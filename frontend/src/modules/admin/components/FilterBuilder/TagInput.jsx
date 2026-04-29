@@ -2,8 +2,14 @@ import React, { useState, KeyboardEvent } from 'react';
 import { X, Plus } from 'lucide-react';
 import './TagInput.css';
 
-const TagInput = ({ tags, setTags, placeholder = "Add option...", label }) => {
+const TagInput = ({ tags, setTags, placeholder = "Add option...", label, filterKey }) => {
   const [input, setInput] = useState('');
+
+  const formatTag = (tag) => {
+    if (filterKey === 'rating') return `${tag} ★ & above`;
+    if (filterKey === 'discount') return `${tag}% Off`;
+    return tag;
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -31,7 +37,7 @@ const TagInput = ({ tags, setTags, placeholder = "Add option...", label }) => {
         <div className="tags-list">
           {tags.map(tag => (
             <span key={tag} className="tag-item">
-              {tag}
+              {formatTag(tag)}
               <button type="button" onClick={() => removeTag(tag)} className="tag-remove">
                 <X size={12} />
               </button>

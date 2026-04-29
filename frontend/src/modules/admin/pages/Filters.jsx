@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Loader2, GripVertical, Check, X, Database, Settings2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, GripVertical, Check, X, Database, Settings2, RefreshCw } from 'lucide-react';
 import { adminGetFilters, adminCreateFilter, adminUpdateFilter, adminToggleFilter, adminDeleteFilter } from '../services/admin.service';
 import toast from 'react-hot-toast';
 import { useSettings } from '../../../context/SettingsContext';
@@ -16,11 +16,11 @@ const INITIAL_FILTERS = [
   { name: "Category", key: "category", type: "select", isActive: true, order: 1, isDynamic: true, refModel: 'Category' },
   { name: "Price", key: "price", type: "range", min: 0, max: 5000, isActive: true, order: 2 },
   { name: "Color", key: "color", type: "multi-select", options: ["Black","White","Red","Blue","Green","Yellow","Pink","Grey"], isActive: true, order: 3 },
-  { name: "Size", key: "size", type: "multi-select", options: ["XS","S","M","L","XL","XXL"], isActive: true, order: 4 },
+  { name: "Size", key: "size", type: "multi-select", options: ["XS","S","M","L","XL","XXL","Free"], isActive: true, order: 4 },
   { name: "Fabric", key: "fabric", type: "select", options: ["Cotton","Silk","Denim","Linen","Polyester"], isActive: true, order: 5 },
   { name: "Shop", key: "shop", type: "select", isActive: true, order: 6, isDynamic: true, refModel: 'Shop' },
-  { name: "Rating", key: "rating", type: "select", options: ["4 & above","3 & above"], isActive: false, order: 7 },
-  { name: "Discount", key: "discount", type: "select", options: ["10%+","25%+","50%+"], isActive: false, order: 8 }
+  { name: "Rating", key: "rating", type: "select", options: ["4","3","2","1"], isActive: false, order: 7 },
+  { name: "Discount", key: "discount", type: "select", options: ["10","20","30","50"], isActive: false, order: 8 }
 ];
 
 const Filters = () => {
@@ -165,8 +165,15 @@ const Filters = () => {
     }
   };
 
+  const renderOption = (val, key) => {
+    const label = val?.label || val;
+    if (key === 'rating') return `${label} ★ & above`;
+    if (key === 'discount') return `${label}% Off`;
+    return label;
+  };
+
   return (
-    <div className="admin-page">
+    <div className="admin-page filters-page">
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Filter Builder</h1>
@@ -184,40 +191,36 @@ const Filters = () => {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 24 }}>
-        {loading ? (
-          <div style={{ padding: 100, textAlign: 'center' }}><Loader2 className="animate-spin" color="var(--primary)" /></div>
-        ) : filters.length === 0 ? (
-          <div style={{ padding: 100, textAlign: 'center', color: 'var(--text-muted)' }}>
-            <div style={{ marginBottom: 16, opacity: 0.5 }}><Settings2 size={48} style={{ margin: '0 auto' }} /></div>
-            <p>No filters configured yet.</p>
-            <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowSeedConfirm(true)}>Initialize Marketplace Filters</button>
-          </div>
-        ) : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 40 }}></th>
-                  <th>Filter Name</th>
-                  <th>Key</th>
-                  <th>Type</th>
-                  <th>Behavior</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filters.sort((a, b) => a.order - b.order).map((f) => (
+      <div className="admin-card" style={{ marginTop: 24 }}>
+        <div className="admin-table-wrapper">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th style={{ width: 40 }}></th>
+                <th>Filter Name</th>
+                <th>Key</th>
+                <th>Type</th>
+                <th>Behavior</th>
+                <th>Status</th>
+                <th style={{ width: 100 }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px' }}>Loading filters...</td></tr>
+              ) : filters.length === 0 ? (
+                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px' }}>No filters found. Load defaults or create one.</td></tr>
+              ) : (
+                filters.sort((a, b) => a.order - b.order).map((f) => (
                   <tr key={f._id}>
-                    <td><GripVertical size={16} color="var(--text-faint)" /></td>
+                    <td><GripVertical size={16} color="#94a3b8" /></td>
                     <td>
-                      <div className="admin-table-primary">{f.name}</div>
+                      <div style={{ fontWeight: 600, color: 'var(--text)' }}>{f.name}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Order: {f.order}</div>
                     </td>
-                    <td><code>{f.key}</code></td>
+                    <td><code style={{ fontSize: 12, background: 'var(--surface-2)', padding: '2px 6px', borderRadius: 4 }}>{f.key}</code></td>
                     <td>
-                      <span className="badge" style={{ background: 'var(--surface-2)', color: 'var(--text)' }}>
+                      <span className={`admin-badge admin-badge-${f.type === 'range' ? 'blue' : 'gray'}`}>
                         {f.type.toUpperCase()}
                       </span>
                     </td>
@@ -233,9 +236,9 @@ const Filters = () => {
                           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 250 }}>
                             {f.options && f.options.length > 0 ? (
                               <>
-                                {f.options.slice(0, 3).map(o => (
-                                  <span key={o.value || o} style={{ fontSize: 10, padding: '2px 6px', background: 'var(--surface-3)', borderRadius: 4 }}>
-                                    {o.label || o}
+                                {f.options.slice(0, 3).map((o, idx) => (
+                                  <span key={idx} style={{ fontSize: 10, padding: '2px 6px', background: 'var(--surface-3)', borderRadius: 4 }}>
+                                    {renderOption(o, f.key)}
                                   </span>
                                 ))}
                                 {f.options.length > 3 && <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>+{f.options.length - 3}</span>}
@@ -254,16 +257,15 @@ const Filters = () => {
                       />
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      <button className="admin-icon-btn" onClick={() => handleOpenModal(f)}><Edit2 size={16} /></button>
-                      <button className="admin-icon-btn text-danger" onClick={() => setConfirmDeleteId(f._id)}><Trash2 size={16} /></button>
+                      <button className="btn btn-icon" onClick={() => handleOpenModal(f)}><Edit2 size={16} /></button>
+                      <button className="btn btn-icon text-danger" onClick={() => setConfirmDeleteId(f._id)}><Trash2 size={16} /></button>
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
 
       {/* Main Edit/Create Modal */}
       {isModalOpen && (
@@ -341,8 +343,9 @@ const Filters = () => {
                 <TagInput 
                   label="Filter Options"
                   tags={formData.options}
-                  setTags={(tags) => setFormData({...formData, options: tags})}
-                  placeholder="Add an option and press Enter..."
+                  setTags={(newTags) => setFormData({ ...formData, options: newTags })}
+                  placeholder="Type and press enter..."
+                  filterKey={formData.key}
                 />
               )}
 
