@@ -141,7 +141,7 @@ const HomePage = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
               {featuredProducts.map(p => (
                 <Link to={`/products/${p._id}`} key={p._id} className="card" style={{ display: 'block', textDecoration: 'none', overflow: 'hidden' }}>
-                  <img src={p.images?.[0] || 'https://placehold.co/400x400'} alt={p.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
+                  <img src={(typeof p.images?.[0] === 'object' ? p.images[0]?.url : p.images?.[0]) || 'https://placehold.co/400x400'} alt={p.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
                   <div style={{ padding: 16 }}>
                     <h3 style={{ fontSize: 16, color: 'var(--text)', marginBottom: 8 }}>{p.name}</h3>
                     <p style={{ color: 'var(--primary)', fontWeight: 600 }}>₹{p.discountPrice || p.price}</p>

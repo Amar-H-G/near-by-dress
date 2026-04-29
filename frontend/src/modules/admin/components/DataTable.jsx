@@ -52,7 +52,7 @@ const DataTable = ({ columns, data, loading, emptyIcon = '📋', emptyTitle = 'N
           {data.map((row, i) => (
             <tr key={row._id || i}>
               {columns.map((col) => (
-                <td key={col.key} style={{ textAlign: col.align || 'left' }}>
+                <td key={col.key} style={{ textAlign: col.align || 'left', width: col.width, minWidth: col.width }}>
                   {col.render ? col.render(row) : row[col.key]}
                 </td>
               ))}

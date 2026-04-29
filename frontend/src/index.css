@@ -507,9 +507,28 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600; color: var(--text); font-size: 14px; border: 1px solid var(--border);
 }
 .admin-table-user { display: flex; align-items: center; gap: 12px; }
+.admin-table-product { display: flex; align-items: center; gap: 16px; }
 .admin-table-shop { display: flex; align-items: center; gap: 12px; }
-.admin-table-shop-logo { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); }
-.admin-table-product-img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; display: block; }
+.admin-table-shop-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+}
+
+.admin-table-product-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  flex-shrink: 0;
+}
 .admin-table-primary { font-weight: 600; color: var(--text); font-size: 14px; }
 .admin-table-secondary { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 

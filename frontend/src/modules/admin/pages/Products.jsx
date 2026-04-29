@@ -13,15 +13,15 @@ const formatDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
 const Products = () => {
-  const [products, setProducts]   = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [page, setPage]           = useState(1);
-  const [totalPages, setTotal]    = useState(1);
-  const [search, setSearch]       = useState('');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotal] = useState(1);
+  const [search, setSearch] = useState('');
   const [shopFilter, setShopFilter] = useState('');
-  const [shopList, setShopList]   = useState([]);
-  const [toDelete, setToDelete]   = useState(null);
-  const [deleting, setDeleting]   = useState(false);
+  const [shopList, setShopList] = useState([]);
+  const [toDelete, setToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
 
@@ -47,7 +47,7 @@ const Products = () => {
   useEffect(() => {
     adminGetShops({ limit: 200, status: 'approved' })
       .then(({ data }) => setShopList(data.data || []))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleSearch = useCallback((q) => { setSearch(q); setPage(1); }, []);
@@ -81,31 +81,31 @@ const Products = () => {
     }
   };
 
-  const openAdd  = () => { setEditProduct(null); setModalOpen(true); };
-  const openEdit = (p) => { setEditProduct(p);   setModalOpen(true); };
+  const openAdd = () => { setEditProduct(null); setModalOpen(true); };
+  const openEdit = (p) => { setEditProduct(p); setModalOpen(true); };
 
   const columns = [
     {
-      key: 'image',
-      label: '',
-      width: 52,
-      render: (p) => (
-        <img
-          src={p.images?.[0] || 'https://placehold.co/40x40/1A1033/9B8EC4?text=?'}
-          alt={p.name}
-          className="admin-table-product-img"
-        />
-      ),
-    },
-    {
       key: 'name',
       label: 'Product',
-      render: (p) => (
-        <div>
-          <p className="admin-table-primary">{p.name}</p>
-          <p className="admin-table-secondary" style={{ textTransform: 'capitalize' }}>{p.category}</p>
-        </div>
-      ),
+      render: (p) => {
+        const firstImg = p.images?.[0];
+        const imageUrl = typeof firstImg === 'object' ? firstImg?.url : firstImg;
+        return (
+          <div className="admin-table-product">
+            <img
+              src={imageUrl || 'https://placehold.co/40x40/1A1033/9B8EC4?text=?'}
+              alt={p.name}
+              className="admin-table-product-img"
+            />
+            <div>
+              <p className="admin-table-primary">{p.name}</p>
+              <p className="admin-table-secondary" style={{ textTransform: 'capitalize' }}>{p.category}</p>
+              <p className="admin-table-id" style={{ fontSize: 10, color: 'var(--text-faint)', marginTop: 2 }}>ID: {p._id}</p>
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: 'price',

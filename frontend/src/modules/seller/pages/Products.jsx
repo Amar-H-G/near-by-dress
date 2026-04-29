@@ -54,7 +54,11 @@ const Products = () => {
                     <tr key={product._id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <img src={product.images?.[0] || 'https://placehold.co/40x40'} alt={product.name} style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />
+                          <img 
+                            src={(typeof product.images?.[0] === 'object' ? product.images[0]?.url : product.images?.[0]) || 'https://placehold.co/40x40'} 
+                            alt={product.name} 
+                            style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} 
+                          />
                           <span style={{ fontWeight: 500, color: 'var(--text)' }}>{product.name}</span>
                         </div>
                       </td>
