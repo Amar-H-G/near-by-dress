@@ -21,3 +21,4 @@ export const adminCreateProduct = (formData) =>
 export const adminUpdateProduct = (id, formData) =>
   API.put(`/products/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminDeleteProduct = (id) => API.delete(`/products/${id}`);
+export const adminToggleFeature = (id, data) => API.put(`/admin/products/${id}/feature`, data);

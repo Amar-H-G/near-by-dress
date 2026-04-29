@@ -1,7 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { ArrowRight, ShoppingBag, Store, MessageCircle, Star, Zap, Shield } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Store, MessageCircle, Star, Zap, Shield, Mail, Phone } from 'lucide-react';
+import { useSettings } from '../../../context/SettingsContext';
+import API from '../../../shared/services/api';
 
 const FEATURES = [
   { icon: <Store size={24} />, title: 'Local Shops', desc: 'Discover verified fashion boutiques near you' },
@@ -10,13 +12,19 @@ const FEATURES = [
   { icon: <Shield size={24} />, title: 'Verified Shops', desc: 'Every shop is admin-approved before listing' },
 ];
 
-const CATEGORIES = ['Ethnic Wear', 'Western', 'Kids Fashion', 'Accessories', 'Footwear', 'Sarees'];
-
 const HomePage = () => {
   const heroRef = useRef(null);
   const featuresRef = useRef(null);
 
+  const { settings, categories } = useSettings();
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+
   useEffect(() => {
+    // Fetch featured products
+    API.get('/products', { params: { isFeatured: true, limit: 8 } })
+      .then(res => setFeaturedProducts(res.data.data.products || []))
+      .catch(err => console.error(err));
+
     // Hero animation
     const ctx = gsap.context(() => {
       gsap.fromTo('.hero-badge', { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' });
@@ -99,7 +107,7 @@ const HomePage = () => {
       <section className="section" ref={featuresRef} style={{ background: 'var(--bg-2)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: 16 }}>Why <span className="gradient-text">NearByDress</span>?</h2>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: 16 }}>Why <span className="gradient-text">{settings?.siteName || 'NearByDress'}</span>?</h2>
             <p style={{ color: 'var(--text-muted)', maxWidth: 480, margin: '0 auto', fontSize: 16 }}>
               The smartest way to shop fashion from your neighbourhood
             </p>
@@ -109,8 +117,7 @@ const HomePage = () => {
               <div key={f.title} className="feature-card card" style={{ padding: 28 }}>
                 <div style={{
                   width: 52, height: 52, borderRadius: 14, marginBottom: 16,
-                  background: '#EFF6FF',
-                  border: '1px solid #BFDBFE',
+                  background: 'rgba(37, 99, 235, 0.1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'var(--primary)',
                 }}>
@@ -124,26 +131,50 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Featured Products */}
+      {featuredProducts.length > 0 && (
+        <section className="section">
+          <div className="container">
+            <div style={{ textAlign: 'center', marginBottom: 48 }}>
+              <h2 style={{ fontSize: 'clamp(26px, 4vw, 38px)', marginBottom: 12 }}>Featured <span className="gradient-text">Products</span></h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
+              {featuredProducts.map(p => (
+                <Link to={`/products/${p._id}`} key={p._id} className="card" style={{ display: 'block', textDecoration: 'none', overflow: 'hidden' }}>
+                  <img src={p.images?.[0] || 'https://placehold.co/400x400'} alt={p.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
+                  <div style={{ padding: 16 }}>
+                    <h3 style={{ fontSize: 16, color: 'var(--text)', marginBottom: 8 }}>{p.name}</h3>
+                    <p style={{ color: 'var(--primary)', fontWeight: 600 }}>₹{p.discountPrice || p.price}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Categories */}
-      <section className="section">
-        <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <h2 style={{ fontSize: 'clamp(26px, 4vw, 38px)', marginBottom: 12 }}>Shop by <span className="gradient-text">Category</span></h2>
+      {categories?.length > 0 && (
+        <section className="section">
+          <div className="container">
+            <div style={{ textAlign: 'center', marginBottom: 48 }}>
+              <h2 style={{ fontSize: 'clamp(26px, 4vw, 38px)', marginBottom: 12 }}>Shop by <span className="gradient-text">Category</span></h2>
+            </div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {categories.map((cat) => (
+                <Link
+                  key={cat._id}
+                  to={`/products?category=${cat.slug}`}
+                  className="btn btn-ghost"
+                  style={{ padding: '12px 24px', fontSize: 14, textDecoration: 'none', borderRadius: 999 }}
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat}
-                to={`/products?category=${encodeURIComponent(cat.toLowerCase())}`}
-                className="btn btn-ghost"
-                style={{ padding: '12px 24px', fontSize: 14, textDecoration: 'none', borderRadius: 999 }}
-              >
-                {cat}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Banner */}
       <section className="section" style={{ background: 'var(--bg-2)' }}>
@@ -151,7 +182,7 @@ const HomePage = () => {
           <div style={{
             borderRadius: 24, padding: 'clamp(40px, 6vw, 72px)',
             background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%)',
-            border: '1px solid #BFDBFE',
+            border: '1px solid var(--border)',
             textAlign: 'center',
             position: 'relative', overflow: 'hidden',
           }}>
@@ -174,15 +205,33 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--border)', padding: '40px 0', background: 'var(--bg)' }}>
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShoppingBag size={14} color="#fff" />
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '60px 0', background: 'var(--bg)' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              {settings?.logo ? (
+                <img src={settings.logo} alt={settings.siteName} style={{ height: 28, width: 'auto', borderRadius: 6 }} />
+              ) : (
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShoppingBag size={14} color="#fff" />
+                </div>
+              )}
+              <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 18 }}>{settings?.siteName || 'NearByDress'}</span>
             </div>
-            <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 16 }}>NearByDress</span>
+            <p style={{ color: 'var(--text-faint)', fontSize: 14 }}>Connecting local fashion boutiques directly to you.</p>
           </div>
-          <p style={{ color: 'var(--text-faint)', fontSize: 13 }}>© 2026 NearByDress. Hyperlocal Fashion Marketplace.</p>
+          <div>
+            <h4 style={{ fontWeight: 600, marginBottom: 16 }}>Contact Us</h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 14, marginBottom: 8 }}>
+              <Mail size={16} /> {settings?.contactEmail || 'support@nearbydress.com'}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 14 }}>
+              <Phone size={16} /> {settings?.contactPhone || '+91 99999 99999'}
+            </div>
+          </div>
+        </div>
+        <div className="container" style={{ marginTop: 40, paddingTop: 20, borderTop: '1px solid var(--border)', textAlign: 'center', color: 'var(--text-faint)', fontSize: 13 }}>
+          © {new Date().getFullYear()} {settings?.siteName || 'NearByDress'}. All rights reserved.
         </div>
       </footer>
     </div>

@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { X, Package } from 'lucide-react';
 import { adminCreateProduct, adminUpdateProduct } from '../services/admin.service';
 import { getShops } from '../../seller/services/shop.service';
+import { useSettings } from '../../../context/SettingsContext';
 import toast from 'react-hot-toast';
-
-const CATEGORIES = ['ethnic wear', 'western', 'kids fashion', 'accessories', 'footwear', 'sarees', 'other'];
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
 
 const EMPTY = {
@@ -13,6 +12,7 @@ const EMPTY = {
 };
 
 const ProductModal = ({ open, product, onClose, onSaved }) => {
+  const { categories } = useSettings();
   const isEdit = !!product;
   const [form, setForm] = useState(EMPTY);
   const [shopList, setShopList] = useState([]);
@@ -164,8 +164,8 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
                 required
               >
                 <option value="">Select category</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c} style={{ textTransform: 'capitalize' }}>{c}</option>
+                {categories.map((c) => (
+                  <option key={c._id} value={c.slug} style={{ textTransform: 'capitalize' }}>{c.name}</option>
                 ))}
               </select>
             </div>

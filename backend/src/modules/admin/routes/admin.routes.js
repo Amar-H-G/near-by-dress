@@ -8,8 +8,18 @@ const { authenticate, authorize } = require('../../../middleware/auth');
 const { validate, shopStatusSchema } = require('../../../middleware/validate');
 const ctrl = require('../controllers/admin.controller');
 
+const settingsCtrl = require('../controllers/settings.controller');
+const categoryCtrl = require('../controllers/category.controller');
+const { shopUpload } = require('../../../middleware/upload');
+
 // All routes require valid JWT with role === 'admin'
 router.use(authenticate, authorize('admin'));
+
+// ── Global Settings & Categories ────────────────────────────────────────────
+router.put('/settings', shopUpload.fields([{ name: 'logo', maxCount: 1 }]), settingsCtrl.updateSettings);
+router.post('/categories', categoryCtrl.createCategory);
+router.put('/categories/:id', categoryCtrl.updateCategory);
+router.delete('/categories/:id', categoryCtrl.deleteCategory);
 
 // ── Dashboard Stats ─────────────────────────────────────────────────────────
 router.get('/stats', ctrl.getStats);
@@ -27,5 +37,6 @@ router.patch('/shops/:id/status', validate(shopStatusSchema), ctrl.updateShopSta
 
 // ── Product Management ───────────────────────────────────────────────────────
 router.get('/products', ctrl.getAdminProducts);
+router.put('/products/:id/feature', ctrl.toggleProductFeature);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
 import {
-  LayoutDashboard, Users, Store, ShoppingBag, Package, LogOut, X, ChevronRight,
+  LayoutDashboard, Users, Store, ShoppingBag, Package, LogOut, X, ChevronRight, Settings as SettingsIcon, Tags
 } from 'lucide-react';
 
 const navItems = [
@@ -10,6 +10,8 @@ const navItems = [
   { to: '/admin/sellers',   icon: <ShoppingBag size={18} />,     label: 'Sellers' },
   { to: '/admin/shops',     icon: <Store size={18} />,           label: 'Shops' },
   { to: '/admin/products',  icon: <Package size={18} />,         label: 'Products' },
+  { to: '/admin/categories',icon: <Tags size={18} />,            label: 'Categories' },
+  { to: '/admin/settings',  icon: <SettingsIcon size={18} />,    label: 'Settings' },
 ];
 
 const Sidebar = ({ open, onClose }) => {

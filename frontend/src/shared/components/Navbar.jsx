@@ -5,10 +5,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ShoppingBag, Menu, X, User, LogOut, LayoutDashboard, Shield } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
+import { ShoppingBag, Menu, X, User, LogOut, LayoutDashboard, Shield, ChevronDown } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
+  const { settings, categories } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -65,15 +67,19 @@ const Navbar = () => {
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 68 }}>
         {/* Logo */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, var(--primary), #60A5FA)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <ShoppingBag size={20} color="#fff" />
-          </div>
+          {settings?.logo ? (
+            <img src={settings.logo} alt={settings.siteName} style={{ height: 36, width: 'auto', borderRadius: 8 }} />
+          ) : (
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <ShoppingBag size={20} color="#fff" />
+            </div>
+          )}
           <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--text)' }}>
-            Near<span className="gradient-text">ByDress</span>
+            {settings?.siteName || 'NearByDress'}
           </span>
         </Link>
 
@@ -97,6 +103,22 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          {/* Categories Dropdown (Simple implementation) */}
+          {categories?.length > 0 && (
+            <div style={{ position: 'relative' }} className="nav-dropdown-container">
+              <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }}>
+                Categories <ChevronDown size={14} />
+              </button>
+              <div className="nav-dropdown glass-strong" style={{ position: 'absolute', top: '100%', left: 0, minWidth: 200, padding: 8, borderRadius: 12, display: 'none' }}>
+                {categories.map(cat => (
+                  <Link key={cat._id} to={`/products?category=${cat.slug}`} style={{ display: 'block', padding: '10px 14px', color: 'var(--text-muted)', textDecoration: 'none', borderRadius: 8, fontSize: 14 }}>
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+              <style>{`.nav-dropdown-container:hover .nav-dropdown { display: block !important; }`}</style>
+            </div>
+          )}
         </div>
 
         {/* Desktop Auth */}

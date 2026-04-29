@@ -66,6 +66,11 @@ app.get('/health', (_req, res) => {
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
 const sellerRoutes  = require('./src/modules/seller/routes/seller.routes');
+const settingsCtrl  = require('./src/modules/admin/controllers/settings.controller');
+const categoryCtrl  = require('./src/modules/admin/controllers/category.controller');
+
+app.get('/api/settings', settingsCtrl.getSettings);
+app.get('/api/categories', categoryCtrl.getCategories);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/shops', shopRoutes);

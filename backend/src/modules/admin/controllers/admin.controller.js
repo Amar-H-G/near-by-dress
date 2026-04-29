@@ -35,3 +35,21 @@ module.exports.getSellers = async (req, res) => {
   const result = await adminService.getSellers(req.query);
   return sendPaginated(res, result.sellers, result.page, result.limit, result.total);
 };
+
+/** PUT /api/admin/products/:id/feature */
+module.exports.toggleProductFeature = async (req, res) => {
+  const { isFeatured, isTrending } = req.body;
+  const Product = require('../../../models/Product');
+  
+  const product = await Product.findByIdAndUpdate(
+    req.params.id,
+    { $set: { isFeatured, isTrending } },
+    { new: true, runValidators: true }
+  );
+
+  if (!product) {
+    return sendSuccess(res, null, 'Product not found', 404);
+  }
+
+  return sendSuccess(res, { data: product }, 'Product feature status updated');
+};

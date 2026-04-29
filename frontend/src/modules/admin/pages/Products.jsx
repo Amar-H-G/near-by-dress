@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, Flame } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import SearchBar from '../components/SearchBar';
 import ConfirmModal from '../components/ConfirmModal';
 import ProductModal from '../components/ProductModal';
 import Pagination from '../../../shared/components/Pagination';
-import { adminGetProducts, adminDeleteProduct } from '../services/admin.service';
+import { adminGetProducts, adminDeleteProduct, adminToggleFeature } from '../services/admin.service';
 import { adminGetShops } from '../services/admin.service';
 import toast from 'react-hot-toast';
 
@@ -64,6 +64,20 @@ const Products = () => {
       toast.error(err.response?.data?.message || 'Delete failed');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleToggleFeature = async (product, type) => {
+    try {
+      const payload = {
+        isFeatured: type === 'featured' ? !product.isFeatured : product.isFeatured,
+        isTrending: type === 'trending' ? !product.isTrending : product.isTrending,
+      };
+      await adminToggleFeature(product._id, payload);
+      toast.success('Product updated');
+      loadProducts();
+    } catch (err) {
+      toast.error('Failed to update product');
     }
   };
 
@@ -134,6 +148,23 @@ const Products = () => {
       align: 'right',
       render: (p) => (
         <div className="admin-table-actions">
+          <button
+            className="admin-icon-btn"
+            style={{ color: p.isFeatured ? '#EAB308' : 'var(--text-faint)', background: p.isFeatured ? 'rgba(234, 179, 8, 0.1)' : 'transparent' }}
+            onClick={() => handleToggleFeature(p, 'featured')}
+            title={p.isFeatured ? 'Unfeature' : 'Feature Product'}
+          >
+            <Star size={14} fill={p.isFeatured ? 'currentColor' : 'none'} />
+          </button>
+          <button
+            className="admin-icon-btn"
+            style={{ color: p.isTrending ? '#EF4444' : 'var(--text-faint)', background: p.isTrending ? 'rgba(239, 68, 68, 0.1)' : 'transparent' }}
+            onClick={() => handleToggleFeature(p, 'trending')}
+            title={p.isTrending ? 'Remove Trending' : 'Mark Trending'}
+          >
+            <Flame size={14} fill={p.isTrending ? 'currentColor' : 'none'} />
+          </button>
+          <div style={{ width: 1, height: 16, background: 'var(--border)', margin: '0 4px' }}></div>
           <button
             className="admin-icon-btn admin-icon-btn-primary"
             onClick={() => openEdit(p)}
