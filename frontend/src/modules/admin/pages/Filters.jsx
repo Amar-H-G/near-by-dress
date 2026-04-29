@@ -223,12 +223,11 @@ const Filters = () => {
                     </td>
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        {f.isDynamic && (
+                        {f.isDynamic ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: 11, fontWeight: 700 }}>
                             <Database size={12} /> <span>REF: {f.refModel}</span>
                           </div>
-                        )}
-                        {f.type === 'range' ? (
+                        ) : f.type === 'range' ? (
                           <span style={{ fontSize: 13 }}>{f.min} - {f.max}</span>
                         ) : (
                           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 250 }}>
@@ -242,7 +241,7 @@ const Filters = () => {
                                 {f.options.length > 3 && <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>+{f.options.length - 3}</span>}
                               </>
                             ) : (
-                              !f.isDynamic && <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>No options defined</span>
+                              <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>No options defined</span>
                             )}
                           </div>
                         )}
