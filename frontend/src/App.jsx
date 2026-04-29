@@ -1,10 +1,10 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 
-// Pages
+// Public Pages
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -13,7 +13,14 @@ import ShopDetailPage from './pages/ShopDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ShopDashboardPage from './pages/ShopDashboardPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
+
+// Admin Layout + Pages
+import AdminLayout from './admin/layout/AdminLayout';
+import Dashboard from './admin/pages/Dashboard';
+import Users from './admin/pages/Users';
+import Sellers from './admin/pages/Sellers';
+import Shops from './admin/pages/Shops';
+import Products from './admin/pages/Products';
 
 function App() {
   return (
@@ -30,38 +37,49 @@ function App() {
               fontSize: '14px',
             },
             success: { iconTheme: { primary: '#10B981', secondary: '#fff' } },
-            error: { iconTheme: { primary: '#EF4444', secondary: '#fff' } },
+            error:   { iconTheme: { primary: '#EF4444', secondary: '#fff' } },
           }}
         />
 
-        {/* Hide navbar on auth pages */}
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          {/* ── Auth Pages (no Navbar) ─────────────────────────────────── */}
+          <Route path="/login"    element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+
+          {/* ── Admin Panel (fully isolated, no public Navbar) ─────────── */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="users"     element={<Users />} />
+            <Route path="sellers"   element={<Sellers />} />
+            <Route path="shops"     element={<Shops />} />
+            <Route path="products"  element={<Products />} />
+          </Route>
+
+          {/* ── Public Site (with Navbar) ──────────────────────────────── */}
           <Route
             path="*"
             element={
               <>
                 <Navbar />
                 <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/products" element={<ProductsPage />} />
-                  <Route path="/products/:id" element={<ProductDetailPage />} />
-                  <Route path="/shops" element={<ShopsPage />} />
-                  <Route path="/shops/:id" element={<ShopDetailPage />} />
+                  <Route path="/"              element={<HomePage />} />
+                  <Route path="/products"      element={<ProductsPage />} />
+                  <Route path="/products/:id"  element={<ProductDetailPage />} />
+                  <Route path="/shops"         element={<ShopsPage />} />
+                  <Route path="/shops/:id"     element={<ShopDetailPage />} />
                   <Route
                     path="/dashboard"
                     element={
                       <ProtectedRoute roles={['shop_owner']}>
                         <ShopDashboardPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute roles={['admin']}>
-                        <AdminDashboardPage />
                       </ProtectedRoute>
                     }
                   />
