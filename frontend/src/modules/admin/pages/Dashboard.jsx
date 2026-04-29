@@ -73,6 +73,7 @@ const Dashboard = () => {
     { label: 'Total Products', value: stats?.totalProducts, icon: <Package size={22} />,     color: '#10B981' },
     { label: 'Pending Approval', value: stats?.pendingShops, icon: <Clock size={22} />,      color: '#F59E0B' },
     { label: 'Approved Shops', value: stats?.approvedShops, icon: <CheckCircle size={22} />, color: '#10B981' },
+    { label: 'Rejected Shops', value: stats?.rejectedShops, icon: <XCircle size={22} />,     color: '#EF4444' },
   ];
 
   return (

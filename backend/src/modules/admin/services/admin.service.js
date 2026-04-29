@@ -12,17 +12,18 @@ const { getPagination } = require('../../../utils/pagination');
  * Aggregate platform statistics for the admin dashboard
  */
 const getPlatformStats = async () => {
-  const [totalUsers, totalShops, pendingShops, approvedShops, totalProducts, totalSellers] =
+  const [totalUsers, totalShops, pendingShops, approvedShops, rejectedShops, totalProducts, totalSellers] =
     await Promise.all([
       User.countDocuments(),
       Shop.countDocuments(),
       Shop.countDocuments({ status: 'pending' }),
       Shop.countDocuments({ status: 'approved' }),
+      Shop.countDocuments({ status: 'rejected' }),
       Product.countDocuments(),
       User.countDocuments({ role: 'shop_owner' }),
     ]);
 
-  return { totalUsers, totalShops, pendingShops, approvedShops, totalProducts, totalSellers };
+  return { totalUsers, totalShops, pendingShops, approvedShops, rejectedShops, totalProducts, totalSellers };
 };
 
 /**
