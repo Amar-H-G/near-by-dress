@@ -13,12 +13,12 @@ import ToggleSwitch from '../components/FilterBuilder/ToggleSwitch';
 import ConfirmModal from '../components/ConfirmModal';
 
 const INITIAL_FILTERS = [
-  { name: "Category", key: "category", type: "select", isActive: true, order: 1, isDynamic: true, ref: "Category" },
+  { name: "Category", key: "category", type: "select", isActive: true, order: 1, isDynamic: true, refModel: 'Category' },
   { name: "Price", key: "price", type: "range", min: 0, max: 5000, isActive: true, order: 2 },
   { name: "Color", key: "color", type: "multi-select", options: ["Black","White","Red","Blue","Green","Yellow","Pink","Grey"], isActive: true, order: 3 },
   { name: "Size", key: "size", type: "multi-select", options: ["XS","S","M","L","XL","XXL"], isActive: true, order: 4 },
   { name: "Fabric", key: "fabric", type: "select", options: ["Cotton","Silk","Denim","Linen","Polyester"], isActive: true, order: 5 },
-  { name: "Shop", key: "shop", type: "select", isActive: true, order: 6, isDynamic: true, ref: "Shop" },
+  { name: "Shop", key: "shop", type: "select", isActive: true, order: 6, isDynamic: true, refModel: 'Shop' },
   { name: "Rating", key: "rating", type: "select", options: ["4 & above","3 & above"], isActive: false, order: 7 },
   { name: "Discount", key: "discount", type: "select", options: ["10%+","25%+","50%+"], isActive: false, order: 8 }
 ];
@@ -45,7 +45,7 @@ const Filters = () => {
     isActive: true,
     order: 0,
     isDynamic: false,
-    ref: null
+    refModel: null
   });
 
   const loadFilters = async () => {
@@ -75,7 +75,7 @@ const Filters = () => {
         isActive: filter.isActive !== undefined ? filter.isActive : true,
         order: filter.order || 0,
         isDynamic: filter.isDynamic || false,
-        ref: filter.ref || null
+        refModel: filter.refModel || null
       });
     } else {
       setEditingFilter(null);
@@ -89,7 +89,7 @@ const Filters = () => {
         isActive: true,
         order: filters.length + 1,
         isDynamic: false,
-        ref: null
+        refModel: null
       });
     }
     setIsModalOpen(true);
@@ -141,8 +141,6 @@ const Filters = () => {
     
     const payload = { ...formData };
     if (payload.type === 'range') {
-      payload.options = [];
-    } else if (payload.isDynamic) {
       payload.options = [];
     } else {
       payload.min = undefined;
@@ -224,20 +222,31 @@ const Filters = () => {
                       </span>
                     </td>
                     <td>
-                      {f.isDynamic ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--primary)', fontSize: 13 }}>
-                          <Database size={14} /> <span>{f.ref || 'Dynamic'} (API)</span>
-                        </div>
-                      ) : f.type === 'range' ? (
-                        <span style={{ fontSize: 13 }}>{f.min} - {f.max}</span>
-                      ) : (
-                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 250 }}>
-                          {f.options?.slice(0, 3).map(o => (
-                            <span key={o} style={{ fontSize: 10, padding: '2px 6px', background: 'var(--surface-3)', borderRadius: 4 }}>{o}</span>
-                          ))}
-                          {f.options?.length > 3 && <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>+{f.options.length - 3}</span>}
-                        </div>
-                      )}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {f.isDynamic && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: 11, fontWeight: 700 }}>
+                            <Database size={12} /> <span>REF: {f.refModel}</span>
+                          </div>
+                        )}
+                        {f.type === 'range' ? (
+                          <span style={{ fontSize: 13 }}>{f.min} - {f.max}</span>
+                        ) : (
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 250 }}>
+                            {f.options && f.options.length > 0 ? (
+                              <>
+                                {f.options.slice(0, 3).map(o => (
+                                  <span key={o.value || o} style={{ fontSize: 10, padding: '2px 6px', background: 'var(--surface-3)', borderRadius: 4 }}>
+                                    {o.label || o}
+                                  </span>
+                                ))}
+                                {f.options.length > 3 && <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>+{f.options.length - 3}</span>}
+                              </>
+                            ) : (
+                              !f.isDynamic && <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>No options defined</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <ToggleSwitch 
@@ -313,29 +322,6 @@ const Filters = () => {
 
               <div className="admin-form-divider"></div>
 
-              <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-                <ToggleSwitch 
-                  label="Dynamic Data Source"
-                  checked={formData.isDynamic}
-                  onChange={(val) => setFormData({...formData, isDynamic: val})}
-                />
-                {formData.isDynamic && (
-                  <div style={{ flex: 1 }}>
-                    <SelectField
-                      id="filter-ref"
-                      label="Reference Collection"
-                      required
-                      value={formData.ref}
-                      onChange={e => setFormData({...formData, ref: e.target.value})}
-                      options={[
-                        { value: 'Category', label: 'Categories Collection' },
-                        { value: 'Shop', label: 'Shops Collection' },
-                      ]}
-                    />
-                  </div>
-                )}
-              </div>
-
               {formData.type === 'range' ? (
                 <RangeSlider 
                   label="Range Configuration"
@@ -346,10 +332,10 @@ const Filters = () => {
                 />
               ) : formData.isDynamic ? (
                 <div className="dynamic-info-card">
-                  <Database size={20} className="text-primary" />
+                  <Database size={20} />
                   <div>
                     <p className="dynamic-title">Dynamic Data Source</p>
-                    <p className="dynamic-desc">Options for this filter are automatically pulled from the <strong>{formData.ref || formData.key}s</strong> collection.</p>
+                    <p className="dynamic-desc">Linked to <strong>{formData.refModel}</strong> collection</p>
                   </div>
                 </div>
               ) : (
@@ -407,22 +393,23 @@ const Filters = () => {
         .dynamic-info-card {
           display: flex;
           gap: 16px;
-          padding: 16px;
-          background: var(--primary-light, #eef2ff);
-          border-radius: 12px;
-          border: 1px solid rgba(99, 102, 241, 0.2);
+          padding: 20px;
+          background: #f0f7ff;
+          border-radius: 16px;
+          border: 1px solid #cce3ff;
           align-items: center;
+          color: #1e40af;
         }
         .dynamic-title {
-          font-weight: 600;
-          font-size: 14px;
-          color: var(--primary);
+          font-weight: 700;
+          font-size: 15px;
           margin: 0;
+          color: #1e3a8a;
         }
         .dynamic-desc {
-          font-size: 12px;
-          color: var(--text-muted);
+          font-size: 13px;
           margin: 4px 0 0 0;
+          opacity: 0.8;
         }
       `}</style>
     </div>

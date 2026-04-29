@@ -4,42 +4,42 @@ const Shop = require('../../../models/Shop');
 const { sendSuccess } = require('../../../utils/response');
 const AppError = require('../../../utils/AppError');
 
-/**
- * Public: Get all active filters with dynamic options populated
- * GET /api/filters
- */
-exports.getFilters = async (req, res) => {
-  let filters = await Filter.find({ isActive: true, isDeleted: false }).sort({ order: 1 }).lean();
+const modelsMap = {
+  'Category': Category,
+  'Shop': Shop
+};
 
-  // Populate dynamic options
-  const populatedFilters = await Promise.all(filters.map(async (filter) => {
-    if (filter.isDynamic && filter.ref) {
-      try {
-        if (filter.ref === 'Category') {
-          const categories = await Category.find({ isDeleted: false, isActive: true }).select('name').lean();
-          filter.options = categories.map(c => c.name);
-        } else if (filter.ref === 'Shop') {
-          const shops = await Shop.find({ status: 'approved', isActive: true }).select('name').lean();
-          filter.options = shops.map(s => s.name);
-        }
-      } catch (err) {
-        console.error(`Error populating dynamic filter ${filter.name}:`, err);
-        filter.options = [];
-      }
+const populateDynamicOptions = async (filters) => {
+  return await Promise.all(filters.map(async (filter) => {
+    const f = filter.toObject ? filter.toObject() : filter;
+    if (f.isDynamic && f.refModel && modelsMap[f.refModel]) {
+      const Model = modelsMap[f.refModel];
+      const query = f.refModel === 'Shop' ? { status: 'approved', isActive: true } : { isActive: true, isDeleted: false };
+      const items = await Model.find(query).select('name _id').lean();
+      f.options = items.map(item => ({ label: item.name, value: item._id }));
     }
-    return filter;
+    return f;
   }));
-
-  sendSuccess(res, { data: populatedFilters });
 };
 
 /**
- * Admin: Get all filters
+ * Public: Get all active filters with populated dynamic options
+ * GET /api/filters
+ */
+exports.getFilters = async (req, res) => {
+  const filters = await Filter.find({ isActive: true, isDeleted: false }).sort({ order: 1 });
+  const populated = await populateDynamicOptions(filters);
+  sendSuccess(res, { data: populated });
+};
+
+/**
+ * Admin: Get all filters with populated dynamic options
  * GET /api/admin/filters
  */
 exports.getAdminFilters = async (req, res) => {
   const filters = await Filter.find({ isDeleted: false }).sort({ order: 1 });
-  sendSuccess(res, { data: filters });
+  const populated = await populateDynamicOptions(filters);
+  sendSuccess(res, { data: populated });
 };
 
 /**
@@ -47,14 +47,14 @@ exports.getAdminFilters = async (req, res) => {
  * POST /api/admin/filters
  */
 exports.createFilter = async (req, res) => {
-  const { name, key, type, options, order, min, max, isDynamic, ref, isActive } = req.body;
+  const { name, key, type, options, order, min, max, isDynamic, isActive, refModel } = req.body;
   
   // Check if key exists
   const exists = await Filter.findOne({ key, isDeleted: false });
   if (exists) throw new AppError('Filter key already exists', 400);
 
   const filter = await Filter.create({ 
-    name, key, type, options, order, min, max, isDynamic, ref, isActive 
+    name, key, type, options, order, min, max, isDynamic, isActive, refModel 
   });
   sendSuccess(res, { data: filter }, 'Filter created successfully', 201);
 };
