@@ -46,7 +46,7 @@ const AdminAddShop = () => {
     
     const submitData = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
-      if (value) submitData.append(key, value);
+      if (value !== undefined && value !== null) submitData.append(key, value);
     });
 
     if (logoFile[0]) {

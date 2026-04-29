@@ -102,7 +102,8 @@ const registerShopByAdmin = async (data, files) => {
     shopNo, description, openingTime, closingTime, logo: logoUrl
   } = data;
 
-  // 1. Validate email uniqueness
+  // 1. Validate email presence and uniqueness
+  if (!email) throw new AppError('Email is required', 400);
   const existingUser = await User.findOne({ email: email.toLowerCase() });
   if (existingUser) throw new AppError('A user with this email already exists', 400);
 
