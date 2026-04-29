@@ -174,21 +174,31 @@ const getAllProducts = async (query) => {
 
 /** Create a product — role-enforced shop ownership check */
 const createProduct = async (userId, userRole, data, files) => {
-  const { shop: shopId } = data;
+  let shopId = data.shop;
 
   if (userRole === 'shop_owner') {
-    if (!shopId) throw new AppError('Shop ID is required for shop owners', 400);
-    const shop = await Shop.findOne({ _id: shopId, owner: userId });
-    if (!shop) throw new AppError('Shop not found or not owned by you', 403);
+    // For sellers, auto-assign their own shop
+    const shop = await Shop.findOne({ owner: userId });
+    if (!shop) throw new AppError('You do not have a shop registered', 403);
     if (shop.status !== 'approved') throw new AppError('Your shop must be approved to add products', 403);
+    shopId = shop._id;
+  } else if (userRole === 'admin') {
+    // For admins, accept shopId from data if provided, or allow system product
+    if (shopId) {
+      const shop = await Shop.findById(shopId);
+      if (!shop) throw new AppError('Target shop not found', 404);
+    }
+  } else {
+    throw new AppError('Not authorized to create products', 403);
   }
 
-  if (userRole === 'admin' && shopId) {
-    const shop = await Shop.findById(shopId);
-    if (!shop) throw new AppError('Target shop not found', 404);
-  }
+  const productData = { 
+    ...data, 
+    shop: shopId, 
+    addedBy: userId,
+    isSystemProduct: userRole === 'admin' && !shopId 
+  };
 
-  const productData = { ...data, addedBy: userId };
   if (files?.images?.length) {
     productData.images = files.images.map((f) => ({
       url: f.path,

@@ -80,53 +80,10 @@ const getSellerProducts = async (userId, query) => {
   return { products, page, limit, total, totalPages: Math.ceil(total / limit) };
 };
 
-const addSellerProduct = async (userId, data, files) => {
-  const shop = await Shop.findOne({ owner: userId });
-  if (!shop) throw new AppError('Complete your shop profile first', 400);
-  if (shop.status !== 'approved') throw new AppError('Shop must be approved to add products', 403);
-
-  const productData = {
-    ...data,
-    shop: shop._id,
-    addedBy: userId,
-  };
-
-  if (files?.images?.length) productData.images = files.images.map((f) => f.path);
-
-  const product = await Product.create(productData);
-  return product;
-};
-
-const updateSellerProduct = async (userId, productId, data, files) => {
-  const shop = await Shop.findOne({ owner: userId });
-  if (!shop) throw new AppError('Shop profile required', 400);
-
-  const product = await Product.findOne({ _id: productId, shop: shop._id });
-  if (!product) throw new AppError('Product not found or not authorized', 404);
-
-  if (files?.images?.length) {
-    data.images = [...(product.images || []), ...files.images.map((f) => f.path)];
-  }
-
-  const updated = await Product.findByIdAndUpdate(productId, data, { new: true, runValidators: true });
-  return updated;
-};
-
-const deleteSellerProduct = async (userId, productId) => {
-  const shop = await Shop.findOne({ owner: userId });
-  if (!shop) throw new AppError('Shop profile required', 400);
-
-  const product = await Product.findOneAndDelete({ _id: productId, shop: shop._id });
-  if (!product) throw new AppError('Product not found or not authorized', 404);
-  return product;
-};
 
 module.exports = {
   getDashboardStats,
   getSellerProfile,
   upsertSellerProfile,
   getSellerProducts,
-  addSellerProduct,
-  updateSellerProduct,
-  deleteSellerProduct,
 };

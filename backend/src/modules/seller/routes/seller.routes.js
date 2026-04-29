@@ -15,13 +15,7 @@ router.get('/dashboard', sellerController.getDashboard);
 router.get('/profile', sellerController.getProfile);
 router.put('/profile', shopUpload.fields([{ name: 'logo', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]), sellerController.updateProfile);
 
-// Products
-router.route('/products')
-  .get(sellerController.getProducts)
-  .post(productUpload.fields([{ name: 'images', maxCount: 5 }]), sellerController.addProduct);
-
-router.route('/products/:id')
-  .put(productUpload.fields([{ name: 'images', maxCount: 5 }]), sellerController.updateProduct)
-  .delete(sellerController.deleteProduct);
+// Products (Dashboard view)
+router.get('/products', sellerController.getProducts);
 
 module.exports = router;

@@ -57,25 +57,44 @@ const createProductSchema = Joi.object({
   name: Joi.string().min(2).max(200).required(),
   description: Joi.string().max(2000).allow('').optional(),
   price: Joi.number().min(0).required(),
-  discountPrice: Joi.number().min(0).allow(null).optional(),
+  discountPrice: Joi.number().min(0).allow(null, '').optional(),
   category: Joi.string().required(),
-  sizes: Joi.array().items(Joi.string()).default([]),
-  colors: Joi.array().items(Joi.string()).default([]),
+  sizes: Joi.array().items(Joi.string()).single().default([]),
+  colors: Joi.array().items(Joi.string()).single().default([]),
   stock: Joi.number().min(0).default(0),
-  shop: Joi.string().hex().length(24).allow(null).optional(),
+  shop: Joi.string().hex().length(24).allow(null, '').optional(),
   isSystemProduct: Joi.boolean().default(false),
+  isActive: Joi.boolean().default(true),
+  existingImages: Joi.alternatives().try(
+    Joi.array().items(Joi.string().allow('')),
+    Joi.string().allow('')
+  ).optional(),
+  removedImages: Joi.alternatives().try(
+    Joi.array().items(Joi.string()),
+    Joi.string()
+  ).optional(),
 });
 
 const updateProductSchema = Joi.object({
   name: Joi.string().min(2).max(200).optional(),
   description: Joi.string().max(2000).allow('').optional(),
   price: Joi.number().min(0).optional(),
-  discountPrice: Joi.number().min(0).allow(null).optional(),
+  discountPrice: Joi.number().min(0).allow(null, '').optional(),
   category: Joi.string().optional(),
-  sizes: Joi.array().items(Joi.string()).optional(),
-  colors: Joi.array().items(Joi.string()).optional(),
+  sizes: Joi.array().items(Joi.string()).single().optional(),
+  colors: Joi.array().items(Joi.string()).single().optional(),
   stock: Joi.number().min(0).optional(),
   isActive: Joi.boolean().optional(),
+  shop: Joi.string().hex().length(24).allow(null, '').optional(),
+  isSystemProduct: Joi.boolean().optional(),
+  existingImages: Joi.alternatives().try(
+    Joi.array().items(Joi.string().allow('')),
+    Joi.string().allow('')
+  ).optional(),
+  removedImages: Joi.alternatives().try(
+    Joi.array().items(Joi.string()),
+    Joi.string()
+  ).optional(),
 });
 
 module.exports = {

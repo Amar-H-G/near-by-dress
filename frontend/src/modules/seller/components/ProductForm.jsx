@@ -6,6 +6,8 @@ import SelectField from '../../../shared/components/form/SelectField';
 import TextArea from '../../../shared/components/form/TextArea';
 import FileUpload from '../../../shared/components/form/FileUpload';
 
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+
 const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
   const { categories } = useSettings();
   const [formData, setFormData] = useState({
@@ -16,6 +18,8 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
     description: initialData?.description || '',
     stock: initialData?.stock || 0,
     isActive: initialData?.isActive ?? true,
+    sizes: initialData?.sizes || [],
+    colors: (initialData?.colors || []).join(', '),
   });
 
   const [images, setImages] = useState([]);
@@ -34,6 +38,8 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
         description: initialData.description || '',
         stock: initialData.stock || 0,
         isActive: initialData.isActive ?? true,
+        sizes: initialData.sizes || [],
+        colors: (initialData.colors || []).join(', '),
       });
       setPreviewUrls(initialData.images || []);
       setRemovedImages([]);
@@ -51,6 +57,12 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
       setImages((prev) => prev.filter((_, i) => i !== idx));
     }
   };
+
+  const toggleSize = (s) =>
+    setFormData((f) => ({
+      ...f,
+      sizes: f.sizes.includes(s) ? f.sizes.filter((x) => x !== s) : [...f.sizes, s],
+    }));
 
   const categoryOptions = categories.reduce((acc, cat) => {
     if (!cat.parentId) {
@@ -108,10 +120,26 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const submitData = new FormData();
-    Object.entries(formData).forEach(([key, value]) => submitData.append(key, value));
+    
+    // Basic fields
+    submitData.append('name', formData.name);
+    submitData.append('price', formData.price);
+    submitData.append('discountPrice', formData.discountPrice);
+    submitData.append('category', formData.category);
+    submitData.append('description', formData.description);
+    submitData.append('stock', formData.stock);
+    submitData.append('isActive', formData.isActive);
+
+    // Multi-value fields
+    formData.sizes.forEach((s) => submitData.append('sizes', s));
+    formData.colors.split(',').map((c) => c.trim()).filter(Boolean).forEach((c) => submitData.append('colors', c));
 
     // Send existing images to keep
-    previewUrls.forEach(img => submitData.append('existingImages', JSON.stringify(img)));
+    if (previewUrls.length === 0) {
+      submitData.append('existingImages', '');
+    } else {
+      previewUrls.forEach(img => submitData.append('existingImages', JSON.stringify(img)));
+    }
 
     // Send removed image IDs for Cloudinary cleanup
     removedImages.forEach(id => submitData.append('removedImages', id));
@@ -124,7 +152,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
 
   return (
     <form onSubmit={handleSubmit} className="admin-product-form" noValidate>
-      {/* ... (Basic Details) ... */}
+      {/* Basic Details */}
       <div className="admin-section" style={{ padding: 28 }}>
         <h3 className="admin-section-title" style={{ marginBottom: 24 }}>Basic Details</h3>
 
@@ -197,6 +225,35 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
           style={{ marginBottom: 16 }}
         />
 
+        {/* Sizes */}
+        <div className="form-field" style={{ marginTop: 20, marginBottom: 20 }}>
+          <span className="form-label" style={{ display: 'block', marginBottom: 12 }}>Available Sizes</span>
+          <div className="admin-size-grid">
+            {SIZES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={`admin-size-btn ${formData.sizes.includes(s) ? 'admin-size-btn-active' : ''}`}
+                onClick={() => toggleSize(s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Colors */}
+        <div style={{ marginBottom: 24 }}>
+          <InputField
+            id="prod-colors"
+            label="Colors (comma separated)"
+            name="colors"
+            value={formData.colors}
+            onChange={handleChange}
+            placeholder="e.g. Red, Navy Blue, White"
+          />
+        </div>
+
         {/* Active toggle */}
         <label style={{
           display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
@@ -222,7 +279,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
         </label>
       </div>
 
-      {/* ── Product Images ────────────────────────────────── */}
+      {/* Product Images */}
       <div className="admin-section" style={{ padding: 28 }}>
         <h3 className="admin-section-title" style={{ marginBottom: 20 }}>Product Images</h3>
         <FileUpload
@@ -238,7 +295,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
         />
       </div>
 
-      {/* ── Actions ───────────────────────────────────────── */}
+      {/* Actions */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, padding: '20px 28px' }}>
         <button type="button" onClick={() => window.history.back()} className="btn btn-ghost">
           Cancel
