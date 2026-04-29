@@ -61,12 +61,19 @@ exports.toggleFilter = async (req, res) => {
   sendSuccess(res, { data: filter }, `Filter ${filter.isActive ? 'enabled' : 'disabled'}`);
 };
 
-/**
- * Admin: Hard delete filter
- * DELETE /api/admin/filters/:id
- */
 exports.deleteFilter = async (req, res) => {
   const filter = await Filter.findByIdAndDelete(req.params.id);
   if (!filter) throw new AppError('Filter not found', 404);
-  sendSuccess(res, null, 'Filter permanently deleted from database');
+
+  // Reorder remaining filters to ensure sequential order (1, 2, 3...)
+  const remainingFilters = await Filter.find().sort({ order: 1 });
+  
+  if (remainingFilters.length > 0) {
+    const updatePromises = remainingFilters.map((f, index) => {
+      return Filter.findByIdAndUpdate(f._id, { order: index + 1 });
+    });
+    await Promise.all(updatePromises);
+  }
+
+  sendSuccess(res, null, 'Filter permanently deleted and list reordered');
 };
