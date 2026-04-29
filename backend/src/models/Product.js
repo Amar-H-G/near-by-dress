@@ -28,10 +28,9 @@ const productSchema = new mongoose.Schema(
       default: [],
     },
     category: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
       required: [true, 'Category is required'],
-      trim: true,
-      lowercase: true,
     },
     sizes: {
       type: [String],

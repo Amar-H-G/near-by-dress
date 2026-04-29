@@ -103,17 +103,25 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          {/* Categories Dropdown (Simple implementation) */}
+          {/* Categories Dropdown (Hierarchical) */}
           {categories?.length > 0 && (
             <div style={{ position: 'relative' }} className="nav-dropdown-container">
               <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }}>
                 Categories <ChevronDown size={14} />
               </button>
-              <div className="nav-dropdown glass-strong" style={{ position: 'absolute', top: '100%', left: 0, minWidth: 200, padding: 8, borderRadius: 12, display: 'none' }}>
-                {categories.map(cat => (
-                  <Link key={cat._id} to={`/products?category=${cat.slug}`} style={{ display: 'block', padding: '10px 14px', color: 'var(--text-muted)', textDecoration: 'none', borderRadius: 8, fontSize: 14 }}>
-                    {cat.name}
-                  </Link>
+              <div className="nav-dropdown glass-strong" style={{ position: 'absolute', top: '100%', left: 0, minWidth: 220, padding: '12px 8px', borderRadius: 16, display: 'none', boxShadow: 'var(--shadow-card)' }}>
+                {categories.filter(c => !c.parentId).map(root => (
+                  <div key={root._id} style={{ marginBottom: 4 }}>
+                    <Link to={`/products?category=${root._id}`} style={{ display: 'block', padding: '8px 14px', color: 'var(--text)', textDecoration: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700 }}>
+                      {root.name}
+                    </Link>
+                    {/* Render subcategories */}
+                    {categories.filter(sub => sub.parentId?._id === root._id).map(sub => (
+                      <Link key={sub._id} to={`/products?category=${sub._id}`} style={{ display: 'block', padding: '6px 14px 6px 28px', color: 'var(--text-muted)', textDecoration: 'none', borderRadius: 8, fontSize: 13 }}>
+                        {sub.name}
+                      </Link>
+                    ))}
+                  </div>
                 ))}
               </div>
               <style>{`.nav-dropdown-container:hover .nav-dropdown { display: block !important; }`}</style>

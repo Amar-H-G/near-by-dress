@@ -4,6 +4,7 @@
  */
 const Product = require('../../../models/Product');
 const Shop = require('../../../models/Shop');
+const mongoose = require('mongoose');
 const AppError = require('../../../utils/AppError');
 const { getPagination } = require('../../../utils/pagination');
 const { getRedis } = require('../../../config/redis');
@@ -38,7 +39,17 @@ const getProducts = async (query) => {
   }
 
   const filter = { isActive: true };
-  if (category) filter.category = { $regex: category, $options: 'i' };
+  if (category) {
+    const Category = require('../../../models/Category');
+    const foundCat = await Category.findOne({ 
+      $or: [
+        { _id: mongoose.Types.ObjectId.isValid(category) ? category : null },
+        { slug: category }
+      ]
+    });
+    if (foundCat) filter.category = foundCat._id;
+    else filter.category = null; // Forces empty result if category doesn't exist
+  }
   if (shop) filter.shop = shop;
   if (minPrice || maxPrice) {
     filter.price = {};
@@ -131,7 +142,17 @@ const getAllProducts = async (query) => {
   const { category, shop, isActive } = query;
 
   const filter = {};
-  if (category) filter.category = { $regex: category, $options: 'i' };
+  if (category) {
+    const Category = require('../../../models/Category');
+    const foundCat = await Category.findOne({ 
+      $or: [
+        { _id: mongoose.Types.ObjectId.isValid(category) ? category : null },
+        { slug: category }
+      ]
+    });
+    if (foundCat) filter.category = foundCat._id;
+    else filter.category = null;
+  }
   if (shop) filter.shop = shop;
   if (isActive !== undefined) filter.isActive = isActive === 'true';
 

@@ -165,7 +165,9 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
               >
                 <option value="">Select category</option>
                 {categories.map((c) => (
-                  <option key={c._id} value={c.slug} style={{ textTransform: 'capitalize' }}>{c.name}</option>
+                  <option key={c._id} value={c._id}>
+                    {c.parentId ? `${c.parentId.name} → ${c.name}` : c.name}
+                  </option>
                 ))}
               </select>
             </div>

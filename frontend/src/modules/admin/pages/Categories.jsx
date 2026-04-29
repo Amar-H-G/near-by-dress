@@ -1,162 +1,229 @@
-import { useState } from 'react';
-import { useSettings } from '../../../context/SettingsContext';
-import API from '../../../shared/services/api';
+import { useEffect, useState } from 'react';
+import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Loader2, Folder, FileText, ChevronRight, X } from 'lucide-react';
+import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory } from '../services/admin.service';
 import toast from 'react-hot-toast';
-import { Tags, Plus, Edit2, Trash2, X } from 'lucide-react';
+import { useSettings } from '../../../context/SettingsContext';
 
 const Categories = () => {
-  const { categories, refreshCategories } = useSettings();
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCat, setEditingCat] = useState(null);
-  const [formData, setFormData] = useState({ name: '', slug: '', isActive: true });
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const { refreshCategories } = useSettings();
 
-  const openModal = (cat = null) => {
-    if (cat) {
-      setEditingCat(cat);
-      setFormData({ name: cat.name, slug: cat.slug, isActive: cat.isActive });
-    } else {
-      setEditingCat(null);
-      setFormData({ name: '', slug: '', isActive: true });
-    }
-    setIsModalOpen(true);
-  };
+  const [formData, setFormData] = useState({
+    name: '',
+    parentId: '',
+    order: 0,
+    isActive: true
+  });
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingCat(null);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const loadCategories = async () => {
     setLoading(true);
     try {
-      if (editingCat) {
-        await API.put(`/admin/categories/${editingCat._id}`, formData);
-        toast.success('Category updated successfully');
-      } else {
-        await API.post('/admin/categories', formData);
-        toast.success('Category created successfully');
-      }
-      refreshCategories();
-      closeModal();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save category');
+      const { data } = await adminGetCategories();
+      setCategories(data.data || []);
+    } catch {
+      toast.error('Failed to load categories');
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => { loadCategories(); }, []);
+
+  const handleOpenModal = (cat = null) => {
+    if (cat) {
+      setEditingCategory(cat);
+      setFormData({
+        name: cat.name,
+        parentId: cat.parentId?._id || '',
+        order: cat.order || 0,
+        isActive: cat.isActive
+      });
+    } else {
+      setEditingCategory(null);
+      setFormData({
+        name: '',
+        parentId: '',
+        order: categories.length,
+        isActive: true
+      });
+    }
+    setIsModalOpen(true);
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) return;
+    if (!window.confirm('Are you sure? This will hide the category from the platform.')) return;
     try {
-      await API.delete(`/admin/categories/${id}`);
-      toast.success('Category deleted successfully');
+      await adminDeleteCategory(id);
+      toast.success('Category deleted');
+      loadCategories();
       refreshCategories();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete category');
+    } catch {
+      toast.error('Failed to delete category');
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      if (editingCategory) {
+        await adminUpdateCategory(editingCategory._id, formData);
+        toast.success('Category updated');
+      } else {
+        await adminCreateCategory(formData);
+        toast.success('Category created');
+      }
+      setIsModalOpen(false);
+      loadCategories();
+      refreshCategories();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Action failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Filter out the category itself from parent options when editing
+  const parentOptions = categories.filter(c => !editingCategory || c._id !== editingCategory._id);
+
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ padding: 12, background: 'rgba(37, 99, 235, 0.1)', color: 'var(--primary)', borderRadius: 12 }}>
-            <Tags size={24} />
-          </div>
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 700 }}>Categories</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Manage global product categories</p>
-          </div>
+    <div className="admin-page">
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">Category System</h1>
+          <p className="admin-page-subtitle">Manage hierarchical categories for your marketplace.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => openModal()} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Plus size={18} />
-          Add Category
+        <button className="btn btn-primary" onClick={() => handleOpenModal()}>
+          <Plus size={18} /> Add Category
         </button>
       </div>
 
-      <div className="card" style={{ overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ background: 'var(--bg-2)', borderBottom: '1px solid var(--border)' }}>
-              <th style={{ padding: '16px 24px', fontWeight: 600, color: 'var(--text-muted)' }}>Name</th>
-              <th style={{ padding: '16px 24px', fontWeight: 600, color: 'var(--text-muted)' }}>Slug</th>
-              <th style={{ padding: '16px 24px', fontWeight: 600, color: 'var(--text-muted)' }}>Status</th>
-              <th style={{ padding: '16px 24px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.length === 0 ? (
-              <tr>
-                <td colSpan={4} style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
-                  No categories found.
-                </td>
-              </tr>
-            ) : (
-              categories.map(cat => (
-                <tr key={cat._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '16px 24px', fontWeight: 500 }}>{cat.name}</td>
-                  <td style={{ padding: '16px 24px', color: 'var(--text-muted)' }}>{cat.slug}</td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <span style={{
-                      padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500,
-                      background: cat.isActive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                      color: cat.isActive ? '#10B981' : '#EF4444'
-                    }}>
-                      {cat.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                      <button onClick={() => openModal(cat)} style={{ padding: 8, background: 'var(--bg-2)', borderRadius: 8, color: 'var(--text-muted)', cursor: 'pointer', border: 'none' }}>
-                        <Edit2 size={16} />
-                      </button>
-                      <button onClick={() => handleDelete(cat._id)} style={{ padding: 8, background: 'rgba(239, 68, 68, 0.1)', borderRadius: 8, color: '#EF4444', cursor: 'pointer', border: 'none' }}>
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+      <div className="card" style={{ marginTop: 24 }}>
+        {loading ? (
+          <div style={{ padding: 100, textAlign: 'center' }}><Loader2 className="animate-spin" color="var(--primary)" /></div>
+        ) : categories.length === 0 ? (
+          <div style={{ padding: 100, textAlign: 'center', color: 'var(--text-muted)' }}>No categories found.</div>
+        ) : (
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Category Name</th>
+                  <th>Hierarchy</th>
+                  <th>Order</th>
+                  <th>Status</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {categories.map((cat) => (
+                  <tr key={cat._id}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {cat.parentId ? <FileText size={16} color="var(--text-faint)" /> : <Folder size={16} color="var(--primary)" />}
+                        <span className="admin-table-primary">{cat.name}</span>
+                      </div>
+                    </td>
+                    <td>
+                      {cat.parentId ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
+                          <span>{cat.parentId.name}</span>
+                          <ChevronRight size={12} />
+                          <span style={{ color: 'var(--text)' }}>{cat.name}</span>
+                        </div>
+                      ) : (
+                        <span className="badge" style={{ background: 'var(--surface-2)', color: 'var(--text-faint)' }}>Root Category</span>
+                      )}
+                    </td>
+                    <td><span className="admin-table-date">{cat.order}</span></td>
+                    <td>
+                      <span className={`badge ${cat.isActive ? 'badge-approved' : 'badge-rejected'}`}>
+                        {cat.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button className="admin-icon-btn" onClick={() => handleOpenModal(cat)}><Edit2 size={16} /></button>
+                      <button className="admin-icon-btn text-danger" onClick={() => handleDelete(cat._id)}><Trash2 size={16} /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 400, padding: 24, position: 'relative' }}>
-            <button onClick={closeModal} style={{ position: 'absolute', right: 16, top: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-              <X size={20} />
-            </button>
-            <h2 style={{ fontSize: 20, marginBottom: 24 }}>{editingCat ? 'Edit Category' : 'Add Category'}</h2>
-            
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <label style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Category Name</label>
-                <input type="text" name="name" className="input" required
+        <div className="admin-modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="admin-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">{editingCategory ? 'Edit Category' : 'New Category'}</h3>
+              <button className="admin-modal-close" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSubmit} style={{ marginTop: 20 }}>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Category Name *</label>
+                <input 
+                  required 
+                  type="text" 
+                  className="admin-input" 
                   value={formData.name} 
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })} 
-                />
-              </div>
-              
-              <div>
-                <label style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Slug (URL friendly)</label>
-                <input type="text" name="slug" className="input" required
-                  value={formData.slug} 
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })} 
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  placeholder="e.g. Ethnic Wear"
                 />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                <input type="checkbox" id="isActive" checked={formData.isActive} onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })} />
-                <label htmlFor="isActive">Active Status</label>
+              <div className="admin-form-group" style={{ marginTop: 16 }}>
+                <label className="admin-form-label">Parent Category</label>
+                <select 
+                  className="admin-input"
+                  value={formData.parentId}
+                  onChange={e => setFormData({...formData, parentId: e.target.value})}
+                >
+                  <option value="">None (Root Category)</option>
+                  {parentOptions.filter(c => !c.parentId).map(c => (
+                    <option key={c._id} value={c._id}>{c.name}</option>
+                  ))}
+                </select>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Leave empty to make this a top-level category.</p>
               </div>
 
-              <button type="submit" className="btn btn-primary" style={{ marginTop: 8 }} disabled={loading}>
-                {loading ? 'Saving...' : 'Save Category'}
-              </button>
+              <div className="admin-form-row" style={{ marginTop: 16 }}>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Sort Order</label>
+                  <input 
+                    type="number" 
+                    className="admin-input" 
+                    value={formData.order}
+                    onChange={e => setFormData({...formData, order: parseInt(e.target.value)})}
+                  />
+                </div>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Status</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 44 }}>
+                    <button 
+                      type="button"
+                      onClick={() => setFormData({...formData, isActive: !formData.isActive})}
+                      className={`admin-icon-btn ${formData.isActive ? 'text-success' : 'text-faint'}`}
+                      style={{ border: 'none', background: 'none', width: 'auto' }}
+                    >
+                      {formData.isActive ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                    </button>
+                    <span style={{ fontSize: 14 }}>{formData.isActive ? 'Active' : 'Hidden'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="admin-modal-actions">
+                <button type="button" className="btn btn-ghost" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (editingCategory ? 'Update' : 'Create')}
+                </button>
+              </div>
             </form>
           </div>
         </div>

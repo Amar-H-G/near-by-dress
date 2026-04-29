@@ -68,8 +68,8 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
             <select required name="category" value={formData.category} onChange={handleChange} className="admin-input">
               <option value="">Select Category</option>
               {categories.map(cat => (
-                <option key={cat._id} value={cat.slug} style={{ textTransform: 'capitalize' }}>
-                  {cat.name}
+                <option key={cat._id} value={cat._id}>
+                  {cat.parentId ? `${cat.parentId.name} → ${cat.name}` : cat.name}
                 </option>
               ))}
             </select>
