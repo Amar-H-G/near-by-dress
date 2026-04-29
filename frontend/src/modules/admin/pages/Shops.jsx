@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Fragment } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, ChevronDown, ChevronUp, ExternalLink, Plus } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import Pagination from '../../../shared/components/Pagination';
@@ -12,13 +13,14 @@ const STATUS_FILTERS = ['', 'pending', 'approved', 'rejected'];
 const statusLabel = { '': 'All', pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
 
 const Shops = () => {
-  const [shops, setShops]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [page, setPage]           = useState(1);
-  const [totalPages, setTotal]    = useState(1);
+  const navigate = useNavigate();
+  const [shops, setShops] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotal] = useState(1);
   const [statusFilter, setStatus] = useState('');
-  const [search, setSearch]       = useState('');
-  const [expanded, setExpanded]   = useState(null);
+  const [search, setSearch] = useState('');
+  const [expanded, setExpanded] = useState(null);
   const [shopProducts, setShopProds] = useState({});
   const [prodsLoading, setProdsLoading] = useState(false);
   const [rejectingShop, setRejectingShop] = useState(null);
@@ -93,11 +95,6 @@ const Shops = () => {
           </div>
         </div>
       ),
-    },
-    {
-      key: 'category',
-      label: 'Category',
-      render: (s) => <span className="admin-table-date" style={{ textTransform: 'capitalize' }}>{s.category || '—'}</span>,
     },
     {
       key: 'status',
@@ -179,8 +176,8 @@ const Shops = () => {
           <h1 className="admin-page-title">Shop Management</h1>
           <p className="admin-page-subtitle">View all shops, manage status and browse their products.</p>
         </div>
-        <button 
-          className="btn btn-primary" 
+        <button
+          className="btn btn-primary"
           onClick={() => navigate('/admin/shops/add')}
           id="add-new-shop-btn"
         >
@@ -225,8 +222,8 @@ const Shops = () => {
             </thead>
             <tbody>
               {shops.map((shop) => (
-                <>
-                  <tr key={shop._id}>
+                <Fragment key={shop._id}>
+                  <tr>
                     {columns.map((col) => (
                       <td key={col.key} style={{ textAlign: col.align || 'left' }}>
                         {col.render ? col.render(shop) : shop[col.key]}
@@ -263,7 +260,7 @@ const Shops = () => {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
