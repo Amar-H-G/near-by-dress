@@ -35,6 +35,11 @@ const filterSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  ref: {
+    type: String,
+    enum: ['Category', 'Shop'],
+    default: null
+  },
   isActive: {
     type: Boolean,
     default: true
