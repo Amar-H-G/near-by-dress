@@ -92,4 +92,42 @@ const deleteUser = async (userId) => {
   await User.findByIdAndDelete(userId);
 };
 
-module.exports = { getPlatformStats, getSellers, getUsers, deleteUser };
+/**
+ * Admin creates a shop + seller account directly
+ */
+const registerShopByAdmin = async (data) => {
+  const { 
+    shopName, ownerName, email, password, phone, 
+    address, city, state, pincode 
+  } = data;
+
+  // 1. Validate email uniqueness
+  const existingUser = await User.findOne({ email: email.toLowerCase() });
+  if (existingUser) throw new AppError('A user with this email already exists', 400);
+
+  // 2. Create User (password hashing is handled by User model pre-save hook)
+  const user = await User.create({
+    name: ownerName,
+    email: email.toLowerCase(),
+    password,
+    phone,
+    role: 'shop_owner'
+  });
+
+  // 3. Create Shop linked to the new user
+  const shop = await Shop.create({
+    name: shopName,
+    owner: user._id,
+    whatsappNumber: phone, // Using provided phone as whatsapp
+    address,
+    city,
+    state,
+    pincode,
+    status: 'approved',
+    isActive: true
+  });
+
+  return { user, shop };
+};
+
+module.exports = { getPlatformStats, getSellers, getUsers, deleteUser, registerShopByAdmin };

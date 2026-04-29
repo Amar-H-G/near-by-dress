@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, ChevronDown, ChevronUp, ExternalLink, Plus } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import Pagination from '../../../shared/components/Pagination';
 import SearchBar from '../components/SearchBar';
@@ -179,6 +179,13 @@ const Shops = () => {
           <h1 className="admin-page-title">Shop Management</h1>
           <p className="admin-page-subtitle">View all shops, manage status and browse their products.</p>
         </div>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => navigate('/admin/shops/add')}
+          id="add-new-shop-btn"
+        >
+          <Plus size={18} /> Add New Shop
+        </button>
       </div>
 
       <div className="admin-toolbar">

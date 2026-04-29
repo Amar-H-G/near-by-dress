@@ -11,6 +11,7 @@ import Products from '../modules/admin/pages/Products';
 import Settings from '../modules/admin/pages/Settings';
 import Categories from '../modules/admin/pages/Categories';
 import Filters from '../modules/admin/pages/Filters';
+import AdminAddShop from '../modules/admin/pages/AdminAddShop';
 
 const AdminRoutes = () => {
   return (
@@ -28,6 +29,7 @@ const AdminRoutes = () => {
         <Route path="users" element={<Users />} />
         <Route path="sellers" element={<Sellers />} />
         <Route path="shops" element={<Shops />} />
+        <Route path="shops/add" element={<AdminAddShop />} />
         <Route path="products" element={<Products />} />
         <Route path="settings" element={<Settings />} />
         <Route path="categories" element={<Categories />} />

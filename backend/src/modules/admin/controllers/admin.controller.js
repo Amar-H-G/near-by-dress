@@ -53,3 +53,9 @@ module.exports.toggleProductFeature = async (req, res) => {
 
   return sendSuccess(res, { data: product }, 'Product feature status updated');
 };
+ 
+/** POST /api/admin/shops */
+module.exports.createShop = async (req, res) => {
+  const result = await adminService.registerShopByAdmin(req.body);
+  return sendSuccess(res, result, 'Shop and seller account created successfully', 201);
+};

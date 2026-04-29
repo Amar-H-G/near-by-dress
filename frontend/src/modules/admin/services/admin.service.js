@@ -13,6 +13,7 @@ export const adminGetSellers = (params) => API.get('/admin/sellers', { params })
 // ─── Shops ───────────────────────────────────────────────────────────────────
 export const adminGetShops = (params) => API.get('/admin/shops', { params });
 export const adminUpdateShopStatus = (id, data) => API.patch(`/admin/shops/${id}/status`, data);
+export const adminCreateShop = (data) => API.post('/admin/shops', data);
 
 // ─── Products ────────────────────────────────────────────────────────────────
 export const adminGetProducts = (params) => API.get('/admin/products', { params });

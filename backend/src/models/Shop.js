@@ -32,6 +32,14 @@ const shopSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    state: {
+      type: String,
+      trim: true,
+    },
+    pincode: {
+      type: String,
+      trim: true,
+    },
     logo: {
       type: String,
       default: null,

@@ -42,6 +42,7 @@ router.get('/sellers', ctrl.getSellers);
 
 // ── Shop Management ─────────────────────────────────────────────────────────
 router.get('/shops', ctrl.getAdminShops);
+router.post('/shops', ctrl.createShop);
 router.patch('/shops/:id/status', validate(shopStatusSchema), ctrl.updateShopStatus);
 
 // ── Product Management ───────────────────────────────────────────────────────
