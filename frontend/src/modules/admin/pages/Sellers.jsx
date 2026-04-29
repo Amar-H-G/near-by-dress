@@ -3,6 +3,7 @@ import { CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import SearchBar from '../components/SearchBar';
 import Pagination from '../../../shared/components/Pagination';
+import RejectionModal from '../components/RejectionModal';
 import { adminGetSellers, adminUpdateShopStatus } from '../services/admin.service';
 import toast from 'react-hot-toast';
 
@@ -21,6 +22,7 @@ const Sellers = () => {
   const [search, setSearch]     = useState('');
   const [status, setStatus]     = useState('');
   const [actioning, setActioning] = useState(null);
+  const [rejectingShop, setRejectingShop] = useState(null);
 
   const loadSellers = useCallback(async () => {
     setLoading(true);
@@ -40,20 +42,17 @@ const Sellers = () => {
   const handleSearch = useCallback((q) => { setSearch(q); setPage(1); }, []);
   const handleStatus = (s) => { setStatus(s); setPage(1); };
 
-  const handleShopAction = async (shopId, newStatus) => {
-    let rejectionReason = null;
-    if (newStatus === 'rejected') {
-      rejectionReason = window.prompt('Please enter the reason for rejection:');
-      if (!rejectionReason) {
-        toast.error('Rejection reason is required');
-        return;
-      }
+  const handleShopAction = async (shopId, newStatus, rejectionReason = null) => {
+    if (newStatus === 'rejected' && !rejectionReason) {
+      setRejectingShop(shopId);
+      return;
     }
 
     setActioning(shopId);
     try {
       await adminUpdateShopStatus(shopId, { status: newStatus, rejectionReason });
       toast.success(`Shop ${newStatus}`);
+      setRejectingShop(null);
       loadSellers();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed');
@@ -213,6 +212,13 @@ const Sellers = () => {
       />
 
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+
+      <RejectionModal
+        open={!!rejectingShop}
+        onClose={() => setRejectingShop(null)}
+        onConfirm={(reason) => handleShopAction(rejectingShop, 'rejected', reason)}
+        loading={!!actioning}
+      />
     </div>
   );
 };

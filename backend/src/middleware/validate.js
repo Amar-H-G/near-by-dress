@@ -48,7 +48,7 @@ const shopStatusSchema = Joi.object({
   rejectionReason: Joi.string().when('status', {
     is: 'rejected',
     then: Joi.string().required(),
-    otherwise: Joi.string().allow('').optional(),
+    otherwise: Joi.string().allow('', null).optional(),
   }),
 });
 

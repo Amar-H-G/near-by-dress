@@ -3,6 +3,7 @@ import { CheckCircle, XCircle, ChevronDown, ChevronUp, ExternalLink } from 'luci
 import DataTable from '../components/DataTable';
 import Pagination from '../../../shared/components/Pagination';
 import SearchBar from '../components/SearchBar';
+import RejectionModal from '../components/RejectionModal';
 import { adminGetShops, adminUpdateShopStatus } from '../services/admin.service';
 import { getShopProducts } from '../../seller/services/shop.service';
 import toast from 'react-hot-toast';
@@ -16,10 +17,8 @@ const Shops = () => {
   const [page, setPage]           = useState(1);
   const [totalPages, setTotal]    = useState(1);
   const [statusFilter, setStatus] = useState('');
-  const [search, setSearch]       = useState('');
-  const [expanded, setExpanded]   = useState(null);
-  const [shopProducts, setShopProds] = useState({});
-  const [prodsLoading, setProdsLoading] = useState(false);
+  const [rejectingShop, setRejectingShop] = useState(null);
+  const [actioning, setActioning] = useState(false);
 
   const loadShops = useCallback(async () => {
     setLoading(true);
@@ -54,22 +53,22 @@ const Shops = () => {
     }
   };
 
-  const handleShopAction = async (id, status) => {
-    let rejectionReason = null;
-    if (status === 'rejected') {
-      rejectionReason = window.prompt('Please enter the reason for rejection:');
-      if (!rejectionReason) {
-        toast.error('Rejection reason is required');
-        return;
-      }
+  const handleShopAction = async (id, status, rejectionReason = null) => {
+    if (status === 'rejected' && !rejectionReason) {
+      setRejectingShop(id);
+      return;
     }
 
+    setActioning(true);
     try {
       await adminUpdateShopStatus(id, { status, rejectionReason });
       toast.success(`Shop ${status}`);
+      setRejectingShop(null);
       loadShops();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed');
+    } finally {
+      setActioning(false);
     }
   };
 
@@ -261,6 +260,13 @@ const Shops = () => {
       )}
 
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+
+      <RejectionModal
+        open={!!rejectingShop}
+        onClose={() => setRejectingShop(null)}
+        onConfirm={(reason) => handleShopAction(rejectingShop, 'rejected', reason)}
+        loading={actioning}
+      />
     </div>
   );
 };

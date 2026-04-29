@@ -4,6 +4,7 @@ import {
   Users, ShoppingBag, Store, Package, Clock, CheckCircle, XCircle, ArrowRight,
 } from 'lucide-react';
 import StatCard from '../components/StatCard';
+import RejectionModal from '../components/RejectionModal';
 import { adminGetStats, adminGetShops, adminUpdateShopStatus } from '../services/admin.service';
 import toast from 'react-hot-toast';
 
@@ -12,6 +13,8 @@ const Dashboard = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [pendingShops, setPendingShops] = useState([]);
   const [shopsLoading, setShopsLoading] = useState(true);
+  const [rejectingShop, setRejectingShop] = useState(null);
+  const [actioning, setActioning] = useState(false);
   const navigate = useNavigate();
 
   const loadStats = useCallback(async () => {
@@ -43,23 +46,23 @@ const Dashboard = () => {
     loadPending();
   }, [loadStats, loadPending]);
 
-  const handleShopStatus = async (id, status) => {
-    let rejectionReason = null;
-    if (status === 'rejected') {
-      rejectionReason = window.prompt('Please enter the reason for rejection:');
-      if (!rejectionReason) {
-        toast.error('Rejection reason is required');
-        return;
-      }
+  const handleShopStatus = async (id, status, rejectionReason = null) => {
+    if (status === 'rejected' && !rejectionReason) {
+      setRejectingShop(id);
+      return;
     }
 
+    setActioning(true);
     try {
       await adminUpdateShopStatus(id, { status, rejectionReason });
       toast.success(`Shop ${status}`);
+      setRejectingShop(null);
       loadPending();
       loadStats();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed');
+    } finally {
+      setActioning(false);
     }
   };
 
@@ -150,6 +153,13 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      <RejectionModal
+        open={!!rejectingShop}
+        onClose={() => setRejectingShop(null)}
+        onConfirm={(reason) => handleShopStatus(rejectingShop, 'rejected', reason)}
+        loading={actioning}
+      />
     </div>
   );
 };
