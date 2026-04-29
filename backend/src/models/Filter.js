@@ -23,6 +23,18 @@ const filterSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  min: {
+    type: Number,
+    default: 0
+  },
+  max: {
+    type: Number,
+    default: 5000
+  },
+  isDynamic: {
+    type: Boolean,
+    default: false
+  },
   isActive: {
     type: Boolean,
     default: true

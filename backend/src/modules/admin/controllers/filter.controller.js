@@ -25,13 +25,15 @@ exports.getAdminFilters = async (req, res) => {
  * POST /api/admin/filters
  */
 exports.createFilter = async (req, res) => {
-  const { name, key, type, options, order } = req.body;
+  const { name, key, type, options, order, min, max, isDynamic, isActive } = req.body;
   
   // Check if key exists
   const exists = await Filter.findOne({ key, isDeleted: false });
   if (exists) throw new AppError('Filter key already exists', 400);
 
-  const filter = await Filter.create({ name, key, type, options, order });
+  const filter = await Filter.create({ 
+    name, key, type, options, order, min, max, isDynamic, isActive 
+  });
   sendSuccess(res, { data: filter }, 'Filter created successfully', 201);
 };
 
@@ -60,11 +62,11 @@ exports.toggleFilter = async (req, res) => {
 };
 
 /**
- * Admin: Soft delete filter
+ * Admin: Hard delete filter
  * DELETE /api/admin/filters/:id
  */
 exports.deleteFilter = async (req, res) => {
-  const filter = await Filter.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+  const filter = await Filter.findByIdAndDelete(req.params.id);
   if (!filter) throw new AppError('Filter not found', 404);
-  sendSuccess(res, null, 'Filter deleted successfully');
+  sendSuccess(res, null, 'Filter permanently deleted from database');
 };
