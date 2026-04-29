@@ -3,7 +3,7 @@ import InputField from '../../../shared/components/form/InputField';
 import FileUpload from '../../../shared/components/form/FileUpload';
 import { Store, MapPin, Clock, Info, Hash, Image as ImageIcon, Phone } from 'lucide-react';
 
-const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onCancel }) => {
+const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onCancel, readOnly = false }) => {
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -59,6 +59,8 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
             placeholder="e.g. Elegant Threads"
             required
             icon={<Store size={16} />}
+            readOnly={readOnly}
+            disabled={readOnly}
           />
           <InputField
             label="Shop Number / Unit"
@@ -67,6 +69,8 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
             onChange={handleChange}
             placeholder="e.g. G-12 or Suite 4"
             icon={<Hash size={16} />}
+            readOnly={readOnly}
+            disabled={readOnly}
           />
         </div>
 
@@ -78,8 +82,10 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
             name="description"
             value={form.description}
             onChange={handleChange}
-            className="form-input"
-            style={{ minHeight: '100px', resize: 'vertical', padding: '12px' }}
+            readOnly={readOnly}
+            disabled={readOnly}
+            className={`form-input ${readOnly ? 'form-input-disabled' : ''}`}
+            style={{ minHeight: '100px', resize: readOnly ? 'none' : 'vertical', padding: '12px' }}
             placeholder="Describe your shop and what you sell..."
           ></textarea>
         </div>
@@ -94,6 +100,8 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
             placeholder="Full street address"
             required
             icon={<MapPin size={16} />}
+            readOnly={readOnly}
+            disabled={readOnly}
           />
           <InputField
             label="City"
@@ -102,6 +110,8 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
             onChange={handleChange}
             placeholder="e.g. Kolkata"
             required
+            readOnly={readOnly}
+            disabled={readOnly}
           />
         </div>
 
@@ -113,6 +123,8 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
             onChange={handleChange}
             placeholder="e.g. West Bengal"
             required
+            readOnly={readOnly}
+            disabled={readOnly}
           />
           <InputField
             label="Pincode"
@@ -121,6 +133,8 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
             onChange={handleChange}
             placeholder="6-digit PIN"
             required
+            readOnly={readOnly}
+            disabled={readOnly}
           />
         </div>
 
@@ -134,6 +148,8 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
             placeholder="10-digit number"
             required
             icon={<Phone size={16} />}
+            readOnly={readOnly}
+            disabled={readOnly}
           />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <InputField
@@ -143,6 +159,8 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
               value={form.openingTime}
               onChange={handleChange}
               icon={<Clock size={16} />}
+              readOnly={readOnly}
+              disabled={readOnly}
             />
             <InputField
               label="Closing Time"
@@ -151,6 +169,8 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
               value={form.closingTime}
               onChange={handleChange}
               icon={<Clock size={16} />}
+              readOnly={readOnly}
+              disabled={readOnly}
             />
           </div>
         </div>
@@ -167,23 +187,33 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
           }}
           maxFiles={1}
           helper="Recommended: Square image, max 2MB"
+          readOnly={readOnly}
+          disabled={readOnly}
         />
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 10 }}>
-          {showCancel && (
-            <button type="button" onClick={onCancel} className="btn btn-ghost" disabled={loading}>
-              Skip for now
+        {!readOnly && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 10 }}>
+            {showCancel && (
+              <button type="button" onClick={onCancel} className="btn btn-ghost" disabled={loading}>
+                Cancel
+              </button>
+            )}
+            <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px' }} disabled={loading}>
+              {loading ? 'Saving...' : 'Save Profile'}
             </button>
-          )}
-          <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px' }} disabled={loading}>
-            {loading ? 'Saving...' : 'Save & Continue'}
-          </button>
-        </div>
+          </div>
+        )}
       </div>
 
       <style jsx>{`
         .shop-form {
           width: 100%;
+        }
+        .form-input-disabled {
+          background-color: var(--surface-2) !important;
+          cursor: not-allowed !important;
+          border-color: transparent !important;
+          color: var(--text-muted) !important;
         }
       `}</style>
     </form>

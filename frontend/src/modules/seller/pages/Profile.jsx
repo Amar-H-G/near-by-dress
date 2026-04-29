@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useSellerProfile } from '../hooks/useSellerProfile';
 import { updateSellerProfile } from '../services/sellerApi';
 import toast from 'react-hot-toast';
-import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle, Edit3 } from 'lucide-react';
 import ShopForm from '../components/ShopForm';
 
 const Profile = () => {
   const { profile, loading, refresh } = useSellerProfile();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleSaveProfile = async (formData, logoFile) => {
     setIsSubmitting(true);
@@ -28,6 +29,7 @@ const Profile = () => {
     try {
       await updateSellerProfile(submitData);
       toast.success('Shop profile updated successfully');
+      setIsEditing(false);
       refresh();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update profile');
@@ -44,14 +46,24 @@ const Profile = () => {
 
   return (
     <div className="admin-page">
-      <div className="admin-page-header">
+      <div className="admin-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="admin-page-title">Shop Profile</h1>
           <p className="admin-page-subtitle">Manage your shop details, location and business hours.</p>
         </div>
+        {!isEditing && profile && (
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => setIsEditing(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12 }}
+          >
+            <Edit3 size={16} /> Edit Profile
+          </button>
+        )}
       </div>
 
       <div style={{ maxWidth: 800 }}>
+        {/* Alerts... (already there) */}
         {!profile && (
           <div className="glass-strong" style={{
             background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', 
@@ -85,10 +97,19 @@ const Profile = () => {
         )}
 
         <div className="card" style={{ padding: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+            <div style={{ width: 4, height: 20, background: 'var(--primary)', borderRadius: 2 }} />
+            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Shop Information</h2>
+          </div>
+          <div style={{ height: 1, background: 'var(--border)', marginBottom: 32, opacity: 0.5 }} />
+          
           <ShopForm 
             initialData={profile} 
             onSubmit={handleSaveProfile} 
             loading={isSubmitting} 
+            readOnly={!isEditing}
+            showCancel={true}
+            onCancel={() => setIsEditing(false)}
           />
         </div>
       </div>
