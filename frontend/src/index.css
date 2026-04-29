@@ -1077,8 +1077,16 @@ input[type='file'].admin-input,
   display: flex; align-items: center; justify-content: center;
 }
 .admin-modal-icon-primary {
-  background: rgba(124,58,237,0.1);
+  background: rgba(124, 58, 237, 0.1);
   color: #7c3aed;
+}
+.admin-modal-icon-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.admin-modal-icon-warn {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
 }
 .admin-modal-close {
   display: flex; align-items: center; justify-content: center;
