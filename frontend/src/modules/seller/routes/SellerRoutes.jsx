@@ -14,15 +14,20 @@ import Profile from '../pages/Profile';
 const SellerRoutes = () => {
   return (
     <Routes>
-      <Route element={<ProtectedRoute allowedRoles={['shop_owner']} />}>
-        <Route element={<SellerLayout />}>
-          <Route path="dashboard" element={<ShopDashboardPage />} />
-          <Route path="products" element={<Products />} />
-          <Route path="add-product" element={<AddProduct />} />
-          <Route path="products/edit/:id" element={<EditProduct />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="*" element={<Navigate to="dashboard" replace />} />
-        </Route>
+      <Route 
+        path="*" 
+        element={
+          <ProtectedRoute roles={['shop_owner']}>
+            <SellerLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="dashboard" element={<ShopDashboardPage />} />
+        <Route path="products" element={<Products />} />
+        <Route path="add-product" element={<AddProduct />} />
+        <Route path="products/edit/:id" element={<EditProduct />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Route>
     </Routes>
   );
