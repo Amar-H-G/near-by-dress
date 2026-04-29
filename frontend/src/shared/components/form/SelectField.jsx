@@ -30,6 +30,7 @@ const SelectField = ({
   error,
   helper,
   className = '',
+  placeholderDisabled = true,
   ...rest
 }) => {
   return (
@@ -54,7 +55,7 @@ const SelectField = ({
           aria-invalid={!!error}
           {...rest}
         >
-          <option value="" disabled>
+          <option value="" disabled={placeholderDisabled}>
             {placeholder}
           </option>
           {options.map((opt) => {

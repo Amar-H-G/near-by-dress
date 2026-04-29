@@ -240,6 +240,7 @@ const Categories = () => {
                 id="cat-parent"
                 label="Parent Category (Optional)"
                 value={formData.parentId}
+                placeholderDisabled={false}
                 onChange={e => {
                   const newParentId = e.target.value;
                   setFormData({
