@@ -11,11 +11,14 @@ const connectDB = require('./src/config/db');
 const { connectRedis } = require('./src/config/redis');
 require('./src/config/cloudinary'); // initialize cloudinary
 
-const authRoutes = require('./src/routes/auth.routes');
-const shopRoutes = require('./src/routes/shop.routes');
-const productRoutes = require('./src/routes/product.routes');
-const adminRoutes = require('./src/routes/admin.routes');
-const errorHandler = require('./src/middleware/errorHandler');
+// ── Modular role-based routes ────────────────────────────────────────────────
+// Used by: user module (auth, public product/shop read)
+const authRoutes    = require('./src/modules/user/routes/auth.routes');
+const shopRoutes    = require('./src/modules/user/routes/shop.routes');
+const productRoutes = require('./src/modules/user/routes/product.routes');
+// Used by: admin module
+const adminRoutes   = require('./src/modules/admin/routes/admin.routes');
+const errorHandler  = require('./src/middleware/errorHandler');
 const { sendError } = require('./src/utils/response');
 
 const app = express();

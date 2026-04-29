@@ -1,26 +1,16 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
+import Navbar from './shared/components/Navbar';
 
-// Public Pages
-import HomePage from './pages/HomePage';
-import ProductsPage from './pages/ProductsPage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import ShopsPage from './pages/ShopsPage';
-import ShopDetailPage from './pages/ShopDetailPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ShopDashboardPage from './pages/ShopDashboardPage';
+// Modular Routes
+import UserRoutes from './routes/UserRoutes';
+import SellerRoutes from './routes/SellerRoutes';
+import AdminRoutes from './routes/AdminRoutes';
 
-// Admin Layout + Pages
-import AdminLayout from './admin/layout/AdminLayout';
-import Dashboard from './admin/pages/Dashboard';
-import Users from './admin/pages/Users';
-import Sellers from './admin/pages/Sellers';
-import Shops from './admin/pages/Shops';
-import Products from './admin/pages/Products';
+// Auth Pages (User module)
+import LoginPage from './modules/user/pages/LoginPage';
+import RegisterPage from './modules/user/pages/RegisterPage';
 
 function App() {
   return (
@@ -43,46 +33,23 @@ function App() {
 
         <Routes>
           {/* ── Auth Pages (no Navbar) ─────────────────────────────────── */}
-          <Route path="/login"    element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
           {/* ── Admin Panel (fully isolated, no public Navbar) ─────────── */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute roles={['admin']}>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="users"     element={<Users />} />
-            <Route path="sellers"   element={<Sellers />} />
-            <Route path="shops"     element={<Shops />} />
-            <Route path="products"  element={<Products />} />
-          </Route>
+          <Route path="/admin/*" element={<AdminRoutes />} />
 
-          {/* ── Public Site (with Navbar) ──────────────────────────────── */}
+          {/* ── Public Site & Seller Dashboard (with Navbar) ───────────── */}
           <Route
             path="*"
             element={
               <>
                 <Navbar />
                 <Routes>
-                  <Route path="/"              element={<HomePage />} />
-                  <Route path="/products"      element={<ProductsPage />} />
-                  <Route path="/products/:id"  element={<ProductDetailPage />} />
-                  <Route path="/shops"         element={<ShopsPage />} />
-                  <Route path="/shops/:id"     element={<ShopDetailPage />} />
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <ProtectedRoute roles={['shop_owner']}>
-                        <ShopDashboardPage />
-                      </ProtectedRoute>
-                    }
-                  />
+                  <Route path="/*" element={<UserRoutes />} />
+                  <Route path="/*" element={<SellerRoutes />} />
+                  
+                  {/* 404 Fallback */}
                   <Route
                     path="*"
                     element={
