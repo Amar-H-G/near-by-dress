@@ -19,8 +19,16 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
   });
 
   const [images, setImages] = useState([]);
-  const [previewUrls] = useState(initialData?.images || []);
+  const [previewUrls, setPreviewUrls] = useState(initialData?.images || []);
   const [errors, setErrors] = useState({});
+
+  const handleRemoveImage = (idx, isExisting) => {
+    if (isExisting) {
+      setPreviewUrls((prev) => prev.filter((_, i) => i !== idx));
+    } else {
+      setImages((prev) => prev.filter((_, i) => i !== idx));
+    }
+  };
 
   const categoryOptions = categories.reduce((acc, cat) => {
     if (!cat.parentId) {
@@ -79,13 +87,19 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const submitData = new FormData();
     Object.entries(formData).forEach(([key, value]) => submitData.append(key, value));
+    
+    // Send existing images to keep
+    previewUrls.forEach(url => submitData.append('existingImages', url));
+    
+    // Send new images
     images.forEach((img) => submitData.append('images', img));
+    
     onSubmit(submitData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="admin-product-form" noValidate>
-      {/* ── Basic Details ─────────────────────────────────── */}
+      {/* ... (Basic Details) ... */}
       <div className="admin-section" style={{ padding: 28 }}>
         <h3 className="admin-section-title" style={{ marginBottom: 24 }}>Basic Details</h3>
 
@@ -189,14 +203,12 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
         <FileUpload
           id="prod-images"
           accept="image/*"
-          multiple
+          multiple={true}
           maxFiles={5}
           files={images}
           previews={previewUrls}
           onFilesChange={setImages}
-          onRemove={(idx, isExisting) => {
-            if (!isExisting) setImages((prev) => prev.filter((_, i) => i !== idx - previewUrls.length));
-          }}
+          onRemove={handleRemoveImage}
           helper="Up to 5 images — first image will be the cover"
         />
       </div>

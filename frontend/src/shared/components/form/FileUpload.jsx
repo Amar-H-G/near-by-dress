@@ -83,7 +83,7 @@ const FileUpload = ({
                 <button
                   type="button"
                   className="file-upload-thumb-remove"
-                  onClick={() => onRemove(isExisting ? previews.indexOf(url) : files.indexOf(files[index - previews.length]), isExisting)}
+                  onClick={() => onRemove(isExisting ? index : index - previews.length, isExisting)}
                   aria-label="Remove image"
                 >
                   <X size={10} />
