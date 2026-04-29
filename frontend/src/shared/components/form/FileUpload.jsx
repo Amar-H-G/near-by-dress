@@ -78,7 +78,11 @@ const FileUpload = ({
         <div className="file-upload-previews">
           {allPreviews.map(({ url, key, isExisting, index }) => (
             <div key={key} className="file-upload-thumb">
-              <img src={url} alt={`Preview ${index + 1}`} className="file-upload-thumb-img" />
+              <img 
+                src={url.startsWith('http') || url.startsWith('blob') ? url : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/${url}`} 
+                alt={`Preview ${index + 1}`} 
+                className="file-upload-thumb-img" 
+              />
               {onRemove && (
                 <button
                   type="button"

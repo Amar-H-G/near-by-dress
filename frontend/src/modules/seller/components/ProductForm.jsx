@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useSettings } from '../../../context/SettingsContext';
 import InputField from '../../../shared/components/form/InputField';
@@ -22,6 +22,22 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
   const [previewUrls, setPreviewUrls] = useState(initialData?.images || []);
   const [errors, setErrors] = useState({});
 
+  // Sync state with initialData when it changes (essential for Edit Mode)
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        price: initialData.price || '',
+        discountPrice: initialData.discountPrice || '',
+        category: initialData.category?._id || initialData.category || '',
+        description: initialData.description || '',
+        stock: initialData.stock || 0,
+        isActive: initialData.isActive ?? true,
+      });
+      setPreviewUrls(initialData.images || []);
+    }
+  }, [initialData]);
+
   const handleRemoveImage = (idx, isExisting) => {
     if (isExisting) {
       setPreviewUrls((prev) => prev.filter((_, i) => i !== idx));
@@ -44,7 +60,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
     } else {
       const pId = typeof cat.parentId === 'object' ? cat.parentId._id : cat.parentId;
       const pName = typeof cat.parentId === 'object' ? cat.parentId.name : 'Other';
-      
+
       let group = acc.find(g => g.id === pId);
       if (!group) {
         group = { id: pId, group: pName, options: [] };
@@ -54,14 +70,14 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
     }
     return acc;
   }, [])
-  .map(item => {
-    // If a parent has no subcategories, make it a regular option
-    if (item.isParent && item.options.length === 0) {
-      return { value: item.id, label: item.group };
-    }
-    return item;
-  })
-  .sort((a, b) => (a.group || a.label).localeCompare(b.group || b.label));
+    .map(item => {
+      // If a parent has no subcategories, make it a regular option
+      if (item.isParent && item.options.length === 0) {
+        return { value: item.id, label: item.group };
+      }
+      return item;
+    })
+    .sort((a, b) => (a.group || a.label).localeCompare(b.group || b.label));
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -87,13 +103,13 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const submitData = new FormData();
     Object.entries(formData).forEach(([key, value]) => submitData.append(key, value));
-    
+
     // Send existing images to keep
     previewUrls.forEach(url => submitData.append('existingImages', url));
-    
+
     // Send new images
     images.forEach((img) => submitData.append('images', img));
-    
+
     onSubmit(submitData);
   };
 
