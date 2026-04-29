@@ -17,6 +17,10 @@ const Shops = () => {
   const [page, setPage]           = useState(1);
   const [totalPages, setTotal]    = useState(1);
   const [statusFilter, setStatus] = useState('');
+  const [search, setSearch]       = useState('');
+  const [expanded, setExpanded]   = useState(null);
+  const [shopProducts, setShopProds] = useState({});
+  const [prodsLoading, setProdsLoading] = useState(false);
   const [rejectingShop, setRejectingShop] = useState(null);
   const [actioning, setActioning] = useState(false);
 
