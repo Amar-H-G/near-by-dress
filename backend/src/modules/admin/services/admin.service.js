@@ -98,7 +98,8 @@ const deleteUser = async (userId) => {
 const registerShopByAdmin = async (data) => {
   const { 
     shopName, ownerName, email, password, phone, 
-    address, city, state, pincode 
+    address, city, state, pincode,
+    shopNo, description, openingTime, closingTime
   } = data;
 
   // 1. Validate email uniqueness
@@ -118,11 +119,15 @@ const registerShopByAdmin = async (data) => {
   const shop = await Shop.create({
     name: shopName,
     owner: user._id,
-    whatsappNumber: phone, // Using provided phone as whatsapp
+    whatsappNumber: phone,
     address,
     city,
     state,
     pincode,
+    shopNo,
+    description,
+    openingTime,
+    closingTime,
     status: 'approved',
     isActive: true
   });

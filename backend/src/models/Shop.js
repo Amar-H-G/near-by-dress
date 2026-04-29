@@ -13,6 +13,10 @@ const shopSchema = new mongoose.Schema(
       trim: true,
       maxlength: [1000, 'Description cannot exceed 1000 characters'],
     },
+    shopNo: {
+      type: String,
+      trim: true,
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -64,6 +68,14 @@ const shopSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    openingTime: {
+      type: String,
+      trim: true,
+    },
+    closingTime: {
+      type: String,
+      trim: true,
     },
   },
   { timestamps: true }

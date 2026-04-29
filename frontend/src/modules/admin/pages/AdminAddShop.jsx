@@ -17,7 +17,12 @@ const AdminAddShop = () => {
     address: '',
     city: '',
     state: '',
-    pincode: ''
+    pincode: '',
+    shopNo: '',
+    description: '',
+    logo: '',
+    openingTime: '',
+    closingTime: ''
   });
 
   const handleChange = (e) => {
@@ -69,14 +74,36 @@ const AdminAddShop = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <InputField
-                label="Shop Name"
-                name="shopName"
-                value={formData.shopName}
-                onChange={handleChange}
-                placeholder="Enter shop business name"
-                required
-              />
+              <div className="admin-grid-2">
+                <InputField
+                  label="Shop Name"
+                  name="shopName"
+                  value={formData.shopName}
+                  onChange={handleChange}
+                  placeholder="Business name"
+                  required
+                />
+                <InputField
+                  label="Shop No / Suite"
+                  name="shopNo"
+                  value={formData.shopNo}
+                  onChange={handleChange}
+                  placeholder="e.g. Ground Floor, 102"
+                  required
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Shop Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="form-input"
+                  style={{ minHeight: '100px', resize: 'vertical' }}
+                  placeholder="Tell us about the shop..."
+                ></textarea>
+              </div>
 
               <div className="admin-grid-2">
                 <InputField
@@ -84,7 +111,7 @@ const AdminAddShop = () => {
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
-                  placeholder="e.g. Kolkata"
+                  placeholder="City"
                   required
                 />
                 <InputField
@@ -92,7 +119,26 @@ const AdminAddShop = () => {
                   name="state"
                   value={formData.state}
                   onChange={handleChange}
-                  placeholder="e.g. West Bengal"
+                  placeholder="State"
+                  required
+                />
+              </div>
+
+              <div className="admin-grid-2">
+                <InputField
+                  label="Opening Time"
+                  name="openingTime"
+                  type="time"
+                  value={formData.openingTime}
+                  onChange={handleChange}
+                  required
+                />
+                <InputField
+                  label="Closing Time"
+                  name="closingTime"
+                  type="time"
+                  value={formData.closingTime}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -107,17 +153,16 @@ const AdminAddShop = () => {
                   required
                 />
                 <InputField
-                  label="Business Phone"
-                  name="phone"
-                  value={formData.phone}
+                  label="Logo URL"
+                  name="logo"
+                  value={formData.logo}
                   onChange={handleChange}
-                  placeholder="10-digit number"
-                  required
+                  placeholder="Image URL"
                 />
               </div>
 
               <InputField
-                label="Business Address"
+                label="Full Address"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
@@ -153,6 +198,15 @@ const AdminAddShop = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="seller@example.com"
+                required
+              />
+
+              <InputField
+                label="Phone Number"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="10-digit number"
                 required
               />
 
