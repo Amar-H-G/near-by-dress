@@ -38,29 +38,38 @@
 .tag-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: var(--primary-light, #eef2ff);
-  color: var(--primary);
-  padding: 4px 10px;
-  border-radius: 8px;
+  gap: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 6px 12px;
+  border-radius: 10px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+
+.tag-item:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .tag-remove {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: #cbd5e1;
   border: none;
-  color: var(--primary);
+  color: #64748b;
   cursor: pointer;
   padding: 2px;
   border-radius: 50%;
+  transition: all 0.2s;
 }
 
 .tag-remove:hover {
-  background: rgba(99, 102, 241, 0.1);
+  background: #ef4444;
+  color: white;
 }
 
 .tag-main-input {
