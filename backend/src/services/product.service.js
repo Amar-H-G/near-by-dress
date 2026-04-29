@@ -1,6 +1,7 @@
 const Product = require('../models/Product');
 const Shop = require('../models/Shop');
 const AppError = require('../utils/AppError');
+const cloudinary = require('../config/cloudinary');
 const { getPagination } = require('../utils/pagination');
 const { getRedis } = require('../config/redis');
 
@@ -148,7 +149,10 @@ const createProduct = async (userId, userRole, data, files) => {
 
   // Collect Cloudinary URLs from uploaded files
   if (files?.images?.length) {
-    productData.images = files.images.map((f) => f.path);
+    productData.images = files.images.map((f) => ({
+      url: f.path,
+      public_id: f.filename,
+    }));
   }
 
   const product = await Product.create(productData);
@@ -165,11 +169,52 @@ const updateProduct = async (productId, userId, userRole, data, files) => {
     if (!shop) throw new AppError('Not authorized to update this product', 403);
   }
 
-  if (files?.images?.length) {
-    data.images = files.images.map((f) => f.path);
+  const { removedImages, existingImages, ...updateData } = data;
+
+  // 1. Delete from Cloudinary
+  if (removedImages) {
+    const idsToDelete = Array.isArray(removedImages) ? removedImages : [removedImages];
+    for (const public_id of idsToDelete) {
+      if (public_id) {
+        await cloudinary.uploader.destroy(public_id).catch(err => {
+          console.error(`Failed to delete image ${public_id} from Cloudinary:`, err);
+        });
+      }
+    }
   }
 
-  const updated = await Product.findByIdAndUpdate(productId, data, {
+  // 2. Prepare images array
+  let updatedImages = [];
+
+  // Add existing images to keep
+  if (existingImages) {
+    const existing = Array.isArray(existingImages) ? existingImages : [existingImages];
+    updatedImages = existing
+      .filter(img => img && img !== '')
+      .map(img => {
+        try {
+          const parsed = typeof img === 'string' ? JSON.parse(img) : img;
+          if (typeof parsed === 'string') return { url: parsed, public_id: 'legacy' };
+          return parsed;
+        } catch (e) {
+          return typeof img === 'string' && img.startsWith('http') ? { url: img, public_id: 'legacy' } : null;
+        }
+      })
+      .filter(Boolean);
+  }
+
+  // Add new uploaded images
+  if (files?.images?.length) {
+    const newImages = files.images.map((f) => ({
+      url: f.path,
+      public_id: f.filename,
+    }));
+    updatedImages = [...updatedImages, ...newImages];
+  }
+
+  updateData.images = updatedImages;
+
+  const updated = await Product.findByIdAndUpdate(productId, updateData, {
     new: true,
     runValidators: true,
   })

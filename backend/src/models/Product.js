@@ -23,10 +23,12 @@ const productSchema = new mongoose.Schema(
       min: [0, 'Discount price cannot be negative'],
       default: null,
     },
-    images: {
-      type: [String],
-      default: [],
-    },
+    images: [
+      {
+        url: { type: String, required: true },
+        public_id: { type: String, required: true },
+      },
+    ],
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',

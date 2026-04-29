@@ -59,7 +59,10 @@ const FileUpload = ({
   };
 
   const allPreviews = [
-    ...previews.map((url, i) => ({ url, key: `existing-${i}`, isExisting: true, index: i })),
+    ...previews.map((item, i) => {
+      const url = typeof item === 'string' ? item : item?.url;
+      return { url, key: `existing-${i}`, isExisting: true, index: i };
+    }),
     ...files.map((file, i) => ({ url: URL.createObjectURL(file), key: `new-${i}`, isExisting: false, index: previews.length + i })),
   ];
 

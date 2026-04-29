@@ -20,6 +20,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
 
   const [images, setImages] = useState([]);
   const [previewUrls, setPreviewUrls] = useState(initialData?.images || []);
+  const [removedImages, setRemovedImages] = useState([]);
   const [errors, setErrors] = useState({});
 
   // Sync state with initialData when it changes (essential for Edit Mode)
@@ -35,11 +36,16 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
         isActive: initialData.isActive ?? true,
       });
       setPreviewUrls(initialData.images || []);
+      setRemovedImages([]);
     }
   }, [initialData]);
 
   const handleRemoveImage = (idx, isExisting) => {
     if (isExisting) {
+      const removed = previewUrls[idx];
+      if (removed?.public_id) {
+        setRemovedImages((prev) => [...prev, removed.public_id]);
+      }
       setPreviewUrls((prev) => prev.filter((_, i) => i !== idx));
     } else {
       setImages((prev) => prev.filter((_, i) => i !== idx));
@@ -105,7 +111,10 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
     Object.entries(formData).forEach(([key, value]) => submitData.append(key, value));
 
     // Send existing images to keep
-    previewUrls.forEach(url => submitData.append('existingImages', url));
+    previewUrls.forEach(img => submitData.append('existingImages', JSON.stringify(img)));
+
+    // Send removed image IDs for Cloudinary cleanup
+    removedImages.forEach(id => submitData.append('removedImages', id));
 
     // Send new images
     images.forEach((img) => submitData.append('images', img));

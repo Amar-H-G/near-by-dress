@@ -24,6 +24,7 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
   const [selectedShop, setSelectedShop] = useState('');
   const [images, setImages] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
+  const [removedImages, setRemovedImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -48,10 +49,15 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
       setPreviewUrls([]);
     }
     setImages([]);
+    setRemovedImages([]);
   }, [open, product, isEdit]);
 
   const handleRemoveImage = (idx, isExisting) => {
     if (isExisting) {
+      const removed = previewUrls[idx];
+      if (removed?.public_id) {
+        setRemovedImages((prev) => [...prev, removed.public_id]);
+      }
       setPreviewUrls((prev) => prev.filter((_, i) => i !== idx));
     } else {
       setImages((prev) => prev.filter((_, i) => i !== idx));
@@ -127,8 +133,11 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
       if (previewUrls.length === 0) {
         fd.append('existingImages', '');
       } else {
-        previewUrls.forEach(url => fd.append('existingImages', url));
+        previewUrls.forEach(img => fd.append('existingImages', JSON.stringify(img)));
       }
+
+      // Send removed image IDs for Cloudinary cleanup
+      removedImages.forEach(id => fd.append('removedImages', id));
 
       form.sizes.forEach((s) => fd.append('sizes', s));
       form.colors.split(',').map((c) => c.trim()).filter(Boolean).forEach((c) => fd.append('colors', c));

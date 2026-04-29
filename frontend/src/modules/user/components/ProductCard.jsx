@@ -6,7 +6,8 @@ const ProductCard = ({ product }) => {
 
   const displayPrice = discountPrice && discountPrice < price ? discountPrice : price;
   const hasDiscount = discountPrice && discountPrice < price;
-  const image = images?.[0] || 'https://placehold.co/400x500/F3F4F6/9CA3AF?text=No+Image';
+  const firstImage = images?.[0];
+  const image = typeof firstImage === 'object' ? firstImage?.url : firstImage || 'https://placehold.co/400x500/F3F4F6/9CA3AF?text=No+Image';
 
   const whatsappUrl = shop?.whatsappNumber
     ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}"`

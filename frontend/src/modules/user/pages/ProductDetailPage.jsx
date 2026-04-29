@@ -39,7 +39,8 @@ const ProductDetailPage = () => {
   const { name, description, price, discountPrice, images, category, sizes, colors, stock, shop } = product;
   const hasDiscount = discountPrice && discountPrice < price;
   const displayPrice = hasDiscount ? discountPrice : price;
-  const imgs = images?.length ? images : ['https://placehold.co/600x700/1A1033/9B8EC4?text=No+Image'];
+  const rawImgs = images?.length ? images : ['https://placehold.co/600x700/1A1033/9B8EC4?text=No+Image'];
+  const imgs = rawImgs.map(img => typeof img === 'object' ? img.url : img);
 
   const whatsappUrl = shop?.whatsappNumber
     ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}" - Price: ₹${displayPrice}`
