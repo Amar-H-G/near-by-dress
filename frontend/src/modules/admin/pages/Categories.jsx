@@ -20,6 +20,11 @@ const Categories = () => {
     order: 0,
     isActive: true
   });
+  const [expandedCats, setExpandedCats] = useState([]);
+
+  const toggleExpand = (id) => {
+    setExpandedCats(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
 
   const loadCategories = async () => {
     setLoading(true);
@@ -92,6 +97,10 @@ const Categories = () => {
   // Filter out the category itself from parent options when editing
   const parentOptions = categories.filter(c => !editingCategory || c._id !== editingCategory._id);
 
+  // Group categories by parent for hierarchical display
+  const rootCategories = categories.filter(c => !c.parentId);
+  const getSubCategories = (parentId) => categories.filter(c => c.parentId?._id === parentId);
+
   return (
     <div className="admin-page">
       <div className="admin-page-header">
@@ -122,47 +131,82 @@ const Categories = () => {
                 </tr>
               </thead>
               <tbody>
-                {categories.map((cat) => (
-                  <tr key={cat._id}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        {cat.parentId ? <FileText size={16} color="var(--text-faint)" /> : <Folder size={16} color="var(--primary)" />}
-                        <span className="admin-table-primary">{cat.name}</span>
-                      </div>
-                    </td>
-                    <td>
-                      {cat.parentId ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
-                          <span>{cat.parentId.name}</span>
-                          <ChevronRight size={12} />
-                          <span style={{ color: 'var(--text)' }}>{cat.name}</span>
-                        </div>
-                      ) : (
-                        <span className="badge" style={{ background: 'var(--surface-2)', color: 'var(--text-faint)' }}>Root Category</span>
-                      )}
-                    </td>
-                    <td><span className="admin-table-date">{cat.order}</span></td>
-                    <td>
-                      <span className={`badge ${cat.isActive ? 'badge-approved' : 'badge-rejected'}`}>
-                        {cat.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      {!cat.parentId && (
-                        <button 
-                          className="admin-icon-btn" 
-                          onClick={() => handleOpenModal(null, cat._id)}
-                          title="Add Sub-category"
-                          style={{ color: 'var(--primary)' }}
-                        >
-                          <Plus size={16} />
-                        </button>
-                      )}
-                      <button className="admin-icon-btn" onClick={() => handleOpenModal(cat)}><Edit2 size={16} /></button>
-                      <button className="admin-icon-btn text-danger" onClick={() => handleDelete(cat._id)}><Trash2 size={16} /></button>
-                    </td>
-                  </tr>
-                ))}
+                {rootCategories.map((cat) => {
+                  const subs = getSubCategories(cat._id);
+                  const isExpanded = expandedCats.includes(cat._id);
+                  
+                  return (
+                    <>
+                      <tr key={cat._id} className={isExpanded ? 'row-expanded' : ''}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            {subs.length > 0 ? (
+                              <button 
+                                onClick={() => toggleExpand(cat._id)} 
+                                className="admin-icon-btn"
+                                style={{ padding: 4, transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}
+                              >
+                                <ChevronRight size={16} />
+                              </button>
+                            ) : (
+                              <Folder size={16} color="var(--primary)" style={{ marginLeft: 28 }} />
+                            )}
+                            <span className="admin-table-primary" style={{ fontWeight: 600 }}>{cat.name}</span>
+                            {subs.length > 0 && <span className="badge badge-pending" style={{ fontSize: 10, padding: '2px 6px' }}>{subs.length} Subs</span>}
+                          </div>
+                        </td>
+                        <td><span className="badge" style={{ background: 'var(--surface-2)', color: 'var(--text-faint)' }}>Root Category</span></td>
+                        <td><span className="admin-table-date">{cat.order}</span></td>
+                        <td>
+                          <span className={`badge ${cat.isActive ? 'badge-approved' : 'badge-rejected'}`}>
+                            {cat.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button 
+                            className="admin-icon-btn" 
+                            onClick={() => handleOpenModal(null, cat._id)}
+                            title="Add Sub-category"
+                            style={{ color: 'var(--primary)' }}
+                          >
+                            <Plus size={16} />
+                          </button>
+                          <button className="admin-icon-btn" onClick={() => handleOpenModal(cat)}><Edit2 size={16} /></button>
+                          <button className="admin-icon-btn text-danger" onClick={() => handleDelete(cat._id)}><Trash2 size={16} /></button>
+                        </td>
+                      </tr>
+
+                      {/* Sub-categories */}
+                      {isExpanded && subs.map(sub => (
+                        <tr key={sub._id} style={{ background: 'rgba(124, 58, 237, 0.02)' }}>
+                          <td style={{ paddingLeft: 48 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <FileText size={14} color="var(--text-faint)" />
+                              <span className="admin-table-primary">{sub.name}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
+                              <span>{cat.name}</span>
+                              <ChevronRight size={12} />
+                              <span style={{ color: 'var(--text)' }}>{sub.name}</span>
+                            </div>
+                          </td>
+                          <td><span className="admin-table-date">{sub.order}</span></td>
+                          <td>
+                            <span className={`badge ${sub.isActive ? 'badge-approved' : 'badge-rejected'}`}>
+                              {sub.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <button className="admin-icon-btn" onClick={() => handleOpenModal(sub)}><Edit2 size={16} /></button>
+                            <button className="admin-icon-btn text-danger" onClick={() => handleDelete(sub._id)}><Trash2 size={16} /></button>
+                          </td>
+                        </tr>
+                      ))}
+                    </>
+                  );
+                })}
               </tbody>
             </table>
           </div>
