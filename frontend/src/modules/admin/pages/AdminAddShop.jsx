@@ -27,6 +27,13 @@ const AdminAddShop = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'phone') {
+      const numericValue = value.replace(/\D/g, '');
+      if (numericValue.length <= 10) {
+        setFormData(prev => ({ ...prev, [name]: numericValue }));
+      }
+      return;
+    }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 

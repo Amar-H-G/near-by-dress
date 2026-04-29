@@ -54,17 +54,23 @@ const DynamicFilters = ({ onFilterChange, activeFilters = {} }) => {
             <div className="filter-options">
               {f.type === 'multi-select' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {f.options.map(opt => (
-                    <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13 }}>
-                      <input 
-                        type="checkbox" 
-                        checked={(activeFilters[f.key] || '').split(',').includes(opt)}
-                        onChange={() => handleCheckboxChange(f.key, opt)}
-                        style={{ width: 16, height: 16, accentColor: 'var(--primary)' }}
-                      />
-                      <span>{opt}</span>
-                    </label>
-                  ))}
+                  {f.options.map((opt, idx) => {
+                    const label = typeof opt === 'object' ? opt.label : opt;
+                    const value = typeof opt === 'object' ? opt.value : opt;
+                    const key = typeof opt === 'object' ? (opt.id || opt.value || idx) : opt;
+                    
+                    return (
+                      <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13 }}>
+                        <input 
+                          type="checkbox" 
+                          checked={(activeFilters[f.key] || '').split(',').includes(String(value))}
+                          onChange={() => handleCheckboxChange(f.key, String(value))}
+                          style={{ width: 16, height: 16, accentColor: 'var(--primary)' }}
+                        />
+                        <span>{label}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
 
@@ -76,9 +82,15 @@ const DynamicFilters = ({ onFilterChange, activeFilters = {} }) => {
                   onChange={(e) => handleSelectChange(f.key, e.target.value)}
                 >
                   <option value="">All {f.name}</option>
-                  {f.options.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
+                  {f.options.map((opt, idx) => {
+                    const label = typeof opt === 'object' ? opt.label : opt;
+                    const value = typeof opt === 'object' ? opt.value : opt;
+                    const key = typeof opt === 'object' ? (opt.id || opt.value || idx) : opt;
+                    
+                    return (
+                      <option key={key} value={value}>{label}</option>
+                    );
+                  })}
                 </select>
               )}
 

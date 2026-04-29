@@ -13,8 +13,16 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-    if (errors[e.target.name]) setErrors((err) => ({ ...err, [e.target.name]: '' }));
+    const { name, value } = e.target;
+    if (name === 'phone') {
+      const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+      if (numericValue.length <= 10) {
+        setForm((f) => ({ ...f, [name]: numericValue }));
+      }
+      return;
+    }
+    setForm((f) => ({ ...f, [name]: value }));
+    if (errors[name]) setErrors((err) => ({ ...err, [name]: '' }));
   };
 
   const validate = () => {
@@ -24,6 +32,7 @@ const RegisterPage = () => {
     else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = 'Enter a valid email address';
     if (!form.password) errs.password = 'Password is required';
     else if (form.password.length < 6) errs.password = 'Password must be at least 6 characters';
+    if (!form.phone.trim()) errs.phone = 'Phone number is required';
     return errs;
   };
 
@@ -133,13 +142,15 @@ const RegisterPage = () => {
 
             <InputField
               id="reg-phone"
-              label="Phone (optional)"
+              label="Phone Number"
               type="tel"
               name="phone"
               value={form.phone}
               onChange={handleChange}
               placeholder="+91 98765 43210"
+              required
               autoComplete="tel"
+              error={errors.phone}
               icon={<Phone size={16} />}
             />
 

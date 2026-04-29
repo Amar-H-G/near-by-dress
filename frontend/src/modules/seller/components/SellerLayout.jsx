@@ -1,23 +1,55 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import SellerSidebar from './SellerSidebar';
+import OnboardingModal from './OnboardingModal';
 import { Menu, Bell, AlertTriangle, XCircle, Clock } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useSellerProfile } from '../hooks/useSellerProfile';
+import { updateSellerProfile } from '../services/sellerApi';
+import toast from 'react-hot-toast';
 
 const SellerLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile, loading } = useSellerProfile();
+  const { profile, loading, refresh } = useSellerProfile();
 
-  // Enforce profile completion
+  // Show onboarding modal if no profile exists
   useEffect(() => {
-    if (!loading && !profile && location.pathname !== '/seller/profile') {
-      navigate('/seller/profile');
+    const hasDismissed = sessionStorage.getItem('onboarding_dismissed');
+    if (!loading && !profile && !hasDismissed) {
+      setShowOnboarding(true);
     }
-  }, [profile, loading, location.pathname, navigate]);
+  }, [profile, loading]);
+
+  const handleCloseOnboarding = () => {
+    setShowOnboarding(false);
+    sessionStorage.setItem('onboarding_dismissed', 'true');
+  };
+
+  const handleSaveProfile = async (formData, logoFile) => {
+    setIsSubmitting(true);
+    const submitData = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value) submitData.append(key, value);
+    });
+    if (logoFile) submitData.append('logo', logoFile);
+
+    try {
+      await updateSellerProfile(submitData);
+      toast.success('Shop profile created successfully!');
+      setShowOnboarding(false);
+      refresh();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save shop details');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="admin-shell">
@@ -72,6 +104,14 @@ const SellerLayout = () => {
           <Outlet context={{ profile }} />
         </div>
       </main>
+
+      <OnboardingModal 
+        isOpen={showOnboarding} 
+        onClose={handleCloseOnboarding}
+        onSave={handleSaveProfile}
+        loading={isSubmitting}
+        initialData={{ whatsappNumber: user?.phone || '' }}
+      />
     </div>
   );
 };

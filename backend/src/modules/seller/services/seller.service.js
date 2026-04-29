@@ -36,11 +36,16 @@ const upsertSellerProfile = async (userId, data, files) => {
   let shop = await Shop.findOne({ owner: userId });
 
   const shopData = {
-    name: data.shopName || data.name,
-    whatsappNumber: data.phone || data.whatsappNumber,
+    name: data.name || data.shopName,
+    whatsappNumber: data.whatsappNumber || data.phone,
     address: data.address,
     city: data.city,
+    state: data.state,
+    pincode: data.pincode,
+    shopNo: data.shopNo,
     description: data.description,
+    openingTime: data.openingTime,
+    closingTime: data.closingTime,
     owner: userId,
   };
 
@@ -50,7 +55,7 @@ const upsertSellerProfile = async (userId, data, files) => {
     // Update existing
     shop = await Shop.findByIdAndUpdate(shop._id, shopData, { new: true, runValidators: true });
   } else {
-    // Create new
+    // Create new (will be 'pending' by default)
     shop = await Shop.create(shopData);
   }
 
