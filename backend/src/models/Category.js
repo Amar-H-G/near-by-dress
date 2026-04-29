@@ -33,11 +33,10 @@ const categorySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save hook to generate slug if not provided (can be manual too)
-categorySchema.pre('validate', function(next) {
+categorySchema.pre('validate', function() {
   if (this.name && !this.slug) {
     this.slug = this.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
   }
-  next();
 });
 
 module.exports = mongoose.model('Category', categorySchema);
