@@ -58,7 +58,20 @@ const SelectField = ({
           <option value="" disabled={placeholderDisabled}>
             {placeholder}
           </option>
-          {options.map((opt) => {
+          {options.map((opt, idx) => {
+            // Support for optgroup
+            if (typeof opt === 'object' && opt.group) {
+              return (
+                <optgroup key={opt.group + idx} label={opt.group}>
+                  {opt.options.map((subOpt) => (
+                    <option key={subOpt.value} value={subOpt.value}>
+                      {subOpt.label}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            }
+
             const optVal = typeof opt === 'object' ? opt.value : opt;
             const optLabel = typeof opt === 'object' ? opt.label : opt;
             return (

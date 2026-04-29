@@ -22,10 +22,38 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
   const [previewUrls] = useState(initialData?.images || []);
   const [errors, setErrors] = useState({});
 
-  const categoryOptions = categories.map((cat) => ({
-    value: cat._id,
-    label: cat.parentId ? `${cat.parentId.name} → ${cat.name}` : cat.name,
-  }));
+  const categoryOptions = categories.reduce((acc, cat) => {
+    if (!cat.parentId) {
+      // Find if this parent already has a group or create one
+      let group = acc.find(g => g.id === cat._id);
+      if (!group) {
+        group = { id: cat._id, group: cat.name, options: [], isParent: true };
+        acc.push(group);
+      } else {
+        group.group = cat.name;
+        group.isParent = true;
+      }
+    } else {
+      const pId = typeof cat.parentId === 'object' ? cat.parentId._id : cat.parentId;
+      const pName = typeof cat.parentId === 'object' ? cat.parentId.name : 'Other';
+      
+      let group = acc.find(g => g.id === pId);
+      if (!group) {
+        group = { id: pId, group: pName, options: [] };
+        acc.push(group);
+      }
+      group.options.push({ value: cat._id, label: cat.name });
+    }
+    return acc;
+  }, [])
+  .map(item => {
+    // If a parent has no subcategories, make it a regular option
+    if (item.isParent && item.options.length === 0) {
+      return { value: item.id, label: item.group };
+    }
+    return item;
+  })
+  .sort((a, b) => (a.group || a.label).localeCompare(b.group || b.label));
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
