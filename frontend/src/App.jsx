@@ -47,7 +47,7 @@ function App() {
                 <Navbar />
                 <Routes>
                   <Route path="/*" element={<UserRoutes />} />
-                  <Route path="/*" element={<SellerRoutes />} />
+                  <Route path="/seller/*" element={<SellerRoutes />} />
                   
                   {/* 404 Fallback */}
                   <Route

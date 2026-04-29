@@ -134,7 +134,7 @@ const Navbar = () => {
                   animation: 'fadeUp 0.15s ease',
                 }}>
                   {user?.role === 'shop_owner' && (
-                    <Link to="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, textDecoration: 'none', color: 'var(--text)', fontSize: 14 }}>
+                    <Link to="/seller/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, textDecoration: 'none', color: 'var(--text)', fontSize: 14 }}>
                       <LayoutDashboard size={16} color="var(--primary-light)" />
                       Dashboard
                     </Link>
@@ -195,7 +195,7 @@ const Navbar = () => {
             </div>
           ) : (
             <div>
-              {user?.role === 'shop_owner' && <Link to="/dashboard" style={{ display: 'block', padding: '12px 16px', color: 'var(--text)', textDecoration: 'none' }}>Dashboard</Link>}
+              {user?.role === 'shop_owner' && <Link to="/seller/dashboard" style={{ display: 'block', padding: '12px 16px', color: 'var(--text)', textDecoration: 'none' }}>Dashboard</Link>}
               {user?.role === 'admin' && <Link to="/admin" style={{ display: 'block', padding: '12px 16px', color: 'var(--text)', textDecoration: 'none' }}>Admin</Link>}
               <button onClick={handleLogout} style={{ width: '100%', marginTop: 8 }} className="btn btn-danger">Logout</button>
             </div>

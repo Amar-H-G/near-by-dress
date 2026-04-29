@@ -21,7 +21,7 @@ const LoginPage = () => {
       const user = await login(form);
       toast.success(`Welcome back, ${user.name}!`);
       if (user.role === 'admin') navigate('/admin');
-      else if (user.role === 'shop_owner') navigate('/dashboard');
+      else if (user.role === 'shop_owner') navigate('/seller/dashboard');
       else navigate('/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
