@@ -16,6 +16,7 @@ const Categories = () => {
 
   const [formData, setFormData] = useState({
     name: '',
+    slug: '',
     parentId: '',
     order: 0,
     isActive: true
@@ -50,6 +51,7 @@ const Categories = () => {
       setEditingCategory(cat);
       setFormData({
         name: cat.name,
+        slug: cat.slug || '',
         parentId: cat.parentId?._id || '',
         order: cat.order || 0,
         isActive: cat.isActive
@@ -59,6 +61,7 @@ const Categories = () => {
       const initialParent = parentId || '';
       setFormData({
         name: '',
+        slug: '',
         parentId: initialParent,
         order: getNextOrder(initialParent),
         isActive: true
@@ -227,14 +230,28 @@ const Categories = () => {
               <button className="admin-modal-close" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <InputField
-                id="cat-name"
-                label="Category Name"
-                required
-                placeholder="e.g. Ethnic Wear"
-                value={formData.name}
-                onChange={e => setFormData({ ...formData, name: e.target.value })}
-              />
+              <div className="admin-form-row">
+                <InputField
+                  id="cat-name"
+                  label="Category Name"
+                  required
+                  placeholder="e.g. Ethnic Wear"
+                  value={formData.name}
+                  onChange={e => {
+                    const name = e.target.value;
+                    const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+                    setFormData({ ...formData, name, slug: editingCategory ? formData.slug : slug });
+                  }}
+                />
+                <InputField
+                  id="cat-slug"
+                  label="Slug (URL Key)"
+                  required
+                  placeholder="ethnic-wear"
+                  value={formData.slug}
+                  onChange={e => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                />
+              </div>
 
               <SelectField
                 id="cat-parent"
