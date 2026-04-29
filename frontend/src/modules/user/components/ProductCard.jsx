@@ -6,7 +6,7 @@ const ProductCard = ({ product }) => {
 
   const displayPrice = discountPrice && discountPrice < price ? discountPrice : price;
   const hasDiscount = discountPrice && discountPrice < price;
-  const image = images?.[0] || 'https://placehold.co/400x500/1A1033/9B8EC4?text=No+Image';
+  const image = images?.[0] || 'https://placehold.co/400x500/F3F4F6/9CA3AF?text=No+Image';
 
   const whatsappUrl = shop?.whatsappNumber
     ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}"`
@@ -36,8 +36,8 @@ const ProductCard = ({ product }) => {
           )}
           <div style={{
             position: 'absolute', top: 12, right: 12,
-            background: 'rgba(10,6,20,0.7)', backdropFilter: 'blur(8px)',
-            padding: '3px 10px', borderRadius: 999,
+            background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(8px)',
+            padding: '3px 10px', borderRadius: 999, border: '1px solid var(--border)'
           }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-muted)' }}>
               <Tag size={10} /> {category}
@@ -57,7 +57,7 @@ const ProductCard = ({ product }) => {
 
         {/* Price */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18, fontWeight: 700, color: hasDiscount ? '#10B981' : 'var(--primary-light)' }}>
+          <span style={{ fontSize: 18, fontWeight: 700, color: hasDiscount ? '#059669' : 'var(--primary-dark)' }}>
             ₹{displayPrice.toLocaleString()}
           </span>
           {hasDiscount && (

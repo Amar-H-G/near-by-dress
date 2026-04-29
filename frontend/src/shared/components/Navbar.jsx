@@ -57,7 +57,7 @@ const Navbar = () => {
         right: 0,
         zIndex: 100,
         transition: 'all 0.3s ease',
-        background: scrolled ? 'rgba(10,6,20,0.95)' : 'transparent',
+        background: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px)' : 'none',
         borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
       }}
@@ -67,7 +67,7 @@ const Navbar = () => {
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, var(--primary), #EC4899)',
+            background: 'linear-gradient(135deg, var(--primary), #60A5FA)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <ShoppingBag size={20} color="#fff" />
@@ -89,8 +89,8 @@ const Navbar = () => {
                 textDecoration: 'none',
                 fontSize: 14,
                 fontWeight: 500,
-                color: location.pathname === link.to ? 'var(--primary-light)' : 'var(--text-muted)',
-                background: location.pathname === link.to ? 'rgba(124,58,237,0.12)' : 'transparent',
+                color: location.pathname === link.to ? 'var(--primary-dark)' : 'var(--text-muted)',
+                background: location.pathname === link.to ? 'rgba(37, 99, 235, 0.1)' : 'transparent',
                 transition: 'all 0.2s',
               }}
             >
@@ -116,7 +116,7 @@ const Navbar = () => {
               >
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, var(--primary), #EC4899)',
+                  background: 'linear-gradient(135deg, var(--primary), #60A5FA)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 12, fontWeight: 700, color: '#fff',
                 }}>
@@ -141,7 +141,7 @@ const Navbar = () => {
                   )}
                   {user?.role === 'admin' && (
                     <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, textDecoration: 'none', color: 'var(--text)', fontSize: 14 }}>
-                      <Shield size={16} color="var(--accent)" />
+                      <Shield size={16} color="var(--primary)" />
                       Admin Panel
                     </Link>
                   )}

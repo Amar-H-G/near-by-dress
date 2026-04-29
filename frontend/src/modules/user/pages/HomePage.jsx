@@ -39,12 +39,12 @@ const HomePage = () => {
         minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative', overflow: 'hidden', paddingTop: 80,
-        background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,58,237,0.2) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 70%)',
       }}>
         {/* Background decoration */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 0,
-          background: 'radial-gradient(circle at 80% 20%, rgba(236,72,153,0.08) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(124,58,237,0.1) 0%, transparent 50%)',
+          background: 'radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(37, 99, 235, 0.05) 0%, transparent 50%)',
         }} />
 
         <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 800 }}>
@@ -52,8 +52,8 @@ const HomePage = () => {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '6px 16px', borderRadius: 999,
-              background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(167,139,250,0.3)',
-              fontSize: 13, color: 'var(--primary-light)', fontWeight: 500,
+              background: '#EFF6FF', border: '1px solid #BFDBFE',
+              fontSize: 13, color: 'var(--primary)', fontWeight: 600,
             }}>
               <Star size={12} fill="currentColor" /> Hyperlocal Fashion Marketplace
             </span>
@@ -87,7 +87,7 @@ const HomePage = () => {
               { value: '50+', label: 'Cities' },
             ].map((s) => (
               <div key={s.label} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary-light)', fontFamily: 'Outfit, sans-serif' }}>{s.value}</div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--primary)', fontFamily: 'Outfit, sans-serif' }}>{s.value}</div>
                 <div style={{ fontSize: 13, color: 'var(--text-faint)' }}>{s.label}</div>
               </div>
             ))}
@@ -109,10 +109,10 @@ const HomePage = () => {
               <div key={f.title} className="feature-card card" style={{ padding: 28 }}>
                 <div style={{
                   width: 52, height: 52, borderRadius: 14, marginBottom: 16,
-                  background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(236,72,153,0.1))',
-                  border: '1px solid rgba(124,58,237,0.3)',
+                  background: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--primary-light)',
+                  color: 'var(--primary)',
                 }}>
                   {f.icon}
                 </div>
@@ -150,17 +150,17 @@ const HomePage = () => {
         <div className="container">
           <div style={{
             borderRadius: 24, padding: 'clamp(40px, 6vw, 72px)',
-            background: 'linear-gradient(135deg, rgba(124,58,237,0.2) 0%, rgba(236,72,153,0.15) 100%)',
-            border: '1px solid rgba(124,58,237,0.3)',
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%)',
+            border: '1px solid #BFDBFE',
             textAlign: 'center',
             position: 'relative', overflow: 'hidden',
           }}>
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'radial-gradient(circle at 50% 0%, rgba(124,58,237,0.15), transparent 70%)',
+              background: 'radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.08), transparent 70%)',
             }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <ShoppingBag size={48} style={{ color: 'var(--primary-light)', marginBottom: 20 }} />
+              <ShoppingBag size={48} style={{ color: 'var(--primary)', marginBottom: 20 }} />
               <h2 style={{ fontSize: 'clamp(24px, 4vw, 40px)', marginBottom: 16 }}>Own a Fashion Shop?</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: 16, marginBottom: 32, maxWidth: 420, margin: '0 auto 32px' }}>
                 List your products for free and reach thousands of local fashion lovers.
@@ -177,7 +177,7 @@ const HomePage = () => {
       <footer style={{ borderTop: '1px solid var(--border)', padding: '40px 0', background: 'var(--bg)' }}>
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, var(--primary), #EC4899)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ShoppingBag size={14} color="#fff" />
             </div>
             <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 16 }}>NearByDress</span>

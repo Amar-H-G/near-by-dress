@@ -3,7 +3,7 @@ import { MapPin, Package } from 'lucide-react';
 
 const ShopCard = ({ shop }) => {
   const { _id, name, description, city, logo, status, category } = shop;
-  const logoSrc = logo || `https://placehold.co/200x200/231845/9B8EC4?text=${encodeURIComponent(name?.charAt(0) || 'S')}`;
+  const logoSrc = logo || `https://placehold.co/200x200/F3F4F6/9CA3AF?text=${encodeURIComponent(name?.charAt(0) || 'S')}`;
 
   return (
     <Link to={`/shops/${_id}`} style={{ textDecoration: 'none' }}>
