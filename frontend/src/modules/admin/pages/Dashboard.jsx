@@ -67,13 +67,13 @@ const Dashboard = () => {
   };
 
   const statCards = [
-    { label: 'Total Users',    value: stats?.totalUsers,    icon: <Users size={22} />,       color: '#7C3AED' },
-    { label: 'Total Sellers',  value: stats?.totalSellers,  icon: <ShoppingBag size={22} />, color: '#EC4899' },
-    { label: 'Total Shops',    value: stats?.totalShops,    icon: <Store size={22} />,       color: '#06B6D4' },
-    { label: 'Total Products', value: stats?.totalProducts, icon: <Package size={22} />,     color: '#10B981' },
-    { label: 'Pending Approval', value: stats?.pendingShops, icon: <Clock size={22} />,      color: '#F59E0B' },
+    { label: 'Total Users', value: stats?.totalUsers, icon: <Users size={22} />, color: '#7C3AED' },
+    { label: 'Total Sellers', value: stats?.totalSellers, icon: <ShoppingBag size={22} />, color: '#EC4899' },
+    { label: 'Total Shops', value: stats?.totalShops, icon: <Store size={22} />, color: '#06B6D4' },
+    { label: 'Total Products', value: stats?.totalProducts, icon: <Package size={22} />, color: '#10B981' },
+    { label: 'Pending Approval', value: stats?.pendingShops, icon: <Clock size={22} />, color: '#F59E0B' },
     { label: 'Approved Shops', value: stats?.approvedShops, icon: <CheckCircle size={22} />, color: '#10B981' },
-    { label: 'Rejected Shops', value: stats?.rejectedShops, icon: <XCircle size={22} />,     color: '#EF4444' },
+    { label: 'Rejected Shops', value: stats?.rejectedShops, icon: <XCircle size={22} />, color: '#EF4444' },
   ];
 
   return (
@@ -118,36 +118,69 @@ const Dashboard = () => {
             <p className="admin-empty-sub">No shops awaiting approval.</p>
           </div>
         ) : (
-          <div className="admin-pending-list">
+          <div className="admin-pending-grid">
             {pendingShops.map((shop) => (
-              <div key={shop._id} className="admin-pending-item">
-                <img
-                  src={shop.logo || `https://placehold.co/48x48/1A1033/9B8EC4?text=${shop.name?.charAt(0)}`}
-                  alt={shop.name}
-                  className="admin-pending-avatar"
-                />
-                <div className="admin-pending-info">
-                  <p className="admin-pending-name">{shop.name}</p>
-                  <p className="admin-pending-meta">{shop.owner?.email} · {shop.city || 'N/A'}</p>
+              <div key={shop._id} className="admin-pending-card">
+                <div className="admin-pending-card-top">
+                  <div 
+                    className="admin-pending-card-cover"
+                    style={{ 
+                      background: shop.coverImage 
+                        ? `url(${shop.coverImage}) center/cover` 
+                        : 'linear-gradient(135deg, #1e1b4b, #312e81)' 
+                    }}
+                  />
+                  <div className="admin-pending-card-status">
+                    <Clock size={10} /> Pending
+                  </div>
                 </div>
-                <span className="badge badge-pending">pending</span>
-                <div className="admin-pending-actions">
-                  <button
-                    className="btn btn-accent"
-                    style={{ padding: '6px 14px', fontSize: 13 }}
-                    onClick={() => handleShopStatus(shop._id, 'approved')}
-                    id={`approve-${shop._id}`}
-                  >
-                    <CheckCircle size={13} /> Approve
-                  </button>
-                  <button
-                    className="btn btn-danger"
-                    style={{ padding: '6px 14px', fontSize: 13 }}
-                    onClick={() => handleShopStatus(shop._id, 'rejected')}
-                    id={`reject-${shop._id}`}
-                  >
-                    <XCircle size={13} /> Reject
-                  </button>
+                
+                <div className="admin-pending-card-body">
+                  <div className="admin-pending-card-main">
+                    <img
+                      src={shop.logo || `https://placehold.co/40x40/1A1033/9B8EC4?text=${shop.name?.charAt(0)}`}
+                      alt={shop.name}
+                      className="admin-pending-card-logo"
+                    />
+                    <div className="admin-pending-card-titles">
+                      <h4 className="admin-pending-card-name">{shop.name}</h4>
+                      <p className="admin-pending-card-cat">{shop.category || 'General Fashion'}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="admin-pending-card-details">
+                    <div className="admin-pending-detail-item">
+                      <MapPin size={12} />
+                      <span>{shop.city || 'Location N/A'}</span>
+                    </div>
+                    <div className="admin-pending-detail-item">
+                      <Users size={12} />
+                      <span>{shop.owner?.name || 'Unknown Owner'}</span>
+                    </div>
+                  </div>
+
+                  <div className="admin-pending-card-footer">
+                    <button
+                      className="admin-btn-action admin-btn-approve"
+                      onClick={() => handleShopStatus(shop._id, 'approved')}
+                    >
+                      <CheckCircle size={14} /> Approve
+                    </button>
+                    <button
+                      className="admin-btn-icon admin-btn-reject"
+                      onClick={() => handleShopStatus(shop._id, 'rejected')}
+                      title="Reject"
+                    >
+                      <XCircle size={16} />
+                    </button>
+                    <button
+                      className="admin-btn-icon"
+                      onClick={() => navigate(`/admin/shops`)}
+                      title="View Details"
+                    >
+                      <ArrowRight size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

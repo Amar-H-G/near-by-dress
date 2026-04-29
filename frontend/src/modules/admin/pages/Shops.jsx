@@ -244,7 +244,7 @@ const Shops = () => {
                               {shopProducts[shop._id].map((p) => (
                                 <div key={p._id} className="admin-expand-product-item">
                                   <img
-                                    src={p.images?.[0] || 'https://placehold.co/36x36/1A1033/9B8EC4?text=?'}
+                                    src={(typeof p.images?.[0] === 'object' ? p.images[0]?.url : p.images?.[0]) || 'https://placehold.co/44x44/1A1033/9B8EC4?text=?'}
                                     alt={p.name}
                                     className="admin-expand-product-img"
                                   />

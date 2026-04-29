@@ -499,6 +499,221 @@ h1, h2, h3, h4, h5, h6 {
 .admin-table-expand-row td { padding: 0; background: #F8FAFC; }
 
 .admin-expand-panel { padding: 24px; border-top: 1px solid var(--border); }
+
+.admin-expand-products {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 4px 0 16px;
+}
+
+.admin-expand-product-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 8px 16px 8px 8px;
+  border-radius: 14px;
+  min-width: 200px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.admin-expand-product-item:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+
+.admin-expand-product-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--border-light);
+}
+
+/* ── Pending Grid ────────────────────────────────────────────── */
+.admin-pending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 24px;
+}
+
+@media (min-width: 1400px) {
+  .admin-pending-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.admin-pending-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.admin-pending-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.12);
+  border-color: var(--primary-light);
+}
+
+.admin-pending-card-top {
+  position: relative;
+  height: 100px;
+}
+
+.admin-pending-card-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-pending-card-status {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(245, 158, 11, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: #D97706;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.admin-pending-card-body {
+  padding: 0 20px 20px;
+  margin-top: -32px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-pending-card-main {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.admin-pending-card-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  border: 4px solid var(--surface);
+  background: var(--bg-2);
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.admin-pending-card-titles {
+  padding-bottom: 2px;
+  min-width: 0;
+}
+
+.admin-pending-card-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-pending-card-cat {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.admin-pending-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 12px;
+  background: var(--bg-2);
+  border-radius: 12px;
+}
+
+.admin-pending-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.admin-pending-card-footer {
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+}
+
+.admin-btn-action {
+  flex: 1;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.admin-btn-approve {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-primary);
+}
+
+.admin-btn-approve:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.admin-btn-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-btn-icon:hover {
+  background: var(--bg-2);
+  color: var(--text);
+  border-color: #D1D5DB;
+}
+
+.admin-btn-reject:hover {
+  background: #FEF2F2;
+  color: #EF4444;
+  border-color: #FECACA;
+}
 .admin-expand-label { font-size: 12px; font-weight: 600; color: var(--text-faint); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
 
 .admin-table-avatar {
