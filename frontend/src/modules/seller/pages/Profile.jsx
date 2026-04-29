@@ -54,14 +54,14 @@ const Profile = () => {
       <div style={{ maxWidth: 800 }}>
         {!profile && (
           <div className="glass-strong" style={{
-            background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', 
-            color: '#F87171', padding: '20px', borderRadius: 20, marginBottom: 32,
+            background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', 
+            color: '#DC2626', padding: '20px', borderRadius: 20, marginBottom: 32,
             display: 'flex', gap: 16, alignItems: 'flex-start',
           }}>
-            <AlertCircle size={24} style={{ flexShrink: 0 }} />
+            <AlertCircle size={24} style={{ flexShrink: 0, color: '#DC2626' }} />
             <div>
-              <h4 style={{ fontWeight: 700, marginBottom: 4, color: '#fff' }}>Complete Your Shop Profile</h4>
-              <p style={{ fontSize: 14, margin: 0, opacity: 0.8 }}>
+              <h4 style={{ fontWeight: 700, marginBottom: 4, color: '#991B1B' }}>Complete Your Shop Profile</h4>
+              <p style={{ fontSize: 14, margin: 0, opacity: 0.9, lineHeight: 1.5 }}>
                 You haven't completed your shop profile yet. Please provide your business details to start listing products.
               </p>
             </div>
@@ -70,14 +70,14 @@ const Profile = () => {
 
         {profile && profile.status === 'pending' && (
           <div className="glass-strong" style={{
-            background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)', 
-            color: '#FBBF24', padding: '20px', borderRadius: 20, marginBottom: 32,
+            background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', 
+            color: '#D97706', padding: '20px', borderRadius: 20, marginBottom: 32,
             display: 'flex', gap: 16, alignItems: 'flex-start',
           }}>
-            <Loader2 size={24} className="animate-spin" style={{ flexShrink: 0 }} />
+            <Loader2 size={24} className="animate-spin" style={{ flexShrink: 0, color: '#D97706' }} />
             <div>
-              <h4 style={{ fontWeight: 700, marginBottom: 4, color: '#fff' }}>Shop Approval Pending</h4>
-              <p style={{ fontSize: 14, margin: 0, opacity: 0.8 }}>
+              <h4 style={{ fontWeight: 700, marginBottom: 4, color: '#92400E' }}>Shop Approval Pending</h4>
+              <p style={{ fontSize: 14, margin: 0, opacity: 0.9, lineHeight: 1.5 }}>
                 Your shop profile is under review by the admin. You can add products but they will only be visible after approval.
               </p>
             </div>
