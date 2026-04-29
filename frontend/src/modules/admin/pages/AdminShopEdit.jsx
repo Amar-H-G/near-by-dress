@@ -27,7 +27,7 @@ const AdminShopEdit = () => {
     load();
   }, [id, navigate]);
 
-  const handleUpdate = async (formData, logoFile, coverFile) => {
+  const handleUpdate = async (formData, logoFile) => {
     setSubmitting(true);
     const submitData = new FormData();
 
@@ -41,7 +41,6 @@ const AdminShopEdit = () => {
     });
 
     if (logoFile) submitData.append('logo', logoFile);
-    if (coverFile) submitData.append('coverImage', coverFile);
 
     try {
       await adminUpdateShop(id, submitData);

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Users, ShoppingBag, Store, Package, Clock, CheckCircle, XCircle, ArrowRight,
+  Users, ShoppingBag, Store, Package, Clock, MapPin, CheckCircle, XCircle, ArrowRight,
 } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import RejectionModal from '../components/RejectionModal';
@@ -122,19 +122,19 @@ const Dashboard = () => {
             {pendingShops.map((shop) => (
               <div key={shop._id} className="admin-pending-card">
                 <div className="admin-pending-card-top">
-                  <div 
+                  <div
                     className="admin-pending-card-cover"
-                    style={{ 
-                      background: shop.coverImage 
-                        ? `url(${shop.coverImage}) center/cover` 
-                        : 'linear-gradient(135deg, #1e1b4b, #312e81)' 
+                    style={{
+                      background: shop.coverImage
+                        ? `url(${shop.coverImage}) center/cover`
+                        : 'linear-gradient(135deg, #1e1b4b, #312e81)'
                     }}
                   />
                   <div className="admin-pending-card-status">
                     <Clock size={10} /> Pending
                   </div>
                 </div>
-                
+
                 <div className="admin-pending-card-body">
                   <div className="admin-pending-card-main">
                     <img
@@ -147,7 +147,7 @@ const Dashboard = () => {
                       <p className="admin-pending-card-cat">{shop.category || 'General Fashion'}</p>
                     </div>
                   </div>
-                  
+
                   <div className="admin-pending-card-details">
                     <div className="admin-pending-detail-item">
                       <MapPin size={12} />

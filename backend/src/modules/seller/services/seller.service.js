@@ -50,6 +50,7 @@ const upsertSellerProfile = async (userId, data, files) => {
   };
 
   if (files?.logo?.[0]) shopData.logo = files.logo[0].path;
+  if (files?.coverImage?.[0]) shopData.coverImage = files.coverImage[0].path;
 
   if (shop) {
     // Update existing

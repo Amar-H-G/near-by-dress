@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSellerProfile } from '../hooks/useSellerProfile';
 import { updateSellerProfile } from '../services/sellerApi';
 import toast from 'react-hot-toast';
@@ -9,11 +9,21 @@ const Profile = () => {
   const { profile, loading, refresh } = useSellerProfile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isFirstSetup, setIsFirstSetup] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !profile) {
+      setIsEditing(true);
+      setIsFirstSetup(true);
+    } else {
+      setIsFirstSetup(false);
+    }
+  }, [loading, profile]);
 
   const handleSaveProfile = async (formData, logoFile) => {
     setIsSubmitting(true);
     const submitData = new FormData();
-    
+
     // Fields to exclude from update payload
     const excludeFields = ['owner', '_id', '__v', 'createdAt', 'updatedAt', 'status', 'rejectionReason'];
 
@@ -24,9 +34,7 @@ const Profile = () => {
     });
 
     // Append logo if new file selected
-    if (logoFile) {
-      submitData.append('logo', logoFile);
-    }
+    if (logoFile) submitData.append('logo', logoFile);
 
     try {
       await updateSellerProfile(submitData);
@@ -54,8 +62,8 @@ const Profile = () => {
           <p className="admin-page-subtitle">Manage your shop details, location and business hours.</p>
         </div>
         {!isEditing && profile && (
-          <button 
-            className="btn btn-secondary" 
+          <button
+            className="btn btn-secondary"
             onClick={() => setIsEditing(true)}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12 }}
           >
@@ -68,7 +76,7 @@ const Profile = () => {
         {/* Alerts... (already there) */}
         {!profile && (
           <div className="glass-strong" style={{
-            background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', 
+            background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)',
             color: '#DC2626', padding: '20px', borderRadius: 20, marginBottom: 32,
             display: 'flex', gap: 16, alignItems: 'flex-start',
           }}>
@@ -84,7 +92,7 @@ const Profile = () => {
 
         {profile && profile.status === 'pending' && (
           <div className="glass-strong" style={{
-            background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', 
+            background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)',
             color: '#D97706', padding: '20px', borderRadius: 20, marginBottom: 32,
             display: 'flex', gap: 16, alignItems: 'flex-start',
           }}>
@@ -104,13 +112,13 @@ const Profile = () => {
             <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Shop Information</h2>
           </div>
           <div style={{ height: 1, background: 'var(--border)', marginBottom: 32, opacity: 0.5 }} />
-          
-          <ShopForm 
-            initialData={profile} 
-            onSubmit={handleSaveProfile} 
-            loading={isSubmitting} 
+
+          <ShopForm
+            initialData={profile}
+            onSubmit={handleSaveProfile}
+            loading={isSubmitting}
             readOnly={!isEditing}
-            showCancel={true}
+            showCancel={!isFirstSetup}
             onCancel={() => setIsEditing(false)}
           />
         </div>
