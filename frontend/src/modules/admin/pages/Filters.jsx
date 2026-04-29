@@ -15,12 +15,12 @@ import ConfirmModal from '../components/ConfirmModal';
 const INITIAL_FILTERS = [
   { name: "Category", key: "category", type: "select", isActive: true, order: 1, isDynamic: true, refModel: 'Category' },
   { name: "Price", key: "price", type: "range", min: 0, max: 5000, isActive: true, order: 2 },
-  { name: "Color", key: "color", type: "multi-select", options: ["Black","White","Red","Blue","Green","Yellow","Pink","Grey"], isActive: true, order: 3 },
-  { name: "Size", key: "size", type: "multi-select", options: ["XS","S","M","L","XL","XXL","Free"], isActive: true, order: 4 },
-  { name: "Fabric", key: "fabric", type: "select", options: ["Cotton","Silk","Denim","Linen","Polyester"], isActive: true, order: 5 },
+  { name: "Color", key: "color", type: "multi-select", options: ["Black", "White", "Red", "Blue", "Green", "Yellow", "Pink", "Grey"], isActive: true, order: 3 },
+  { name: "Size", key: "size", type: "multi-select", options: ["XS", "S", "M", "L", "XL", "XXL", "Free"], isActive: true, order: 4 },
+  { name: "Fabric", key: "fabric", type: "select", options: ["Cotton", "Silk", "Denim", "Linen", "Polyester"], isActive: true, order: 5 },
   { name: "Shop", key: "shop", type: "select", isActive: true, order: 6, isDynamic: true, refModel: 'Shop' },
-  { name: "Rating", key: "rating", type: "select", options: ["4","3","2","1"], isActive: false, order: 7 },
-  { name: "Discount", key: "discount", type: "select", options: ["10","20","30","50"], isActive: false, order: 8 }
+  { name: "Rating", key: "rating", type: "select", options: ["4", "3", "2", "1"], isActive: false, order: 7 },
+  { name: "Discount", key: "discount", type: "select", options: ["10", "20", "30", "50"], isActive: false, order: 8 }
 ];
 
 const Filters = () => {
@@ -138,7 +138,7 @@ const Filters = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     const payload = { ...formData };
     if (payload.type === 'range') {
       payload.options = [];
@@ -191,18 +191,17 @@ const Filters = () => {
         </div>
       </div>
 
-      <div className="admin-card" style={{ marginTop: 24 }}>
-        <div className="admin-table-wrapper">
+      <div className="card" style={{ marginTop: 24 }}>
+        <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
               <tr>
                 <th style={{ width: 40 }}></th>
                 <th>Filter Name</th>
-                <th>Key</th>
                 <th>Type</th>
                 <th>Behavior</th>
                 <th>Status</th>
-                <th style={{ width: 100 }}>Actions</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -213,14 +212,13 @@ const Filters = () => {
               ) : (
                 filters.sort((a, b) => a.order - b.order).map((f) => (
                   <tr key={f._id}>
-                    <td><GripVertical size={16} color="#94a3b8" /></td>
+                    <td><GripVertical size={16} color="var(--text-faint)" /></td>
                     <td>
-                      <div style={{ fontWeight: 600, color: 'var(--text)' }}>{f.name}</div>
+                      <div className="admin-table-primary">{f.name}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Order: {f.order}</div>
                     </td>
-                    <td><code style={{ fontSize: 12, background: 'var(--surface-2)', padding: '2px 6px', borderRadius: 4 }}>{f.key}</code></td>
                     <td>
-                      <span className={`admin-badge admin-badge-${f.type === 'range' ? 'blue' : 'gray'}`}>
+                      <span className="badge" style={{ background: 'var(--surface-2)', color: 'var(--text)' }}>
                         {f.type.toUpperCase()}
                       </span>
                     </td>
@@ -251,21 +249,23 @@ const Filters = () => {
                       </div>
                     </td>
                     <td>
-                      <ToggleSwitch 
-                        checked={f.isActive} 
-                        onChange={() => handleToggle(f._id)} 
+                      <ToggleSwitch
+                        checked={f.isActive}
+                        onChange={() => handleToggle(f._id)}
                       />
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      <button className="btn btn-icon" onClick={() => handleOpenModal(f)}><Edit2 size={16} /></button>
-                      <button className="btn btn-icon text-danger" onClick={() => setConfirmDeleteId(f._id)}><Trash2 size={16} /></button>
+                      <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <button className="btn btn-icon" onClick={() => handleOpenModal(f)}><Edit2 size={16} /></button>
+                        <button className="btn btn-icon text-danger" onClick={() => setConfirmDeleteId(f._id)}><Trash2 size={16} /></button>
+                      </div>
                     </td>
                   </tr>
                 )))}
-              </tbody>
-            </table>
-          </div>
+            </tbody>
+          </table>
         </div>
+      </div>
 
       {/* Main Edit/Create Modal */}
       {isModalOpen && (
@@ -275,7 +275,7 @@ const Filters = () => {
               <h3 className="admin-modal-title">{editingFilter ? 'Edit Filter' : 'Create New Filter'}</h3>
               <button className="admin-modal-close" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
             </div>
-            
+
             <form onSubmit={handleSubmit} style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div className="admin-form-row">
                 <InputField
@@ -284,7 +284,7 @@ const Filters = () => {
                   required
                   placeholder="e.g. Fabric Material"
                   value={formData.name}
-                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
                 />
                 <InputField
                   id="filter-key"
@@ -293,7 +293,7 @@ const Filters = () => {
                   placeholder="e.g. fabric"
                   disabled={!!editingFilter}
                   value={formData.key}
-                  onChange={e => setFormData({...formData, key: e.target.value})}
+                  onChange={e => setFormData({ ...formData, key: e.target.value })}
                   helper="Database identifier"
                 />
               </div>
@@ -304,7 +304,7 @@ const Filters = () => {
                   label="Input Type"
                   required
                   value={formData.type}
-                  onChange={e => setFormData({...formData, type: e.target.value})}
+                  onChange={e => setFormData({ ...formData, type: e.target.value })}
                   options={[
                     { value: 'select', label: 'Dropdown Selection' },
                     { value: 'multi-select', label: 'Multiple Checkboxes' },
@@ -317,19 +317,19 @@ const Filters = () => {
                   label="Sort Order"
                   type="number"
                   value={formData.order}
-                  onChange={e => setFormData({...formData, order: parseInt(e.target.value)})}
+                  onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) })}
                 />
               </div>
 
               <div className="admin-form-divider"></div>
 
               {formData.type === 'range' ? (
-                <RangeSlider 
+                <RangeSlider
                   label="Range Configuration"
                   min={formData.min}
                   max={formData.max}
-                  onChangeMin={(val) => setFormData({...formData, min: val})}
-                  onChangeMax={(val) => setFormData({...formData, max: val})}
+                  onChangeMin={(val) => setFormData({ ...formData, min: val })}
+                  onChangeMax={(val) => setFormData({ ...formData, max: val })}
                 />
               ) : formData.isDynamic ? (
                 <div className="dynamic-info-card">
@@ -340,7 +340,7 @@ const Filters = () => {
                   </div>
                 </div>
               ) : (
-                <TagInput 
+                <TagInput
                   label="Filter Options"
                   tags={formData.options}
                   setTags={(newTags) => setFormData({ ...formData, options: newTags })}
@@ -350,10 +350,10 @@ const Filters = () => {
               )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-                <ToggleSwitch 
+                <ToggleSwitch
                   label="Active Status"
                   checked={formData.isActive}
-                  onChange={(val) => setFormData({...formData, isActive: val})}
+                  onChange={(val) => setFormData({ ...formData, isActive: val })}
                 />
                 <div className="admin-modal-actions">
                   <button type="button" className="btn btn-ghost" onClick={() => setIsModalOpen(false)}>Cancel</button>
@@ -368,7 +368,7 @@ const Filters = () => {
       )}
 
       {/* Custom Confirmation Modals */}
-      <ConfirmModal 
+      <ConfirmModal
         open={!!confirmDeleteId}
         title="Delete Filter?"
         message="Are you sure you want to remove this filter? This will affect how customers search for products."
@@ -377,7 +377,7 @@ const Filters = () => {
         onCancel={() => setConfirmDeleteId(null)}
       />
 
-      <ConfirmModal 
+      <ConfirmModal
         open={showSeedConfirm}
         title="Initialize Filters?"
         message="This will add the standard marketplace filters (Price, Color, Size, etc.). Are you sure you want to proceed?"
