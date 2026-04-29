@@ -1,13 +1,17 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const dns = require('dns');
 require('dotenv').config();
+
+// FIX: Force Google/Cloudflare DNS for SRV lookups (matches db.js config)
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
 const createAdmin = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI, { family: 4 });
     console.log('Connected to MongoDB');
 
-    const User = require('./src/models/User');
+    const User = require('../src/models/User');
 
     const existing = await User.findOne({ email: 'admin@nearbydress.com' });
     if (existing) {
