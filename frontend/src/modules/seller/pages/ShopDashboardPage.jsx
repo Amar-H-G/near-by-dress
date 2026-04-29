@@ -15,7 +15,7 @@ const ShopDashboardPage = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
         <StatsCard title="Total Products" value={stats?.totalProducts || 0} icon={<Package size={24} />} color="var(--primary)" />
         <StatsCard title="Total Views (Estimated)" value={stats?.totalViews || 0} icon={<Eye size={24} />} color="var(--success)" />
-        <StatsCard title="Shop Rating" value="4.8" icon={<Star size={24} />} color="var(--accent)" />
+        <StatsCard title="Shop Rating" value="0.0" icon={<Star size={24} />} color="var(--accent)" />
       </div>
 
       <div className="card">
@@ -23,7 +23,7 @@ const ShopDashboardPage = () => {
           <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>Recent Products</h3>
           <Link to="/seller/products" className="btn btn-ghost" style={{ fontSize: 13, padding: '6px 12px' }}>View All</Link>
         </div>
-        
+
         {stats?.recentProducts?.length === 0 ? (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
             <p style={{ marginBottom: 16 }}>No products added yet.</p>
