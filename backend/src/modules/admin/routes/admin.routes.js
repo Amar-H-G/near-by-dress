@@ -18,6 +18,7 @@ router.use(authenticate, authorize('admin'));
 
 // ── Global Settings & Categories ────────────────────────────────────────────
 router.put('/settings', shopUpload.fields([{ name: 'logo', maxCount: 1 }]), settingsCtrl.updateSettings);
+router.get('/categories', categoryCtrl.getAdminCategories);
 router.post('/categories', categoryCtrl.createCategory);
 router.put('/categories/:id', categoryCtrl.updateCategory);
 router.delete('/categories/:id', categoryCtrl.deleteCategory);
