@@ -3,13 +3,15 @@
  * Purpose: admin request/response handlers — stats, users, sellers, shops, products
  */
 const adminService = require('../services/admin.service');
-const { getAdminShops, updateShopStatus } = require('../../seller/controllers/shop.controller');
+const { getAdminShops, updateShopStatus, getShop, updateShop } = require('../../seller/controllers/shop.controller');
 const { getAdminProducts } = require('../../seller/controllers/product.controller');
 const { sendSuccess, sendPaginated } = require('../../../utils/response');
 
 // Re-export these for use in routes (they already handle res directly)
 module.exports.getAdminShops = getAdminShops;
 module.exports.updateShopStatus = updateShopStatus;
+module.exports.getShop = getShop;
+module.exports.updateShop = updateShop;
 module.exports.getAdminProducts = getAdminProducts;
 
 /** GET /api/admin/stats */

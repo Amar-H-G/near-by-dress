@@ -14,9 +14,11 @@ const Profile = () => {
     setIsSubmitting(true);
     const submitData = new FormData();
     
-    // Append all text fields
+    // Fields to exclude from update payload
+    const excludeFields = ['owner', '_id', '__v', 'createdAt', 'updatedAt', 'status', 'rejectionReason'];
+
     Object.entries(formData).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
+      if (!excludeFields.includes(key) && value !== undefined && value !== null) {
         submitData.append(key, value);
       }
     });

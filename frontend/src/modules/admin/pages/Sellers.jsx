@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle, XCircle, ExternalLink, Settings } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import SearchBar from '../components/SearchBar';
 import Pagination from '../../../shared/components/Pagination';
@@ -15,6 +16,7 @@ const formatDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
 const Sellers = () => {
+  const navigate = useNavigate();
   const [sellers, setSellers]   = useState([]);
   const [loading, setLoading]   = useState(true);
   const [page, setPage]         = useState(1);
@@ -158,6 +160,13 @@ const Sellers = () => {
                 Re-Approve
               </button>
             )}
+            <button
+              className="admin-icon-btn"
+              onClick={() => navigate(`/admin/shops/edit/${s.shop._id}`)}
+              title="Edit Shop Details"
+            >
+              <Settings size={14} />
+            </button>
             <a
               href={`/shops/${s.shop._id}`}
               target="_blank"

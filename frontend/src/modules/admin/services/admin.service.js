@@ -12,6 +12,9 @@ export const adminGetSellers = (params) => API.get('/admin/sellers', { params })
 
 // ─── Shops ───────────────────────────────────────────────────────────────────
 export const adminGetShops = (params) => API.get('/admin/shops', { params });
+export const adminGetShop = (id) => API.get(`/admin/shops/${id}`);
+export const adminUpdateShop = (id, formData) => 
+  API.put(`/admin/shops/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminUpdateShopStatus = (id, data) => API.patch(`/admin/shops/${id}/status`, data);
 export const adminCreateShop = (data) => API.post('/admin/shops', data);
 

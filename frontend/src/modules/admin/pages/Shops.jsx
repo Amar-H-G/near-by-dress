@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, XCircle, ChevronDown, ChevronUp, ExternalLink, Plus } from 'lucide-react';
+import { CheckCircle, XCircle, ChevronDown, ChevronUp, ExternalLink, Plus, Settings } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import Pagination from '../../../shared/components/Pagination';
 import SearchBar from '../components/SearchBar';
@@ -147,6 +147,13 @@ const Shops = () => {
               Re-Approve
             </button>
           )}
+          <button
+            className="admin-icon-btn"
+            onClick={() => navigate(`/admin/shops/edit/${s._id}`)}
+            title="Edit Shop Details"
+          >
+            <Settings size={14} />
+          </button>
           <button
             className="admin-icon-btn"
             onClick={() => handleToggleProducts(s._id)}
