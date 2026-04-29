@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react';
 import { UploadCloud, X, Loader2 } from 'lucide-react';
+import { useSettings } from '../../../context/SettingsContext';
 
 const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
+  const { categories } = useSettings();
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     price: initialData?.price || '',
@@ -65,10 +67,11 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
             <label className="admin-form-label">Category *</label>
             <select required name="category" value={formData.category} onChange={handleChange} className="admin-input">
               <option value="">Select Category</option>
-              <option value="ethnic wear">Ethnic Wear</option>
-              <option value="western">Western</option>
-              <option value="kids fashion">Kids Fashion</option>
-              <option value="accessories">Accessories</option>
+              {categories.map(cat => (
+                <option key={cat._id} value={cat.slug} style={{ textTransform: 'capitalize' }}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>

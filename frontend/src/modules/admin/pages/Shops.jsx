@@ -55,8 +55,17 @@ const Shops = () => {
   };
 
   const handleShopAction = async (id, status) => {
+    let rejectionReason = null;
+    if (status === 'rejected') {
+      rejectionReason = window.prompt('Please enter the reason for rejection:');
+      if (!rejectionReason) {
+        toast.error('Rejection reason is required');
+        return;
+      }
+    }
+
     try {
-      await adminUpdateShopStatus(id, { status });
+      await adminUpdateShopStatus(id, { status, rejectionReason });
       toast.success(`Shop ${status}`);
       loadShops();
     } catch (err) {
