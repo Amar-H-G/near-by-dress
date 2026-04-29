@@ -26,6 +26,11 @@ const Categories = () => {
     setExpandedCats(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
+  const getNextOrder = (parentId = '') => {
+    const siblings = categories.filter(c => (c.parentId?._id || c.parentId || '') === parentId);
+    return siblings.length + 1;
+  };
+
   const loadCategories = async () => {
     setLoading(true);
     try {
@@ -51,10 +56,11 @@ const Categories = () => {
       });
     } else {
       setEditingCategory(null);
+      const initialParent = parentId || '';
       setFormData({
         name: '',
-        parentId: parentId || '',
-        order: categories.length,
+        parentId: initialParent,
+        order: getNextOrder(initialParent),
         isActive: true
       });
     }
@@ -134,15 +140,15 @@ const Categories = () => {
                 {rootCategories.map((cat) => {
                   const subs = getSubCategories(cat._id);
                   const isExpanded = expandedCats.includes(cat._id);
-                  
+
                   return (
                     <>
                       <tr key={cat._id} className={isExpanded ? 'row-expanded' : ''}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             {subs.length > 0 ? (
-                              <button 
-                                onClick={() => toggleExpand(cat._id)} 
+                              <button
+                                onClick={() => toggleExpand(cat._id)}
                                 className="admin-icon-btn"
                                 style={{ padding: 4, transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}
                               >
@@ -163,8 +169,8 @@ const Categories = () => {
                           </span>
                         </td>
                         <td style={{ textAlign: 'right' }}>
-                          <button 
-                            className="admin-icon-btn" 
+                          <button
+                            className="admin-icon-btn"
                             onClick={() => handleOpenModal(null, cat._id)}
                             title="Add Sub-category"
                             style={{ color: 'var(--primary)' }}
@@ -227,14 +233,21 @@ const Categories = () => {
                 required
                 placeholder="e.g. Ethnic Wear"
                 value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
               />
 
               <SelectField
                 id="cat-parent"
                 label="Parent Category (Optional)"
                 value={formData.parentId}
-                onChange={e => setFormData({...formData, parentId: e.target.value})}
+                onChange={e => {
+                  const newParentId = e.target.value;
+                  setFormData({
+                    ...formData,
+                    parentId: newParentId,
+                    order: editingCategory ? formData.order : getNextOrder(newParentId)
+                  });
+                }}
                 options={parentOptions.filter(c => !c.parentId).map(c => ({ value: c._id, label: c.name }))}
                 placeholder="--- Make this a Main Category ---"
                 helper="If this is a sub-category, select its parent above. Otherwise, leave it as 'Main Category'."
@@ -246,14 +259,14 @@ const Categories = () => {
                   label="Sort Order"
                   type="number"
                   value={formData.order}
-                  onChange={e => setFormData({...formData, order: parseInt(e.target.value)})}
+                  onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) })}
                 />
                 <div className="form-field">
                   <span className="form-label">Status</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 48 }}>
-                    <button 
+                    <button
                       type="button"
-                      onClick={() => setFormData({...formData, isActive: !formData.isActive})}
+                      onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: formData.isActive ? 'var(--success)' : 'var(--text-faint)' }}
                     >
                       {formData.isActive ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
