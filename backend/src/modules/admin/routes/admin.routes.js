@@ -10,6 +10,7 @@ const ctrl = require('../controllers/admin.controller');
 
 const settingsCtrl = require('../controllers/settings.controller');
 const categoryCtrl = require('../controllers/category.controller');
+const filterCtrl = require('../controllers/filter.controller');
 const { shopUpload } = require('../../../middleware/upload');
 
 // All routes require valid JWT with role === 'admin'
@@ -20,6 +21,13 @@ router.put('/settings', shopUpload.fields([{ name: 'logo', maxCount: 1 }]), sett
 router.post('/categories', categoryCtrl.createCategory);
 router.put('/categories/:id', categoryCtrl.updateCategory);
 router.delete('/categories/:id', categoryCtrl.deleteCategory);
+
+// ── Filter Management ─────────────────────────────────────────────────────────
+router.get('/filters', filterCtrl.getAdminFilters);
+router.post('/filters', filterCtrl.createFilter);
+router.put('/filters/:id', filterCtrl.updateFilter);
+router.patch('/filters/:id/toggle', filterCtrl.toggleFilter);
+router.delete('/filters/:id', filterCtrl.deleteFilter);
 
 // ── Dashboard Stats ─────────────────────────────────────────────────────────
 router.get('/stats', ctrl.getStats);

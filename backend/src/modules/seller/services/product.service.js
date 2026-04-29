@@ -47,6 +47,27 @@ const getProducts = async (query) => {
   }
   if (search) filter.$text = { $search: search };
 
+  // Dynamic Filters Integration
+  const standardParams = ['page', 'limit', 'category', 'shop', 'search', 'minPrice', 'maxPrice', 'sort'];
+  Object.keys(query).forEach(key => {
+    if (!standardParams.includes(key)) {
+      const val = query[key];
+      if (!val) return;
+
+      // Map common singular keys to plural schema fields if needed
+      let dbKey = key;
+      if (key === 'color') dbKey = 'colors';
+      if (key === 'size') dbKey = 'sizes';
+
+      // Handle multi-select (comma separated)
+      if (typeof val === 'string' && val.includes(',')) {
+        filter[dbKey] = { $in: val.split(',') };
+      } else {
+        filter[dbKey] = val;
+      }
+    }
+  });
+
   const [products, total] = await Promise.all([
     Product.find(filter)
       .populate({ path: 'shop', select: 'name city whatsappNumber logo status' })

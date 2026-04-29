@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
 import {
-  LayoutDashboard, Users, Store, ShoppingBag, Package, LogOut, X, ChevronRight, Settings as SettingsIcon, Tags
+  LayoutDashboard, Users, Store, ShoppingBag, Package, LogOut, X, ChevronRight, Settings as SettingsIcon, Tags, Filter
 } from 'lucide-react';
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { to: '/admin/shops',     icon: <Store size={18} />,           label: 'Shops' },
   { to: '/admin/products',  icon: <Package size={18} />,         label: 'Products' },
   { to: '/admin/categories',icon: <Tags size={18} />,            label: 'Categories' },
+  { to: '/admin/filters',   icon: <Filter size={18} />,          label: 'Filters' },
   { to: '/admin/settings',  icon: <SettingsIcon size={18} />,    label: 'Settings' },
 ];
 

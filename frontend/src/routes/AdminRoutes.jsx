@@ -10,6 +10,7 @@ import Products from '../modules/admin/pages/Products';
 
 import Settings from '../modules/admin/pages/Settings';
 import Categories from '../modules/admin/pages/Categories';
+import Filters from '../modules/admin/pages/Filters';
 
 const AdminRoutes = () => {
   return (
@@ -30,6 +31,7 @@ const AdminRoutes = () => {
         <Route path="products" element={<Products />} />
         <Route path="settings" element={<Settings />} />
         <Route path="categories" element={<Categories />} />
+        <Route path="filters" element={<Filters />} />
       </Route>
     </Routes>
   );

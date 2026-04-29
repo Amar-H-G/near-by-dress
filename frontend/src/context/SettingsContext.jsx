@@ -4,20 +4,23 @@ import API from '../shared/services/api';
 const SettingsContext = createContext(null);
 
 export const SettingsProvider = ({ children }) => {
-  const [settings, setSettings] = useState(null);
+    const [settings, setSettings] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [filters, setFilters] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchGlobalData = async () => {
     try {
-      const [settingsRes, categoriesRes] = await Promise.all([
+      const [settingsRes, categoriesRes, filtersRes] = await Promise.all([
         API.get('/settings'),
-        API.get('/categories')
+        API.get('/categories'),
+        API.get('/filters')
       ]);
       
       const settingsData = settingsRes.data.data;
       setSettings(settingsData);
       setCategories(categoriesRes.data.data);
+      setFilters(filtersRes.data.data || []);
 
       if (settingsData.primaryColor) {
         document.documentElement.style.setProperty('--primary', settingsData.primaryColor);
@@ -68,6 +71,15 @@ export const SettingsProvider = ({ children }) => {
     }
   };
 
+  const refreshFilters = async () => {
+    try {
+      const { data } = await API.get('/filters');
+      setFilters(data.data || []);
+    } catch (err) {
+      console.error('Failed to refresh filters', err);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg)' }}>
@@ -78,7 +90,14 @@ export const SettingsProvider = ({ children }) => {
   }
 
   return (
-    <SettingsContext.Provider value={{ settings, categories, refreshSettings, refreshCategories }}>
+    <SettingsContext.Provider value={{ 
+      settings, 
+      categories, 
+      filters, 
+      refreshSettings, 
+      refreshCategories, 
+      refreshFilters 
+    }}>
       {children}
     </SettingsContext.Provider>
   );
