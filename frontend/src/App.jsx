@@ -5,7 +5,7 @@ import Navbar from './shared/components/Navbar';
 
 // Modular Routes
 import UserRoutes from './routes/UserRoutes';
-import SellerRoutes from './routes/SellerRoutes';
+import SellerRoutes from './modules/seller/routes/SellerRoutes';
 import AdminRoutes from './routes/AdminRoutes';
 
 // Auth Pages (User module)
@@ -39,7 +39,10 @@ function App() {
           {/* ── Admin Panel (fully isolated, no public Navbar) ─────────── */}
           <Route path="/admin/*" element={<AdminRoutes />} />
 
-          {/* ── Public Site & Seller Dashboard (with Navbar) ───────────── */}
+          {/* ── Seller Dashboard (fully isolated, no public Navbar) ────── */}
+          <Route path="/seller/*" element={<SellerRoutes />} />
+
+          {/* ── Public Site (with Navbar) ───────────── */}
           <Route
             path="*"
             element={
@@ -47,7 +50,6 @@ function App() {
                 <Navbar />
                 <Routes>
                   <Route path="/*" element={<UserRoutes />} />
-                  <Route path="/seller/*" element={<SellerRoutes />} />
                   
                   {/* 404 Fallback */}
                   <Route

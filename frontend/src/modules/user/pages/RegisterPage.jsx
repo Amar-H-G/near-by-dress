@@ -21,7 +21,7 @@ const RegisterPage = () => {
     try {
       const user = await register(form);
       toast.success(`Welcome, ${user.name}! Account created.`);
-      if (user.role === 'shop_owner') navigate('/dashboard');
+      if (user.role === 'shop_owner') navigate('/seller/dashboard');
       else navigate('/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
