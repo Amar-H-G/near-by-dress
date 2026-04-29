@@ -23,6 +23,7 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
   const [shopList, setShopList] = useState([]);
   const [selectedShop, setSelectedShop] = useState('');
   const [images, setImages] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -40,12 +41,22 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
         isSystemProduct: !product.shop,
       });
       setSelectedShop(product.shop?._id || product.shop || '');
+      setPreviewUrls(product.images || []);
     } else {
       setForm(EMPTY);
       setSelectedShop('');
+      setPreviewUrls([]);
     }
     setImages([]);
   }, [open, product, isEdit]);
+
+  const handleRemoveImage = (idx, isExisting) => {
+    if (isExisting) {
+      setPreviewUrls((prev) => prev.filter((_, i) => i !== idx));
+    } else {
+      setImages((prev) => prev.filter((_, i) => i !== idx));
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -65,10 +76,35 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
 
   const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const categoryOptions = categories.map((c) => ({
-    value: c._id,
-    label: c.parentId ? `${c.parentId.name} → ${c.name}` : c.name,
-  }));
+  const categoryOptions = categories.reduce((acc, cat) => {
+    if (!cat.parentId) {
+      let group = acc.find(g => g.id === cat._id);
+      if (!group) {
+        group = { id: cat._id, group: cat.name, options: [], isParent: true };
+        acc.push(group);
+      } else {
+        group.group = cat.name;
+        group.isParent = true;
+      }
+    } else {
+      const pId = typeof cat.parentId === 'object' ? cat.parentId._id : cat.parentId;
+      const pName = typeof cat.parentId === 'object' ? cat.parentId.name : 'Other';
+      let group = acc.find(g => g.id === pId);
+      if (!group) {
+        group = { id: pId, group: pName, options: [] };
+        acc.push(group);
+      }
+      group.options.push({ value: cat._id, label: cat.name });
+    }
+    return acc;
+  }, [])
+  .map(item => {
+    if (item.isParent && item.options.length === 0) {
+      return { value: item.id, label: item.group };
+    }
+    return item;
+  })
+  .sort((a, b) => (a.group || a.label).localeCompare(b.group || b.label));
 
   const shopOptions = shopList.map((s) => ({
     value: s._id,
@@ -86,6 +122,14 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
       fd.append('discountPrice', form.discountPrice);
       fd.append('category', form.category);
       fd.append('stock', form.stock);
+      
+      // Send existing images to keep
+      if (previewUrls.length === 0) {
+        fd.append('existingImages', '');
+      } else {
+        previewUrls.forEach(url => fd.append('existingImages', url));
+      }
+
       form.sizes.forEach((s) => fd.append('sizes', s));
       form.colors.split(',').map((c) => c.trim()).filter(Boolean).forEach((c) => fd.append('colors', c));
       if (selectedShop) {
@@ -247,13 +291,14 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
           <div style={{ marginTop: 20 }}>
             <FileUpload
               id="admin-prod-images"
-              label={isEdit ? 'Replace Images (optional)' : 'Product Images'}
+              label="Product Images"
               accept="image/*"
-              multiple
+              multiple={true}
               maxFiles={5}
               files={images}
-              previews={isEdit ? (product?.images || []) : []}
+              previews={previewUrls}
               onFilesChange={setImages}
+              onRemove={handleRemoveImage}
               helper="Up to 5 images — first will be the cover"
             />
           </div>
