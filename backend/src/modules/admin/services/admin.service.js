@@ -95,11 +95,11 @@ const deleteUser = async (userId) => {
 /**
  * Admin creates a shop + seller account directly
  */
-const registerShopByAdmin = async (data) => {
+const registerShopByAdmin = async (data, files) => {
   const { 
     shopName, ownerName, email, password, phone, 
     address, city, state, pincode,
-    shopNo, description, openingTime, closingTime
+    shopNo, description, openingTime, closingTime, logo: logoUrl
   } = data;
 
   // 1. Validate email uniqueness
@@ -115,8 +115,8 @@ const registerShopByAdmin = async (data) => {
     role: 'shop_owner'
   });
 
-  // 3. Create Shop linked to the new user
-  const shop = await Shop.create({
+  // 3. Prepare Shop Data
+  const shopData = {
     name: shopName,
     owner: user._id,
     whatsappNumber: phone,
@@ -130,8 +130,20 @@ const registerShopByAdmin = async (data) => {
     closingTime,
     status: 'approved',
     isActive: true
-  });
+  };
 
+  // 4. Handle Files
+  if (files?.logo?.[0]) {
+    shopData.logo = files.logo[0].path;
+  } else if (logoUrl) {
+    shopData.logo = logoUrl;
+  }
+
+  if (files?.coverImage?.[0]) {
+    shopData.coverImage = files.coverImage[0].path;
+  }
+
+  const shop = await Shop.create(shopData);
   return { user, shop };
 };
 

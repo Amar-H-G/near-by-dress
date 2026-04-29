@@ -58,6 +58,6 @@ module.exports.toggleProductFeature = async (req, res) => {
  
 /** POST /api/admin/shops */
 module.exports.createShop = async (req, res) => {
-  const result = await adminService.registerShopByAdmin(req.body);
+  const result = await adminService.registerShopByAdmin(req.body, req.files);
   return sendSuccess(res, result, 'Shop and seller account created successfully', 201);
 };

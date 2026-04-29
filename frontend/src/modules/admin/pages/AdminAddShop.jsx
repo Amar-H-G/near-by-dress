@@ -4,6 +4,7 @@ import { Store, User, Mail, Phone, Lock, MapPin, Hash, ArrowLeft, Loader2, Check
 import { adminCreateShop } from '../services/admin.service';
 import toast from 'react-hot-toast';
 import InputField from '../../../shared/components/form/InputField';
+import FileUpload from '../../../shared/components/form/FileUpload';
 
 const AdminAddShop = () => {
   const navigate = useNavigate();
@@ -25,6 +26,8 @@ const AdminAddShop = () => {
     closingTime: ''
   });
 
+  const [logoFile, setLogoFile] = useState([]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'phone') {
@@ -40,8 +43,18 @@ const AdminAddShop = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
+    const submitData = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value) submitData.append(key, value);
+    });
+
+    if (logoFile[0]) {
+      submitData.append('logo', logoFile[0]);
+    }
+
     try {
-      await adminCreateShop(formData);
+      await adminCreateShop(submitData);
       toast.success('Shop and seller account created successfully!');
       navigate('/admin/shops');
     } catch (err) {
@@ -160,21 +173,23 @@ const AdminAddShop = () => {
                   required
                 />
                 <InputField
-                  label="Logo URL"
-                  name="logo"
-                  value={formData.logo}
+                  label="Full Address"
+                  name="address"
+                  value={formData.address}
                   onChange={handleChange}
-                  placeholder="Image URL"
+                  placeholder="Full street address"
+                  required
                 />
               </div>
 
-              <InputField
-                label="Full Address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="Full street address"
-                required
+              <FileUpload
+                id="shop-logo-upload"
+                label="Shop Logo"
+                files={logoFile}
+                onFilesChange={(f) => setLogoFile(f)}
+                onRemove={() => setLogoFile([])}
+                maxFiles={1}
+                helper="Recommended: Square image, max 2MB"
               />
             </div>
           </div>

@@ -43,7 +43,10 @@ router.get('/sellers', ctrl.getSellers);
 // ── Shop Management ─────────────────────────────────────────────────────────
 router.get('/shops', ctrl.getAdminShops);
 router.get('/shops/:id', ctrl.getShop);
-router.post('/shops', ctrl.createShop);
+router.post('/shops', shopUpload.fields([
+  { name: 'logo', maxCount: 1 },
+  { name: 'coverImage', maxCount: 1 }
+]), ctrl.createShop);
 router.put('/shops/:id', shopUpload.fields([
   { name: 'logo', maxCount: 1 },
   { name: 'coverImage', maxCount: 1 }
