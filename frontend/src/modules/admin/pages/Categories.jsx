@@ -260,10 +260,11 @@ const Categories = () => {
                 placeholderDisabled={false}
                 onChange={e => {
                   const newParentId = e.target.value;
+                  const parentChanged = String(newParentId) !== String(editingCategory?.parentId?._id || editingCategory?.parentId || '');
                   setFormData({
                     ...formData,
                     parentId: newParentId,
-                    order: editingCategory ? formData.order : getNextOrder(newParentId)
+                    order: (editingCategory && !parentChanged) ? formData.order : getNextOrder(newParentId)
                   });
                 }}
                 options={parentOptions.filter(c => !c.parentId).map(c => ({ value: c._id, label: c.name }))}

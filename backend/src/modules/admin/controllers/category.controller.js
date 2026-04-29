@@ -3,6 +3,21 @@ const { sendSuccess } = require('../../../utils/response');
 const AppError = require('../../../utils/AppError');
 
 /**
+ * Helper: Normalize orders for a parent to be sequential (1, 2, 3...)
+ */
+const normalizeOrders = async (parentId) => {
+  const categories = await Category.find({ parentId: parentId || null, isDeleted: false })
+    .sort({ order: 1, updatedAt: -1 });
+  
+  for (let i = 0; i < categories.length; i++) {
+    if (categories[i].order !== i + 1) {
+      categories[i].order = i + 1;
+      await categories[i].save();
+    }
+  }
+};
+
+/**
  * Public: Get all active categories
  * GET /api/categories
  */
@@ -30,11 +45,25 @@ exports.getAdminCategories = async (req, res) => {
  */
 exports.createCategory = async (req, res) => {
   const { name, parentId, order, isActive } = req.body;
+
+  // Shift existing categories with same parent and same/higher order
+  if (order !== undefined) {
+    await Category.updateMany(
+      { parentId: parentId || null, order: { $gte: order }, isDeleted: false },
+      { $inc: { order: 1 } }
+    );
+  }
+
+  const category = await Category.create({ 
+    name, 
+    slug: req.body.slug, 
+    parentId: parentId || null, 
+    order: order || 0, 
+    isActive 
+  });
+
+  await normalizeOrders(parentId || null);
   
-  // Check if name exists under same parent to avoid confusion? 
-  // Slug unique check is handled by DB index
-  
-  const category = await Category.create({ name, parentId: parentId || null, order, isActive });
   sendSuccess(res, { data: category }, 'Category created successfully', 201);
 };
 
@@ -51,12 +80,38 @@ exports.updateCategory = async (req, res) => {
   // Prevent setting itself as parent
   if (parentId === req.params.id) throw new AppError('Cannot set a category as its own parent', 400);
 
+  const oldOrder = category.order;
+  const oldParentId = category.parentId;
+  const newOrder = order !== undefined ? order : category.order;
+  const newParentId = parentId === '' ? null : (parentId || category.parentId);
+
+  // If order or parent changed, shift categories at the new position
+  if (newOrder !== oldOrder || String(newParentId) !== String(oldParentId)) {
+    await Category.updateMany(
+      { 
+        _id: { $ne: req.params.id },
+        parentId: newParentId, 
+        order: { $gte: newOrder }, 
+        isDeleted: false 
+      },
+      { $inc: { order: 1 } }
+    );
+  }
+
   category.name = name || category.name;
-  category.parentId = parentId === '' ? null : (parentId || category.parentId);
-  category.order = order !== undefined ? order : category.order;
+  category.slug = req.body.slug || category.slug;
+  category.parentId = newParentId;
+  category.order = newOrder;
   category.isActive = isActive !== undefined ? isActive : category.isActive;
 
   await category.save();
+
+  // Normalize both old and new parent branches
+  await normalizeOrders(newParentId);
+  if (String(oldParentId) !== String(newParentId)) {
+    await normalizeOrders(oldParentId);
+  }
+
   sendSuccess(res, { data: category }, 'Category updated successfully');
 };
 
@@ -65,7 +120,14 @@ exports.updateCategory = async (req, res) => {
  * DELETE /api/admin/categories/:id
  */
 exports.deleteCategory = async (req, res) => {
-  const category = await Category.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+  const category = await Category.findById(req.params.id);
   if (!category) throw new AppError('Category not found', 404);
+
+  const parentId = category.parentId;
+  category.isDeleted = true;
+  await category.save();
+
+  await normalizeOrders(parentId || null);
+
   sendSuccess(res, null, 'Category deleted successfully');
 };
