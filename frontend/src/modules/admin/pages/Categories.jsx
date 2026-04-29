@@ -10,6 +10,8 @@ const Categories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [catToDelete, setCatToDelete] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const { refreshCategories } = useSettings();
@@ -70,15 +72,25 @@ const Categories = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure? This will hide the category from the platform.')) return;
+  const handleDeleteClick = (cat) => {
+    setCatToDelete(cat);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!catToDelete) return;
+    setIsSubmitting(true);
     try {
-      await adminDeleteCategory(id);
+      await adminDeleteCategory(catToDelete._id);
       toast.success('Category deleted');
+      setIsDeleteModalOpen(false);
       loadCategories();
       refreshCategories();
     } catch {
       toast.error('Failed to delete category');
+    } finally {
+      setIsSubmitting(false);
+      setCatToDelete(null);
     }
   };
 
@@ -181,7 +193,7 @@ const Categories = () => {
                             <Plus size={16} />
                           </button>
                           <button className="admin-icon-btn" onClick={() => handleOpenModal(cat)}><Edit2 size={16} /></button>
-                          <button className="admin-icon-btn text-danger" onClick={() => handleDelete(cat._id)}><Trash2 size={16} /></button>
+                          <button className="admin-icon-btn text-danger" onClick={() => handleDeleteClick(cat)}><Trash2 size={16} /></button>
                         </td>
                       </tr>
 
@@ -209,7 +221,7 @@ const Categories = () => {
                           </td>
                           <td style={{ textAlign: 'right' }}>
                             <button className="admin-icon-btn" onClick={() => handleOpenModal(sub)}><Edit2 size={16} /></button>
-                            <button className="admin-icon-btn text-danger" onClick={() => handleDelete(sub._id)}><Trash2 size={16} /></button>
+                            <button className="admin-icon-btn text-danger" onClick={() => handleDeleteClick(sub)}><Trash2 size={16} /></button>
                           </td>
                         </tr>
                       ))}
@@ -221,6 +233,31 @@ const Categories = () => {
           </div>
         )}
       </div>
+
+      {isDeleteModalOpen && (
+        <div className="admin-modal-overlay" onClick={() => setIsDeleteModalOpen(false)}>
+          <div className="admin-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 400, textAlign: 'center', padding: '32px 24px' }}>
+            <div style={{ width: 64, height: 64, background: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#ef4444' }}>
+              <Trash2 size={32} />
+            </div>
+            <h3 className="admin-modal-title" style={{ marginBottom: 12 }}>Delete Category?</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 32 }}>
+              Are you sure you want to delete <strong>{catToDelete?.name}</strong>? This will hide it from the platform. This action cannot be easily undone.
+            </p>
+            <div className="admin-modal-actions" style={{ justifyContent: 'center', gap: 12 }}>
+              <button className="btn btn-ghost" onClick={() => setIsDeleteModalOpen(false)} style={{ minWidth: 100 }}>Cancel</button>
+              <button
+                className="btn"
+                onClick={confirmDelete}
+                disabled={isSubmitting}
+                style={{ background: '#ef4444', color: '#fff', minWidth: 120 }}
+              >
+                {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isModalOpen && (
         <div className="admin-modal-overlay" onClick={() => setIsModalOpen(false)}>

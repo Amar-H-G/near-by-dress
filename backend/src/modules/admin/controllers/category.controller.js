@@ -6,7 +6,7 @@ const AppError = require('../../../utils/AppError');
  * Helper: Normalize orders for a parent to be sequential (1, 2, 3...)
  */
 const normalizeOrders = async (parentId) => {
-  const categories = await Category.find({ parentId: parentId || null, isDeleted: false })
+  const categories = await Category.find({ parentId: parentId || null })
     .sort({ order: 1, updatedAt: -1 });
   
   for (let i = 0; i < categories.length; i++) {
@@ -22,7 +22,7 @@ const normalizeOrders = async (parentId) => {
  * GET /api/categories
  */
 exports.getCategories = async (req, res) => {
-  const categories = await Category.find({ isActive: true, isDeleted: false })
+  const categories = await Category.find()
     .sort({ order: 1, name: 1 })
     .populate('parentId', 'name');
   sendSuccess(res, { data: categories });
@@ -33,7 +33,7 @@ exports.getCategories = async (req, res) => {
  * GET /api/admin/categories
  */
 exports.getAdminCategories = async (req, res) => {
-  const categories = await Category.find({ isDeleted: false })
+  const categories = await Category.find()
     .sort({ order: 1, name: 1 })
     .populate('parentId', 'name');
   sendSuccess(res, { data: categories });
@@ -49,7 +49,7 @@ exports.createCategory = async (req, res) => {
   // Shift existing categories with same parent and same/higher order
   if (order !== undefined) {
     await Category.updateMany(
-      { parentId: parentId || null, order: { $gte: order }, isDeleted: false },
+      { parentId: parentId || null, order: { $gte: order } },
       { $inc: { order: 1 } }
     );
   }
@@ -91,8 +91,7 @@ exports.updateCategory = async (req, res) => {
       { 
         _id: { $ne: req.params.id },
         parentId: newParentId, 
-        order: { $gte: newOrder }, 
-        isDeleted: false 
+        order: { $gte: newOrder }
       },
       { $inc: { order: 1 } }
     );
@@ -116,7 +115,7 @@ exports.updateCategory = async (req, res) => {
 };
 
 /**
- * Admin: Soft delete category
+ * Admin: Hard delete category
  * DELETE /api/admin/categories/:id
  */
 exports.deleteCategory = async (req, res) => {
@@ -124,10 +123,15 @@ exports.deleteCategory = async (req, res) => {
   if (!category) throw new AppError('Category not found', 404);
 
   const parentId = category.parentId;
-  category.isDeleted = true;
-  await category.save();
 
+  // Delete all children categories first
+  await Category.deleteMany({ parentId: req.params.id });
+
+  // Delete the category itself
+  await Category.findByIdAndDelete(req.params.id);
+
+  // Normalize orders in the branch
   await normalizeOrders(parentId || null);
 
-  sendSuccess(res, null, 'Category deleted successfully');
+  sendSuccess(res, null, 'Category deleted permanently');
 };
