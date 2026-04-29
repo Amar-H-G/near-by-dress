@@ -46,4 +46,20 @@ const loginUser = async ({ email, password }) => {
   return { user, token };
 };
 
-module.exports = { registerUser, loginUser };
+/**
+ * Update current user profile
+ */
+const updateUserProfile = async (userId, updateData) => {
+  const { name, phone, password } = updateData;
+  const user = await User.findById(userId);
+  if (!user) throw new AppError('User not found', 404);
+
+  if (name) user.name = name;
+  if (phone !== undefined) user.phone = phone;
+  if (password) user.password = password; // pre-save hook will hash it
+
+  await user.save();
+  return user;
+};
+
+module.exports = { registerUser, loginUser, updateUserProfile };

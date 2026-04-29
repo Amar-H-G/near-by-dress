@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { login as loginAPI, register as registerAPI, getMe } from '../shared/services/auth.service';
+import { login as loginAPI, register as registerAPI, getMe, updateProfile } from '../shared/services/auth.service';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
@@ -51,6 +51,15 @@ export const AuthProvider = ({ children }) => {
     return u;
   }, []);
 
+  const updateUser = useCallback(async (formData) => {
+    const { data } = await updateProfile(formData);
+    const updatedUser = data.data.user;
+    localStorage.setItem('nbd_user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+    toast.success('Profile updated successfully');
+    return updatedUser;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('nbd_token');
     localStorage.removeItem('nbd_user');
@@ -59,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, login, register, updateUser, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
