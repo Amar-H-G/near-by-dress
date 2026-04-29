@@ -714,12 +714,26 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ── Select ──────────────────────────────────────────────────── */
-.form-select-wrap { position: relative; }
-.form-select {
+.form-select-wrap { position: relative; display: block; }
+
+/* Force-hide every browser's native arrow on selects using form-select class */
+select.form-select,
+select.form-input.form-select {
   cursor: pointer;
-  padding-right: 40px;
-  background-image: none;
+  padding-right: 42px;
+  /* strip ALL browser-native arrows */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
+  /* ensure text doesn't bleed into chevron */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
+/* Remove IE10+ arrow */
+select.form-select::-ms-expand { display: none; }
+
 .form-select-chevron {
   position: absolute;
   right: 14px;
@@ -728,6 +742,8 @@ h1, h2, h3, h4, h5, h6 {
   color: #9ca3af;
   pointer-events: none;
   transition: color 0.2s;
+  flex-shrink: 0;
+  z-index: 2;
 }
 .form-select-wrap:focus-within .form-select-chevron { color: #7c3aed; }
 
@@ -955,17 +971,41 @@ textarea.admin-input {
   line-height: 1.6;
 }
 
-/* select variant */
+/* select variant — use .admin-select-wrap wrapper in JSX for chevron */
 select.admin-input {
   cursor: pointer;
-  padding-right: 38px;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
+  padding-right: 42px;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
+  text-overflow: ellipsis;
 }
-select.admin-input:focus {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%237c3aed' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+select.admin-input::-ms-expand { display: none; }
+
+/* Wrapper div that adds the single chevron via ::after */
+.admin-select-wrap {
+  position: relative;
+  display: block;
+}
+.admin-select-wrap select.admin-input {
+  width: 100%;
+}
+.admin-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-60%) rotate(45deg);
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #9ca3af;
+  border-bottom: 2px solid #9ca3af;
+  pointer-events: none;
+  transition: border-color 0.2s;
+}
+.admin-select-wrap:focus-within::after {
+  border-color: #7c3aed;
 }
 
 /* file input */

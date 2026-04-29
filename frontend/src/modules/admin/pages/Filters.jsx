@@ -3,6 +3,9 @@ import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Loader2, GripVertical, Ch
 import { adminGetFilters, adminCreateFilter, adminUpdateFilter, adminToggleFilter, adminDeleteFilter } from '../services/admin.service';
 import toast from 'react-hot-toast';
 import { useSettings } from '../../../context/SettingsContext';
+import InputField from '../../../shared/components/form/InputField';
+import SelectField from '../../../shared/components/form/SelectField';
+import TextArea from '../../../shared/components/form/TextArea';
 
 const Filters = () => {
   const [filters, setFilters] = useState([]);
@@ -181,71 +184,62 @@ const Filters = () => {
               <h3 className="admin-modal-title">{editingFilter ? 'Edit Filter' : 'Add New Filter'}</h3>
               <button className="admin-modal-close" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} style={{ marginTop: 20 }}>
+            <form onSubmit={handleSubmit} style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Display Name *</label>
-                  <input 
-                    required 
-                    type="text" 
-                    className="admin-input" 
-                    placeholder="e.g. Primary Color" 
-                    value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                  />
-                </div>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Filter Key *</label>
-                  <input 
-                    required 
-                    type="text" 
-                    className="admin-input" 
-                    placeholder="e.g. color" 
-                    disabled={!!editingFilter}
-                    value={formData.key}
-                    onChange={e => setFormData({...formData, key: e.target.value})}
-                  />
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>This must match your product field name.</p>
-                </div>
+                <InputField
+                  id="filter-name"
+                  label="Display Name"
+                  required
+                  placeholder="e.g. Primary Color"
+                  value={formData.name}
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                />
+                <InputField
+                  id="filter-key"
+                  label="Filter Key"
+                  required
+                  placeholder="e.g. color"
+                  disabled={!!editingFilter}
+                  value={formData.key}
+                  onChange={e => setFormData({...formData, key: e.target.value})}
+                  helper="Must match your product field name"
+                />
               </div>
 
-              <div className="admin-form-row" style={{ marginTop: 16 }}>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Input Type *</label>
-                  <select 
-                    className="admin-input"
-                    value={formData.type}
-                    onChange={e => setFormData({...formData, type: e.target.value})}
-                  >
-                    <option value="select">Dropdown Selection</option>
-                    <option value="multi-select">Multiple Checkboxes</option>
-                    <option value="range">Price/Number Range</option>
-                    <option value="checkbox">Toggle Boolean</option>
-                  </select>
-                </div>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Sort Order</label>
-                  <input 
-                    type="number" 
-                    className="admin-input" 
-                    value={formData.order}
-                    onChange={e => setFormData({...formData, order: parseInt(e.target.value)})}
-                  />
-                </div>
+              <div className="admin-form-row">
+                <SelectField
+                  id="filter-type"
+                  label="Input Type"
+                  required
+                  value={formData.type}
+                  onChange={e => setFormData({...formData, type: e.target.value})}
+                  options={[
+                    { value: 'select', label: 'Dropdown Selection' },
+                    { value: 'multi-select', label: 'Multiple Checkboxes' },
+                    { value: 'range', label: 'Price/Number Range' },
+                    { value: 'checkbox', label: 'Toggle Boolean' },
+                  ]}
+                  placeholder="Select type"
+                />
+                <InputField
+                  id="filter-order"
+                  label="Sort Order"
+                  type="number"
+                  value={formData.order}
+                  onChange={e => setFormData({...formData, order: parseInt(e.target.value)})}
+                />
               </div>
 
-              <div className="admin-form-group" style={{ marginTop: 16 }}>
-                <label className="admin-form-label">Options (Comma separated)</label>
-                <textarea 
-                  className="admin-input" 
-                  rows="3" 
-                  placeholder="Red, Blue, Green, Yellow"
-                  value={formData.options}
-                  onChange={e => setFormData({...formData, options: e.target.value})}
-                  disabled={formData.type === 'range' || formData.type === 'checkbox'}
-                ></textarea>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Not required for 'range' or 'checkbox' types.</p>
-              </div>
+              <TextArea
+                id="filter-options"
+                label="Options (Comma separated)"
+                placeholder="Red, Blue, Green, Yellow"
+                value={formData.options}
+                onChange={e => setFormData({...formData, options: e.target.value})}
+                disabled={formData.type === 'range' || formData.type === 'checkbox'}
+                rows={3}
+                helper="Not required for 'range' or 'checkbox' types"
+              />
 
               <div className="admin-modal-actions">
                 <button type="button" className="btn btn-ghost" onClick={() => setIsModalOpen(false)}>Cancel</button>

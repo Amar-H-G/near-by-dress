@@ -3,6 +3,8 @@ import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Loader2, Folder, FileText
 import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory } from '../services/admin.service';
 import toast from 'react-hot-toast';
 import { useSettings } from '../../../context/SettingsContext';
+import InputField from '../../../shared/components/form/InputField';
+import SelectField from '../../../shared/components/form/SelectField';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -164,56 +166,45 @@ const Categories = () => {
               <h3 className="admin-modal-title">{editingCategory ? 'Edit Category' : 'New Category'}</h3>
               <button className="admin-modal-close" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} style={{ marginTop: 20 }}>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Category Name *</label>
-                <input 
-                  required 
-                  type="text" 
-                  className="admin-input" 
-                  value={formData.name} 
-                  onChange={e => setFormData({...formData, name: e.target.value})}
-                  placeholder="e.g. Ethnic Wear"
+            <form onSubmit={handleSubmit} style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <InputField
+                id="cat-name"
+                label="Category Name"
+                required
+                placeholder="e.g. Ethnic Wear"
+                value={formData.name}
+                onChange={e => setFormData({...formData, name: e.target.value})}
+              />
+
+              <SelectField
+                id="cat-parent"
+                label="Parent Category"
+                value={formData.parentId}
+                onChange={e => setFormData({...formData, parentId: e.target.value})}
+                options={parentOptions.filter(c => !c.parentId).map(c => ({ value: c._id, label: c.name }))}
+                placeholder="None (Root Category)"
+                helper="Leave empty to make this a top-level category"
+              />
+
+              <div className="admin-form-row">
+                <InputField
+                  id="cat-order"
+                  label="Sort Order"
+                  type="number"
+                  value={formData.order}
+                  onChange={e => setFormData({...formData, order: parseInt(e.target.value)})}
                 />
-              </div>
-
-              <div className="admin-form-group" style={{ marginTop: 16 }}>
-                <label className="admin-form-label">Parent Category</label>
-                <select 
-                  className="admin-input"
-                  value={formData.parentId}
-                  onChange={e => setFormData({...formData, parentId: e.target.value})}
-                >
-                  <option value="">None (Root Category)</option>
-                  {parentOptions.filter(c => !c.parentId).map(c => (
-                    <option key={c._id} value={c._id}>{c.name}</option>
-                  ))}
-                </select>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Leave empty to make this a top-level category.</p>
-              </div>
-
-              <div className="admin-form-row" style={{ marginTop: 16 }}>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Sort Order</label>
-                  <input 
-                    type="number" 
-                    className="admin-input" 
-                    value={formData.order}
-                    onChange={e => setFormData({...formData, order: parseInt(e.target.value)})}
-                  />
-                </div>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Status</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 44 }}>
+                <div className="form-field">
+                  <span className="form-label">Status</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 48 }}>
                     <button 
                       type="button"
                       onClick={() => setFormData({...formData, isActive: !formData.isActive})}
-                      className={`admin-icon-btn ${formData.isActive ? 'text-success' : 'text-faint'}`}
-                      style={{ border: 'none', background: 'none', width: 'auto' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: formData.isActive ? 'var(--success)' : 'var(--text-faint)' }}
                     >
                       {formData.isActive ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
                     </button>
-                    <span style={{ fontSize: 14 }}>{formData.isActive ? 'Active' : 'Hidden'}</span>
+                    <span style={{ fontSize: 14, fontWeight: 500 }}>{formData.isActive ? 'Active' : 'Hidden'}</span>
                   </div>
                 </div>
               </div>

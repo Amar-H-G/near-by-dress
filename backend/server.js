@@ -33,10 +33,11 @@ app.use(helmet());
 // ─── Rate Limiting ──────────────────────────────────────────────────────────
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
+  max: process.env.NODE_ENV === 'development' ? 2000 : 200, // relaxed in dev
   message: 'Too many requests, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'development', // completely skip in dev
 });
 app.use('/api', limiter);
 
