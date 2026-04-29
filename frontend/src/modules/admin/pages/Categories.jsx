@@ -35,7 +35,7 @@ const Categories = () => {
 
   useEffect(() => { loadCategories(); }, []);
 
-  const handleOpenModal = (cat = null) => {
+  const handleOpenModal = (cat = null, parentId = '') => {
     if (cat) {
       setEditingCategory(cat);
       setFormData({
@@ -48,7 +48,7 @@ const Categories = () => {
       setEditingCategory(null);
       setFormData({
         name: '',
-        parentId: '',
+        parentId: parentId || '',
         order: categories.length,
         isActive: true
       });
@@ -148,6 +148,16 @@ const Categories = () => {
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>
+                      {!cat.parentId && (
+                        <button 
+                          className="admin-icon-btn" 
+                          onClick={() => handleOpenModal(null, cat._id)}
+                          title="Add Sub-category"
+                          style={{ color: 'var(--primary)' }}
+                        >
+                          <Plus size={16} />
+                        </button>
+                      )}
                       <button className="admin-icon-btn" onClick={() => handleOpenModal(cat)}><Edit2 size={16} /></button>
                       <button className="admin-icon-btn text-danger" onClick={() => handleDelete(cat._id)}><Trash2 size={16} /></button>
                     </td>
@@ -178,12 +188,12 @@ const Categories = () => {
 
               <SelectField
                 id="cat-parent"
-                label="Parent Category"
+                label="Parent Category (Optional)"
                 value={formData.parentId}
                 onChange={e => setFormData({...formData, parentId: e.target.value})}
                 options={parentOptions.filter(c => !c.parentId).map(c => ({ value: c._id, label: c.name }))}
-                placeholder="None (Root Category)"
-                helper="Leave empty to make this a top-level category"
+                placeholder="--- Make this a Main Category ---"
+                helper="If this is a sub-category, select its parent above. Otherwise, leave it as 'Main Category'."
               />
 
               <div className="admin-form-row">
