@@ -2,21 +2,35 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Eye, EyeOff, ShoppingBag, Mail, Lock, User, Phone } from 'lucide-react';
+import { ShoppingBag, Mail, Lock, User, Phone } from 'lucide-react';
+import InputField from '../../../shared/components/form/InputField';
 
 const RegisterPage = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'customer', phone: '' });
-  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+    if (errors[e.target.name]) setErrors((err) => ({ ...err, [e.target.name]: '' }));
+  };
+
+  const validate = () => {
+    const errs = {};
+    if (!form.name.trim()) errs.name = 'Full name is required';
+    if (!form.email) errs.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = 'Enter a valid email address';
+    if (!form.password) errs.password = 'Password is required';
+    else if (form.password.length < 6) errs.password = 'Password must be at least 6 characters';
+    return errs;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.password) return toast.error('Please fill required fields');
-    if (form.password.length < 6) return toast.error('Password must be at least 6 characters');
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
     try {
       const user = await register(form);
@@ -39,9 +53,10 @@ const RegisterPage = () => {
       <div style={{ width: '100%', maxWidth: 480 }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <div style={{
-            width: 56, height: 56, borderRadius: 16, margin: '0 auto 16px',
-            background: 'linear-gradient(135deg, var(--primary), #EC4899)',
+            width: 60, height: 60, borderRadius: 18, margin: '0 auto 16px',
+            background: 'linear-gradient(135deg, #7c3aed, #EC4899)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 8px 24px rgba(124,58,237,0.35)',
           }}>
             <ShoppingBag size={28} color="#fff" />
           </div>
@@ -49,77 +64,99 @@ const RegisterPage = () => {
           <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Join NearByDress today</p>
         </div>
 
-        <div className="glass" style={{ borderRadius: 20, padding: 32 }}>
+        <div className="glass-strong" style={{ borderRadius: 24, padding: 32 }}>
           {/* Role Selector */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
             {['customer', 'shop_owner'].map((role) => (
               <button
                 key={role}
                 type="button"
+                id={`role-${role}`}
                 onClick={() => setForm((f) => ({ ...f, role }))}
                 style={{
-                  padding: '12px', borderRadius: 12, cursor: 'pointer', fontSize: 14, fontWeight: 600,
-                  background: form.role === role ? 'linear-gradient(135deg, var(--primary), #9333EA)' : 'var(--surface-2)',
+                  padding: '13px 12px', borderRadius: 14, cursor: 'pointer', fontSize: 14, fontWeight: 600,
+                  background: form.role === role ? 'linear-gradient(135deg, #7c3aed, #9333EA)' : 'var(--surface-2)',
                   color: form.role === role ? '#fff' : 'var(--text-muted)',
-                  border: `1px solid ${form.role === role ? 'transparent' : 'var(--border)'}`,
-                  transition: 'all 0.2s',
+                  border: `1.5px solid ${form.role === role ? '#7c3aed' : 'var(--border)'}`,
+                  transition: 'all 0.2s ease',
+                  boxShadow: form.role === role ? '0 4px 14px rgba(124,58,237,0.3)' : 'none',
+                  fontFamily: "'Outfit', sans-serif",
                 }}
-                id={`role-${role}`}
               >
                 {role === 'customer' ? '🛍️ Customer' : '🏪 Shop Owner'}
               </button>
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <div>
-              <label style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Full Name *</label>
-              <div style={{ position: 'relative' }}>
-                <User size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input id="reg-name" className="input" style={{ paddingLeft: 42 }} type="text" name="name" placeholder="Your full name" value={form.name} onChange={handleChange} required />
-              </div>
-            </div>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }} noValidate>
+            <InputField
+              id="reg-name"
+              label="Full Name"
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Your full name"
+              required
+              error={errors.name}
+              icon={<User size={16} />}
+            />
 
-            <div>
-              <label style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Email *</label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input id="reg-email" className="input" style={{ paddingLeft: 42 }} type="email" name="email" placeholder="you@example.com" value={form.email} onChange={handleChange} required />
-              </div>
-            </div>
+            <InputField
+              id="reg-email"
+              label="Email Address"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              required
+              autoComplete="email"
+              error={errors.email}
+              icon={<Mail size={16} />}
+            />
 
-            <div>
-              <label style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Password *</label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input
-                  id="reg-password"
-                  className="input" style={{ paddingLeft: 42, paddingRight: 42 }}
-                  type={showPass ? 'text' : 'password'} name="password"
-                  placeholder="Min. 6 characters" value={form.password} onChange={handleChange} required
-                />
-                <button type="button" onClick={() => setShowPass((v) => !v)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)' }}>
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
+            <InputField
+              id="reg-password"
+              label="Password"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Min. 6 characters"
+              required
+              autoComplete="new-password"
+              error={errors.password}
+              helper={!errors.password ? 'At least 6 characters' : undefined}
+              icon={<Lock size={16} />}
+            />
 
-            <div>
-              <label style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Phone (optional)</label>
-              <div style={{ position: 'relative' }}>
-                <Phone size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input id="reg-phone" className="input" style={{ paddingLeft: 42 }} type="tel" name="phone" placeholder="+91 98765 43210" value={form.phone} onChange={handleChange} />
-              </div>
-            </div>
+            <InputField
+              id="reg-phone"
+              label="Phone (optional)"
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="+91 98765 43210"
+              autoComplete="tel"
+              icon={<Phone size={16} />}
+            />
 
-            <button id="reg-submit" type="submit" className="btn btn-primary" style={{ padding: '13px', fontSize: 16, marginTop: 4 }} disabled={loading}>
-              {loading ? 'Creating Account...' : 'Create Account'}
+            <button
+              id="reg-submit"
+              type="submit"
+              className="btn btn-primary"
+              style={{ padding: '14px', fontSize: 16, marginTop: 4, borderRadius: 14, width: '100%' }}
+              disabled={loading}
+            >
+              {loading ? 'Creating Account…' : 'Create Account'}
             </button>
           </form>
 
           <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: 'var(--text-muted)' }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: 'var(--primary-light)', textDecoration: 'none', fontWeight: 600 }}>Sign in →</Link>
+            <Link to="/login" style={{ color: '#7c3aed', textDecoration: 'none', fontWeight: 600 }}>Sign in →</Link>
           </p>
         </div>
       </div>

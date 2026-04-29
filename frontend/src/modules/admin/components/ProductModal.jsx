@@ -4,6 +4,11 @@ import { adminCreateProduct, adminUpdateProduct } from '../services/admin.servic
 import { getShops } from '../../seller/services/shop.service';
 import { useSettings } from '../../../context/SettingsContext';
 import toast from 'react-hot-toast';
+import InputField from '../../../shared/components/form/InputField';
+import SelectField from '../../../shared/components/form/SelectField';
+import TextArea from '../../../shared/components/form/TextArea';
+import FileUpload from '../../../shared/components/form/FileUpload';
+
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
 
 const EMPTY = {
@@ -20,7 +25,6 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Reset / populate form
   useEffect(() => {
     if (!open) return;
     if (isEdit) {
@@ -43,7 +47,6 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
     setImages([]);
   }, [open, product, isEdit]);
 
-  // Load shops for dropdown
   useEffect(() => {
     if (open) {
       getShops({ limit: 200 })
@@ -60,6 +63,18 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
       sizes: f.sizes.includes(s) ? f.sizes.filter((x) => x !== s) : [...f.sizes, s],
     }));
 
+  const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+
+  const categoryOptions = categories.map((c) => ({
+    value: c._id,
+    label: c.parentId ? `${c.parentId.name} → ${c.name}` : c.name,
+  }));
+
+  const shopOptions = shopList.map((s) => ({
+    value: s._id,
+    label: `${s.name}${s.city ? ` — ${s.city}` : ''}`,
+  }));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -73,7 +88,6 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
       fd.append('stock', form.stock);
       form.sizes.forEach((s) => fd.append('sizes', s));
       form.colors.split(',').map((c) => c.trim()).filter(Boolean).forEach((c) => fd.append('colors', c));
-
       if (selectedShop) {
         fd.append('shop', selectedShop);
         fd.append('isSystemProduct', 'false');
@@ -123,109 +137,87 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
           {isEdit ? 'Update product details below.' : 'Fill in the product details. Shop assignment is optional.'}
         </p>
 
-        <form onSubmit={handleSubmit} className="admin-product-form">
-          {/* Shop assignment */}
-          <div className="admin-form-group">
-            <label className="admin-form-label">Assign to Shop</label>
-            <select
-              id="admin-prod-shop"
-              className="admin-input"
-              value={selectedShop}
-              onChange={(e) => setSelectedShop(e.target.value)}
-            >
-              <option value="">System Product (no shop)</option>
-              {shopList.map((s) => (
-                <option key={s._id} value={s._id}>
-                  {s.name} {s.city ? `— ${s.city}` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+        <form onSubmit={handleSubmit} className="admin-product-form" noValidate>
+          {/* Shop */}
+          <SelectField
+            id="admin-prod-shop"
+            label="Assign to Shop"
+            name="selectedShop"
+            value={selectedShop}
+            onChange={(e) => setSelectedShop(e.target.value)}
+            options={shopOptions}
+            placeholder="System Product (no shop)"
+            className="form-field"
+          />
 
-          <div className="admin-form-row">
-            <div className="admin-form-group">
-              <label className="admin-form-label">Product Name *</label>
-              <input
-                id="admin-prod-name"
-                className="admin-input"
-                placeholder="e.g. Floral Summer Dress"
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                required
-              />
-            </div>
-            <div className="admin-form-group">
-              <label className="admin-form-label">Category *</label>
-              <select
-                id="admin-prod-cat"
-                className="admin-input"
-                value={form.category}
-                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                required
-              >
-                <option value="">Select category</option>
-                {categories.map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.parentId ? `${c.parentId.name} → ${c.name}` : c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="admin-form-group">
-            <label className="admin-form-label">Description</label>
-            <textarea
-              className="admin-input"
-              placeholder="Product description..."
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              rows={3}
-              style={{ resize: 'vertical' }}
+          <div className="form-row" style={{ marginTop: 20 }}>
+            <InputField
+              id="admin-prod-name"
+              label="Product Name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="e.g. Floral Summer Dress"
+              required
+            />
+            <SelectField
+              id="admin-prod-cat"
+              label="Category"
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              options={categoryOptions}
+              placeholder="Select category"
+              required
             />
           </div>
 
-          <div className="admin-form-row">
-            <div className="admin-form-group">
-              <label className="admin-form-label">Price (₹) *</label>
-              <input
-                id="admin-prod-price"
-                className="admin-input"
-                type="number"
-                placeholder="0"
-                value={form.price}
-                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                required
-                min={0}
-              />
-            </div>
-            <div className="admin-form-group">
-              <label className="admin-form-label">Discount Price (₹)</label>
-              <input
-                className="admin-input"
-                type="number"
-                placeholder="0"
-                value={form.discountPrice}
-                onChange={(e) => setForm((f) => ({ ...f, discountPrice: e.target.value }))}
-                min={0}
-              />
-            </div>
-            <div className="admin-form-group">
-              <label className="admin-form-label">Stock</label>
-              <input
-                className="admin-input"
-                type="number"
-                placeholder="0"
-                value={form.stock}
-                onChange={(e) => setForm((f) => ({ ...f, stock: e.target.value }))}
-                min={0}
-              />
-            </div>
+          <div style={{ marginTop: 20 }}>
+            <TextArea
+              id="admin-prod-desc"
+              label="Description"
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Product description…"
+              rows={3}
+            />
+          </div>
+
+          <div className="form-row-3" style={{ marginTop: 20 }}>
+            <InputField
+              id="admin-prod-price"
+              label="Price (₹)"
+              type="number"
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+              placeholder="0"
+              required
+            />
+            <InputField
+              id="admin-prod-discount"
+              label="Discount Price (₹)"
+              type="number"
+              name="discountPrice"
+              value={form.discountPrice}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            <InputField
+              id="admin-prod-stock"
+              label="Stock"
+              type="number"
+              name="stock"
+              value={form.stock}
+              onChange={handleChange}
+              placeholder="0"
+            />
           </div>
 
           {/* Sizes */}
-          <div className="admin-form-group">
-            <label className="admin-form-label">Sizes</label>
+          <div className="form-field" style={{ marginTop: 20 }}>
+            <span className="form-label">Sizes</span>
             <div className="admin-size-grid">
               {SIZES.map((s) => (
                 <button
@@ -240,30 +232,29 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
             </div>
           </div>
 
-          <div className="admin-form-row">
-            <div className="admin-form-group">
-              <label className="admin-form-label">Colors (comma separated)</label>
-              <input
-                className="admin-input"
-                placeholder="Red, Blue, Green"
-                value={form.colors}
-                onChange={(e) => setForm((f) => ({ ...f, colors: e.target.value }))}
-              />
-            </div>
+          <div style={{ marginTop: 20 }}>
+            <InputField
+              id="admin-prod-colors"
+              label="Colors (comma separated)"
+              name="colors"
+              value={form.colors}
+              onChange={handleChange}
+              placeholder="Red, Blue, Green"
+            />
           </div>
 
           {/* Images */}
-          <div className="admin-form-group">
-            <label className="admin-form-label">
-              {isEdit ? 'Replace Images (optional)' : 'Product Images'}
-            </label>
-            <input
+          <div style={{ marginTop: 20 }}>
+            <FileUpload
               id="admin-prod-images"
-              type="file"
-              multiple
+              label={isEdit ? 'Replace Images (optional)' : 'Product Images'}
               accept="image/*"
-              className="admin-file-input"
-              onChange={(e) => setImages(Array.from(e.target.files))}
+              multiple
+              maxFiles={5}
+              files={images}
+              previews={isEdit ? (product?.images || []) : []}
+              onFilesChange={setImages}
+              helper="Up to 5 images — first will be the cover"
             />
           </div>
 
@@ -276,8 +267,9 @@ const ProductModal = ({ open, product, onClose, onSaved }) => {
               type="submit"
               className="btn btn-primary"
               disabled={loading}
+              style={{ borderRadius: 14 }}
             >
-              {loading ? 'Saving...' : isEdit ? 'Update Product' : 'Add Product'}
+              {loading ? 'Saving…' : isEdit ? 'Update Product' : 'Add Product'}
             </button>
           </div>
         </form>
