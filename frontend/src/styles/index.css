@@ -1,6 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+/* Tailwind CSS v4 - must be first */
 @import "tailwindcss";
 
+/* Custom CSS Variables & Base Styles */
 @import "../shared/styles/variables.css";
 @import "../shared/styles/base.css";
 @import "../shared/styles/primitives.css";
