@@ -1,33 +1,36 @@
+import { Link } from 'react-router-dom';
 import { Mail, Phone, ShoppingBag } from 'lucide-react';
 
 const FooterSection = ({ settings }) => (
-  <footer style={{ borderTop: '1px solid var(--border)', padding: '60px 0', background: 'var(--bg)' }}>
-    <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40 }}>
+  <footer className="fashion-footer">
+    <div className="container fashion-footer-grid">
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          {settings?.logo ? (
-            <img src={settings.logo} alt={settings.siteName} style={{ height: 28, width: 'auto', borderRadius: 6 }} />
-          ) : (
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShoppingBag size={14} color="#fff" />
-            </div>
-          )}
-          <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 18 }}>{settings?.siteName || 'NearByDress'}</span>
+        <div className="fashion-footer-brand">
+          <span className="marketplace-brand-mark">
+            {settings?.logo ? <img src={settings.logo} alt={settings.siteName} /> : <ShoppingBag size={17} />}
+          </span>
+          <span>{settings?.siteName || 'NearByDress'}</span>
         </div>
-        <p style={{ color: 'var(--text-faint)', fontSize: 14 }}>Connecting local fashion boutiques directly to you.</p>
+        <p>Premium local fashion discovery, verified shops, and direct buying in one marketplace.</p>
       </div>
       <div>
-        <h4 style={{ fontWeight: 600, marginBottom: 16 }}>Contact Us</h4>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 14, marginBottom: 8 }}>
+        <h4>Explore</h4>
+        <Link to="/products">Products</Link>
+        <Link to="/shops">Shops</Link>
+        <Link to="/register">Sell on NearByDress</Link>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <span>
           <Mail size={16} /> {settings?.contactEmail || 'support@nearbydress.com'}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 14 }}>
+        </span>
+        <span>
           <Phone size={16} /> {settings?.contactPhone || '+91 99999 99999'}
-        </div>
+        </span>
       </div>
     </div>
-    <div className="container" style={{ marginTop: 40, paddingTop: 20, borderTop: '1px solid var(--border)', textAlign: 'center', color: 'var(--text-faint)', fontSize: 13 }}>
-      Â© {new Date().getFullYear()} {settings?.siteName || 'NearByDress'}. All rights reserved.
+    <div className="container fashion-footer-bottom">
+      &copy; {new Date().getFullYear()} {settings?.siteName || 'NearByDress'}. All rights reserved.
     </div>
   </footer>
 );

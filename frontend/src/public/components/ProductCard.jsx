@@ -1,105 +1,106 @@
 import { Link } from 'react-router-dom';
-import { MessageCircle, Tag, Store } from 'lucide-react';
+import { Eye, Heart, MessageCircle, Sparkles, Star, Store } from 'lucide-react';
+
+const formatPrice = (value) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(Number(value || 0));
+
+const getProductImage = (images, name) => {
+  const firstImage = images?.[0];
+  return typeof firstImage === 'object'
+    ? firstImage?.url
+    : firstImage || `https://placehold.co/600x760/f0ece8/756f72?text=${encodeURIComponent(name || 'Fashion')}`;
+};
 
 const ProductCard = ({ product }) => {
   const { _id, name, price, discountPrice, images, category, shop } = product;
 
   const displayPrice = discountPrice && discountPrice < price ? discountPrice : price;
   const hasDiscount = discountPrice && discountPrice < price;
-  const firstImage = images?.[0];
-  const image = typeof firstImage === 'object' ? firstImage?.url : firstImage || 'https://placehold.co/400x500/F3F4F6/9CA3AF?text=No+Image';
+  const image = getProductImage(images, name);
+  const categoryLabel = typeof category === 'object' ? category?.name : category;
+  const rating = product.rating || product.averageRating;
+  const reviewCount = product.reviewCount || product.reviewsCount;
 
   const whatsappUrl = shop?.whatsappNumber
     ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}"`
     : null;
 
   return (
-    <div className="card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      {/* Image */}
-      <Link to={`/products/${_id}`} style={{ display: 'block', textDecoration: 'none' }}>
-        <div style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: 'var(--surface-2)' }}>
-          <img
-            src={image}
-            alt={name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
-            onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-            onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-            loading="lazy"
-          />
-          {hasDiscount && (
-            <div style={{
-              position: 'absolute', top: 12, left: 12,
-              background: 'linear-gradient(135deg, #EF4444, #EC4899)',
-              color: '#fff', padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700,
-            }}>
-              {Math.round(((price - discountPrice) / price) * 100)}% OFF
-            </div>
-          )}
-          <div style={{
-            position: 'absolute', top: 12, right: 12,
-            background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(8px)',
-            padding: '3px 10px', borderRadius: 999, border: '1px solid var(--border)'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-muted)' }}>
-              <Tag size={10} /> {category}
-            </span>
-          </div>
+    <article className="fashion-product-card">
+      <Link to={`/products/${_id}`} className="fashion-product-media" aria-label={`View ${name}`}>
+        <img src={image} alt={name} loading="lazy" />
+        <div className="fashion-card-badges">
+          <span className={`fashion-badge ${hasDiscount ? 'fashion-badge-sale' : ''}`}>
+            {hasDiscount ? `${Math.round(((price - discountPrice) / price) * 100)}% off` : 'New'}
+          </span>
+          <span className="fashion-wishlist" aria-label={`Save ${name}`} title="Save">
+            <Heart size={16} />
+          </span>
+        </div>
+        <div className="fashion-product-overlay" aria-hidden="true">
+          <span className="fashion-quick-action">
+            <Eye size={15} />
+            View
+          </span>
         </div>
       </Link>
 
-      {/* Content */}
-      <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Link to={`/products/${_id}`} style={{ textDecoration: 'none' }}>
-          <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', lineHeight: 1.3,
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {name}
-          </h3>
-        </Link>
-
-        {/* Price */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18, fontWeight: 700, color: hasDiscount ? '#059669' : 'var(--primary-dark)' }}>
-            ₹{displayPrice.toLocaleString()}
+      <div className="fashion-product-body">
+        <div className="fashion-product-meta">
+          <span>{categoryLabel || 'Fashion'}</span>
+          <span className="fashion-rating">
+            {rating ? (
+              <>
+                <Star size={13} fill="currentColor" />
+                {Number(rating).toFixed(1)}
+                {reviewCount ? ` (${reviewCount})` : ''}
+              </>
+            ) : (
+              <>
+                <Sparkles size={13} />
+                Curated
+              </>
+            )}
           </span>
-          {hasDiscount && (
-            <span style={{ fontSize: 13, color: 'var(--text-faint)', textDecoration: 'line-through' }}>
-              ₹{price.toLocaleString()}
-            </span>
-          )}
         </div>
 
-        {/* Shop */}
+        <Link to={`/products/${_id}`} className="fashion-product-name">
+          {name}
+        </Link>
+
+        <div className="fashion-price-row">
+          <span className={`fashion-price ${hasDiscount ? 'fashion-price-sale' : ''}`}>
+            {formatPrice(displayPrice)}
+          </span>
+          {hasDiscount && <span className="fashion-price-old">{formatPrice(price)}</span>}
+        </div>
+
         {shop && (
-          <Link to={`/shops/${shop._id}`} style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 'auto' }}>
-              <Store size={12} color="var(--text-faint)" />
-              <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>{shop.name}</span>
-              {shop.city && <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>· {shop.city}</span>}
-            </div>
+          <Link to={`/shops/${shop._id}`} className="fashion-shop-link">
+            <Store size={13} />
+            <span>{shop.name}</span>
+            {shop.city && <span>{shop.city}</span>}
           </Link>
         )}
 
-        {/* WhatsApp CTA */}
         {whatsappUrl && (
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn"
-            style={{
-              background: 'linear-gradient(135deg, #25D366, #128C7E)',
-              color: '#fff', marginTop: 8, textDecoration: 'none', fontSize: 13,
-              padding: '9px 14px',
-              boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)',
-            }}
+            className="fashion-whatsapp"
             id={`whatsapp-${_id}`}
           >
             <MessageCircle size={15} />
-            WhatsApp Shop
+            WhatsApp
           </a>
         )}
       </div>
-    </div>
+    </article>
   );
 };
 

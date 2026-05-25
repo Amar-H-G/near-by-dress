@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../core/auth/useAuth';
-import { Loader2 } from 'lucide-react';
-import { User, Mail, Phone, Lock } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Loader2, Lock, Mail, Phone, ShieldCheck, User } from 'lucide-react';
+import { useAuth } from '../../core/auth/useAuth';
 import InputField from '../../shared/components/form/InputField';
 
 const UserProfilePage = () => {
@@ -14,14 +13,14 @@ const UserProfilePage = () => {
   useEffect(() => {
     if (user) {
       queueMicrotask(() => {
-        setFormData((f) => ({ ...f, name: user.name || '', phone: user.phone || '' }));
+        setFormData((current) => ({ ...current, name: user.name || '', phone: user.phone || '' }));
       });
     }
   }, [user]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) setErrors((err) => ({ ...err, [e.target.name]: '' }));
+    setFormData((current) => ({ ...current, [e.target.name]: e.target.value }));
+    if (errors[e.target.name]) setErrors((current) => ({ ...current, [e.target.name]: '' }));
   };
 
   const validate = () => {
@@ -34,13 +33,16 @@ const UserProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      return;
+    }
     setLoading(true);
     try {
       const updatePayload = { name: formData.name, phone: formData.phone };
       if (formData.password) updatePayload.password = formData.password;
       await updateUser(updatePayload);
-      setFormData((f) => ({ ...f, password: '' }));
+      setFormData((current) => ({ ...current, password: '' }));
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update profile');
     } finally {
@@ -49,27 +51,21 @@ const UserProfilePage = () => {
   };
 
   return (
-    <div style={{ paddingTop: 100, paddingBottom: 60, minHeight: '100vh', background: 'var(--bg)' }}>
-      <div className="container" style={{ maxWidth: 600 }}>
-        {/* Avatar Header */}
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{
-            width: 80, height: 80, borderRadius: 24, margin: '0 auto 16px',
-            background: 'linear-gradient(135deg, #7c3aed, #EC4899)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 32, fontWeight: 700, color: '#fff',
-            boxShadow: '0 8px 24px rgba(124,58,237,0.3)',
-          }}>
-            {user?.name?.charAt(0).toUpperCase()}
+    <div className="marketplace-page luxury-shell profile-page">
+      <div className="container profile-shell">
+        <section className="profile-summary">
+          <div className="profile-avatar">{user?.name?.charAt(0).toUpperCase()}</div>
+          <span className="luxury-eyebrow">My account</span>
+          <h1 className="luxury-title luxury-title-sm">{user?.name || 'Account'}</h1>
+          <p>Manage your public profile details and account security.</p>
+          <div className="profile-trust">
+            <ShieldCheck size={18} />
+            Protected account settings
           </div>
-          <h1 style={{ fontSize: 28, marginBottom: 8 }}>My Account</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Manage your personal information</p>
-        </div>
+        </section>
 
-        <div className="card" style={{ padding: 32 }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }} noValidate>
-
-            {/* Read-only email */}
+        <section className="profile-form-card">
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
             <InputField
               id="profile-email"
               label="Email Address (cannot be changed)"
@@ -104,9 +100,8 @@ const UserProfilePage = () => {
               icon={<Phone size={16} />}
             />
 
-            {/* Security section */}
-            <div style={{ paddingTop: 20, borderTop: '1px solid var(--border)' }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, fontFamily: "'Outfit', sans-serif" }}>Security</h3>
+            <div className="profile-security">
+              <h3>Security</h3>
               <InputField
                 id="profile-password"
                 label="New Password"
@@ -117,21 +112,16 @@ const UserProfilePage = () => {
                 placeholder="Leave blank to keep current"
                 autoComplete="new-password"
                 error={errors.password}
-                helper={!errors.password ? 'Min. 6 characters — only fill this if you want to change your password' : undefined}
+                helper={!errors.password ? 'Min. 6 characters; only fill this if you want to change your password' : undefined}
                 icon={<Lock size={16} />}
               />
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '14px', fontSize: 16, marginTop: 8, borderRadius: 14 }}
-              disabled={loading}
-            >
-              {loading ? <Loader2 size={20} className="animate-spin" /> : 'Save Changes'}
+            <button type="submit" className="luxury-btn luxury-btn-primary auth-submit" disabled={loading}>
+              {loading ? <Loader2 size={20} className="animate-spin" /> : 'Save changes'}
             </button>
           </form>
-        </div>
+        </section>
       </div>
     </div>
   );

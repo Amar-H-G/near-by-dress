@@ -2,11 +2,29 @@
  * Used by: user, seller (public/seller layout)
  * Purpose: Main navigation bar
  */
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  ChevronDown,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Search,
+  Shield,
+  ShoppingBag,
+  Store,
+  User,
+  X,
+} from 'lucide-react';
 import { useAuth } from '../../core/auth/useAuth';
 import { useSettings } from '../../core/contexts/useSettings';
-import { ShoppingBag, Menu, X, User, LogOut, LayoutDashboard, Shield, ChevronDown } from 'lucide-react';
+
+const navLinks = [
+  { label: 'Home', to: '/', icon: Home },
+  { label: 'Products', to: '/products', icon: ShoppingBag },
+  { label: 'Shops', to: '/shops', icon: Store },
+];
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -22,6 +40,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -34,7 +53,6 @@ const Navbar = () => {
     });
   }, [location.pathname]);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e) => {
       if (dropRef.current && !dropRef.current.contains(e.target)) setDropdownOpen(false);
@@ -44,250 +62,197 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const navLinks = [
-    { label: 'Home', to: '/' },
-    { label: 'Products', to: '/products' },
-    { label: 'Shops', to: '/shops' },
-  ];
-
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const isActive = (path) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
+  const queryParams = new URLSearchParams(location.search);
+  const selectedCategoryId = queryParams.get('category');
+  const selectedCategory = categories?.find((category) => category._id === selectedCategoryId);
+  const rootCategories = categories?.filter((category) => !category.parentId) || [];
+  const isDetailRoute = /^\/products\/[^/]+/.test(location.pathname) || /^\/shops\/[^/]+/.test(location.pathname);
+
   return (
-    <nav
-      id="navbar"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        transition: 'all 0.3s ease',
-        background: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(20px)' : 'none',
-        borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
-      }}
-    >
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 68 }}>
-        {/* Logo */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          {settings?.logo ? (
-            <img src={settings.logo} alt={settings.siteName} style={{ height: 36, width: 'auto', borderRadius: 8 }} />
-          ) : (
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <ShoppingBag size={20} color="#fff" />
-            </div>
-          )}
-          <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--text)' }}>
-            {settings?.siteName || 'NearByDress'}
-          </span>
-        </Link>
+    <>
+      <nav className={`marketplace-nav ${scrolled ? 'marketplace-nav-scrolled' : ''} ${mobileOpen ? 'marketplace-nav-open' : ''}`} id="navbar">
+        <div className="container marketplace-nav-inner">
+          <Link to="/" className="marketplace-brand" aria-label={settings?.siteName || 'NearByDress'}>
+            <span className="marketplace-brand-mark">
+              {settings?.logo ? <img src={settings.logo} alt={settings.siteName} /> : <ShoppingBag size={21} />}
+            </span>
+            <span>
+              <span className="marketplace-brand-name">{settings?.siteName || 'NearByDress'}</span>
+              <span className="marketplace-brand-sub">Fashion marketplace</span>
+            </span>
+          </Link>
 
-        {/* Desktop Nav */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} className="hidden md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: 500,
-                color: location.pathname === link.to ? 'var(--primary-dark)' : 'var(--text-muted)',
-                background: location.pathname === link.to ? 'rgba(37, 99, 235, 0.1)' : 'transparent',
-                transition: 'all 0.2s',
-              }}
-            >
-              {link.label}
-            </Link>
-          ))}
-          {/* Categories Dropdown (Hierarchical) */}
-          {categories?.length > 0 && (() => {
-            const queryParams = new URLSearchParams(location.search);
-            const selectedCategoryId = queryParams.get('category');
-            const selectedCategory = categories.find(c => c._id === selectedCategoryId);
-            const dropdownLabel = selectedCategory ? selectedCategory.name : 'Categories';
+          <div className="marketplace-nav-links">
+            {navLinks.map((link) => (
+              <Link key={link.to} to={link.to} className={`marketplace-nav-link ${isActive(link.to) ? 'marketplace-nav-link-active' : ''}`}>
+                {link.label}
+              </Link>
+            ))}
 
-            return (
-              <div style={{ position: 'relative' }} className="nav-dropdown-container" ref={catDropRef}>
-                <button 
-                  className="btn btn-ghost" 
-                  onClick={() => setCatDropdownOpen(!catDropdownOpen)}
-                  style={{ 
-                    padding: '8px 16px', 
-                    fontSize: 14, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 4,
-                    color: selectedCategory ? 'var(--primary)' : 'inherit',
-                    fontWeight: selectedCategory ? 700 : 500
-                  }}
+            {categories?.length > 0 && (
+              <div className="marketplace-category-menu" ref={catDropRef}>
+                <button
+                  type="button"
+                  className="marketplace-nav-menu-btn"
+                  onClick={() => setCatDropdownOpen((open) => !open)}
                 >
-                  {dropdownLabel} <ChevronDown size={14} style={{ transform: catDropdownOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+                  {selectedCategory?.name || 'Categories'}
+                  <ChevronDown size={14} className={catDropdownOpen ? 'rotate-180' : ''} />
                 </button>
-                    {catDropdownOpen && (
-                  <div className="nav-dropdown glass-strong" style={{ 
-                    position: 'absolute', top: '100%', left: 0, minWidth: 220, 
-                    padding: '12px 8px', borderRadius: 16, display: 'block', 
-                    boxShadow: 'var(--shadow-card)', zIndex: 100,
-                    animation: 'fadeUp 0.15s ease'
-                  }}>
-                    <Link 
-                      to="/products" 
-                      onClick={() => setCatDropdownOpen(false)}
-                      style={{ 
-                        display: 'block', padding: '10px 14px', color: 'var(--primary)', 
-                        textDecoration: 'none', borderRadius: 8, fontSize: 14, 
-                        fontWeight: 700, borderBottom: '1px solid var(--border)',
-                        marginBottom: 8
-                      }}
-                    >
-                      All Categories
+
+                {catDropdownOpen && (
+                  <div className="marketplace-dropdown marketplace-dropdown-left">
+                    <Link to="/products" className="marketplace-dropdown-heading" onClick={() => setCatDropdownOpen(false)}>
+                      All categories
                     </Link>
-                    {categories.filter(c => !c.parentId).map(root => (
-                      <div key={root._id} style={{ marginBottom: 4 }}>
-                        <Link 
-                          to={`/products?category=${root._id}`} 
+                    {rootCategories.map((root) => (
+                      <div key={root._id}>
+                        <Link
+                          to={`/products?category=${root._id}`}
+                          className="marketplace-dropdown-item"
                           onClick={() => setCatDropdownOpen(false)}
-                          style={{ display: 'block', padding: '8px 14px', color: 'var(--text)', textDecoration: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700 }}
                         >
                           {root.name}
                         </Link>
-                        {/* Render subcategories */}
-                        {categories.filter(sub => {
-                          const pId = sub.parentId ? (typeof sub.parentId === 'object' ? sub.parentId._id : sub.parentId) : null;
-                          return pId === root._id;
-                        }).map(sub => (
-                          <Link 
-                            key={sub._id} 
-                            to={`/products?category=${sub._id}`} 
-                            onClick={() => setCatDropdownOpen(false)}
-                            style={{ display: 'block', padding: '6px 14px 6px 28px', color: 'var(--text-muted)', textDecoration: 'none', borderRadius: 8, fontSize: 13 }}
-                          >
-                            {sub.name}
-                          </Link>
-                        ))}
+                        {categories
+                          .filter((sub) => {
+                            const parentId = sub.parentId ? (typeof sub.parentId === 'object' ? sub.parentId._id : sub.parentId) : null;
+                            return parentId === root._id;
+                          })
+                          .map((sub) => (
+                            <Link
+                              key={sub._id}
+                              to={`/products?category=${sub._id}`}
+                              className="marketplace-dropdown-item marketplace-dropdown-child"
+                              onClick={() => setCatDropdownOpen(false)}
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-            );
-          })()}
+            )}
+          </div>
+
+          <div className="marketplace-nav-actions">
+            <Link to="/products" className="marketplace-icon-btn" aria-label="Search products" title="Search">
+              <Search size={18} />
+            </Link>
+
+            {!isAuthenticated ? (
+              <>
+                <Link to="/login" className="marketplace-nav-link">Login</Link>
+                <Link to="/register" className="luxury-btn luxury-btn-primary">Get Started</Link>
+              </>
+            ) : (
+              <div className="marketplace-user-menu" ref={dropRef}>
+                <button
+                  type="button"
+                  className="marketplace-nav-menu-btn"
+                  onClick={() => setDropdownOpen((open) => !open)}
+                  id="user-menu-btn"
+                >
+                  <span className="marketplace-avatar">{user?.name?.charAt(0).toUpperCase()}</span>
+                  <span className="marketplace-user-name">{user?.name}</span>
+                  <ChevronDown size={14} />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="marketplace-dropdown marketplace-dropdown-right">
+                    {user?.role === 'shop_owner' && (
+                      <Link to="/seller/dashboard" className="marketplace-dropdown-item">
+                        <LayoutDashboard size={16} />
+                        Dashboard
+                      </Link>
+                    )}
+                    {user?.role === 'admin' && (
+                      <Link to="/admin" className="marketplace-dropdown-item">
+                        <Shield size={16} />
+                        Admin Panel
+                      </Link>
+                    )}
+                    <Link to="/profile" className="marketplace-dropdown-item">
+                      <User size={16} />
+                      Profile
+                    </Link>
+                    <button type="button" onClick={handleLogout} className="marketplace-dropdown-item marketplace-danger" id="logout-btn">
+                      <LogOut size={16} />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="marketplace-icon-btn marketplace-mobile-toggle"
+            onClick={() => setMobileOpen((open) => !open)}
+            id="mobile-menu-btn"
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
 
-        {/* Desktop Auth */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }} className="hidden md:flex">
-          {!isAuthenticated ? (
-            <>
-              <Link to="/login" className="btn btn-ghost" style={{ padding: '8px 18px', fontSize: 14 }}>Login</Link>
-              <Link to="/register" className="btn btn-primary" style={{ padding: '8px 18px', fontSize: 14 }}>Get Started</Link>
-            </>
-          ) : (
-            <div style={{ position: 'relative' }} ref={dropRef}>
-              <button
-                className="btn btn-ghost"
-                style={{ gap: 8, padding: '8px 14px' }}
-                onClick={() => setDropdownOpen((v) => !v)}
-                id="user-menu-btn"
-              >
-                <div style={{
-                  width: 28, height: 28, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, var(--primary), #60A5FA)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, fontWeight: 700, color: '#fff',
-                }}>
-                  {user?.name?.charAt(0).toUpperCase()}
-                </div>
-                <span style={{ fontSize: 14, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {user?.name}
-                </span>
-              </button>
+        {mobileOpen && (
+          <div className="marketplace-mobile-panel">
+            <div className="container">
+              {navLinks.map((link) => (
+                <Link key={link.to} to={link.to} className="marketplace-mobile-link">
+                  {link.label}
+                  <link.icon size={17} />
+                </Link>
+              ))}
+              {rootCategories.slice(0, 6).map((category) => (
+                <Link key={category._id} to={`/products?category=${category._id}`} className="marketplace-mobile-link">
+                  {category.name}
+                </Link>
+              ))}
 
-              {dropdownOpen && (
-                <div className="glass-strong" style={{
-                  position: 'absolute', right: 0, top: 'calc(100% + 8px)',
-                  minWidth: 200, borderRadius: 12, padding: 8, zIndex: 200,
-                  animation: 'fadeUp 0.15s ease',
-                }}>
-                  {user?.role === 'shop_owner' && (
-                    <Link to="/seller/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, textDecoration: 'none', color: 'var(--text)', fontSize: 14 }}>
-                      <LayoutDashboard size={16} color="var(--primary-light)" />
-                      Dashboard
-                    </Link>
-                  )}
-                  {user?.role === 'admin' && (
-                    <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, textDecoration: 'none', color: 'var(--text)', fontSize: 14 }}>
-                      <Shield size={16} color="var(--primary)" />
-                      Admin Panel
-                    </Link>
-                  )}
-                  <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, textDecoration: 'none', color: 'var(--text)', fontSize: 14 }}>
-                    <User size={16} color="var(--text-muted)" />
-                    Profile
-                  </Link>
-                  <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
-                  <button
-                    onClick={handleLogout}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, width: '100%', background: 'none', border: 'none', color: '#EF4444', fontSize: 14, cursor: 'pointer' }}
-                    id="logout-btn"
-                  >
-                    <LogOut size={16} />
-                    Logout
-                  </button>
+              {!isAuthenticated ? (
+                <div className="marketplace-mobile-actions">
+                  <Link to="/login" className="luxury-btn luxury-btn-secondary">Login</Link>
+                  <Link to="/register" className="luxury-btn luxury-btn-primary">Register</Link>
+                </div>
+              ) : (
+                <div className="marketplace-mobile-actions marketplace-mobile-actions-auth">
+                  {user?.role === 'shop_owner' && <Link to="/seller/dashboard" className="luxury-btn luxury-btn-secondary">Dashboard</Link>}
+                  {user?.role === 'admin' && <Link to="/admin" className="luxury-btn luxury-btn-secondary">Admin</Link>}
+                  <Link to="/profile" className="luxury-btn luxury-btn-secondary">Profile</Link>
+                  <button type="button" onClick={handleLogout} className="luxury-btn luxury-btn-primary">Logout</button>
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+      </nav>
 
-        {/* Mobile hamburger */}
-        <button
-          className="btn btn-ghost md:hidden"
-          style={{ padding: 8 }}
-          onClick={() => setMobileOpen((v) => !v)}
-          id="mobile-menu-btn"
-        >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      {mobileOpen && (
-        <div className="glass-strong md:hidden" style={{ borderTop: '1px solid var(--border)', padding: 16 }}>
+      {!isDetailRoute && (
+        <div className="marketplace-bottom-nav" aria-label="Mobile navigation">
           {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              style={{ display: 'block', padding: '12px 16px', color: 'var(--text)', textDecoration: 'none', borderRadius: 8, fontWeight: 500, marginBottom: 4 }}
-            >
-              {link.label}
+            <Link key={link.to} to={link.to} className={isActive(link.to) ? 'active' : ''}>
+              <link.icon size={18} />
+              <span>{link.label}</span>
             </Link>
           ))}
-          <div style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
-          {!isAuthenticated ? (
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Link to="/login" className="btn btn-ghost" style={{ flex: 1, textDecoration: 'none' }}>Login</Link>
-              <Link to="/register" className="btn btn-primary" style={{ flex: 1, textDecoration: 'none' }}>Register</Link>
-            </div>
-          ) : (
-            <div>
-              {user?.role === 'shop_owner' && <Link to="/seller/dashboard" style={{ display: 'block', padding: '12px 16px', color: 'var(--text)', textDecoration: 'none' }}>Dashboard</Link>}
-              {user?.role === 'admin' && <Link to="/admin" style={{ display: 'block', padding: '12px 16px', color: 'var(--text)', textDecoration: 'none' }}>Admin</Link>}
-              <button onClick={handleLogout} style={{ width: '100%', marginTop: 8 }} className="btn btn-danger">Logout</button>
-            </div>
-          )}
+          <Link to={isAuthenticated ? '/profile' : '/login'} className={isActive('/profile') || isActive('/login') ? 'active' : ''}>
+            <User size={18} />
+            <span>{isAuthenticated ? 'Profile' : 'Login'}</span>
+          </Link>
         </div>
       )}
-    </nav>
+    </>
   );
 };
 

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../core/auth/useAuth';
 import toast from 'react-hot-toast';
-import { ShoppingBag, Mail, Lock, User, Phone } from 'lucide-react';
+import { ArrowRight, Lock, Mail, Phone, ShoppingBag, Store, User } from 'lucide-react';
+import { useAuth } from '../../core/auth/useAuth';
+import { useSettings } from '../../core/contexts/useSettings';
 import InputField from '../../shared/components/form/InputField';
 
 const RegisterPage = () => {
   const { register } = useAuth();
+  const { settings } = useSettings();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'customer', phone: '' });
   const [loading, setLoading] = useState(false);
@@ -15,14 +17,14 @@ const RegisterPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'phone') {
-      const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+      const numericValue = value.replace(/\D/g, '');
       if (numericValue.length <= 10) {
-        setForm((f) => ({ ...f, [name]: numericValue }));
+        setForm((current) => ({ ...current, [name]: numericValue }));
       }
       return;
     }
-    setForm((f) => ({ ...f, [name]: value }));
-    if (errors[name]) setErrors((err) => ({ ...err, [name]: '' }));
+    setForm((current) => ({ ...current, [name]: value }));
+    if (errors[name]) setErrors((current) => ({ ...current, [name]: '' }));
   };
 
   const validate = () => {
@@ -39,7 +41,10 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      return;
+    }
     setLoading(true);
     try {
       const user = await register(form);
@@ -54,123 +59,115 @@ const RegisterPage = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,58,237,0.15) 0%, transparent 70%)',
-      padding: '24px',
-    }}>
-      <div style={{ width: '100%', maxWidth: 480 }}>
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{
-            width: 60, height: 60, borderRadius: 18, margin: '0 auto 16px',
-            background: 'linear-gradient(135deg, #7c3aed, #EC4899)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 24px rgba(124,58,237,0.35)',
-          }}>
-            <ShoppingBag size={28} color="#fff" />
-          </div>
-          <h1 style={{ fontSize: 28, marginBottom: 6 }}>Create Account</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Join NearByDress today</p>
+    <div className="auth-page auth-page-register">
+      <Link to="/" className="auth-brand">
+        <span className="marketplace-brand-mark">
+          {settings?.logo ? <img src={settings.logo} alt={settings.siteName} /> : <ShoppingBag size={20} />}
+        </span>
+        <span>{settings?.siteName || 'NearByDress'}</span>
+      </Link>
+
+      <section className="auth-visual">
+        <span className="luxury-eyebrow fashion-hero-kicker">Join the marketplace</span>
+        <h1>Create a shopper account or launch a boutique storefront.</h1>
+        <p>Customers can browse premium local fashion. Sellers can enter their dashboard and start building a verified shop presence.</p>
+      </section>
+
+      <section className="auth-panel">
+        <div className="auth-panel-header">
+          <span className="luxury-eyebrow">Create account</span>
+          <h2>Start with NearByDress</h2>
+          <p>Choose your role and continue.</p>
         </div>
 
-        <div className="glass-strong" style={{ borderRadius: 24, padding: 32 }}>
-          {/* Role Selector */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
-            {['customer', 'shop_owner'].map((role) => (
-              <button
-                key={role}
-                type="button"
-                id={`role-${role}`}
-                onClick={() => setForm((f) => ({ ...f, role }))}
-                style={{
-                  padding: '13px 12px', borderRadius: 14, cursor: 'pointer', fontSize: 14, fontWeight: 600,
-                  background: form.role === role ? 'linear-gradient(135deg, #7c3aed, #9333EA)' : 'var(--surface-2)',
-                  color: form.role === role ? '#fff' : 'var(--text-muted)',
-                  border: `1.5px solid ${form.role === role ? '#7c3aed' : 'var(--border)'}`,
-                  transition: 'all 0.2s ease',
-                  boxShadow: form.role === role ? '0 4px 14px rgba(124,58,237,0.3)' : 'none',
-                  fontFamily: "'Outfit', sans-serif",
-                }}
-              >
-                {role === 'customer' ? '🛍️ Customer' : '🏪 Shop Owner'}
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }} noValidate>
-            <InputField
-              id="reg-name"
-              label="Full Name"
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Your full name"
-              required
-              error={errors.name}
-              icon={<User size={16} />}
-            />
-
-            <InputField
-              id="reg-email"
-              label="Email Address"
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="you@example.com"
-              required
-              autoComplete="email"
-              error={errors.email}
-              icon={<Mail size={16} />}
-            />
-
-            <InputField
-              id="reg-password"
-              label="Password"
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Min. 6 characters"
-              required
-              autoComplete="new-password"
-              error={errors.password}
-              helper={!errors.password ? 'At least 6 characters' : undefined}
-              icon={<Lock size={16} />}
-            />
-
-            <InputField
-              id="reg-phone"
-              label="Phone Number"
-              type="tel"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="+91 98765 43210"
-              required
-              autoComplete="tel"
-              error={errors.phone}
-              icon={<Phone size={16} />}
-            />
-
-            <button
-              id="reg-submit"
-              type="submit"
-              className="btn btn-primary"
-              style={{ padding: '14px', fontSize: 16, marginTop: 4, borderRadius: 14, width: '100%' }}
-              disabled={loading}
-            >
-              {loading ? 'Creating Account…' : 'Create Account'}
-            </button>
-          </form>
-
-          <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: 'var(--text-muted)' }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: '#7c3aed', textDecoration: 'none', fontWeight: 600 }}>Sign in →</Link>
-          </p>
+        <div className="role-selector" aria-label="Account role">
+          <button
+            type="button"
+            id="role-customer"
+            onClick={() => setForm((current) => ({ ...current, role: 'customer' }))}
+            className={`role-card ${form.role === 'customer' ? 'role-card-active' : ''}`}
+          >
+            <User size={18} />
+            Customer
+          </button>
+          <button
+            type="button"
+            id="role-shop_owner"
+            onClick={() => setForm((current) => ({ ...current, role: 'shop_owner' }))}
+            className={`role-card ${form.role === 'shop_owner' ? 'role-card-active' : ''}`}
+          >
+            <Store size={18} />
+            Shop Owner
+          </button>
         </div>
-      </div>
+
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
+          <InputField
+            id="reg-name"
+            label="Full Name"
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Your full name"
+            required
+            error={errors.name}
+            icon={<User size={16} />}
+          />
+
+          <InputField
+            id="reg-email"
+            label="Email Address"
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="you@example.com"
+            required
+            autoComplete="email"
+            error={errors.email}
+            icon={<Mail size={16} />}
+          />
+
+          <InputField
+            id="reg-password"
+            label="Password"
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Min. 6 characters"
+            required
+            autoComplete="new-password"
+            error={errors.password}
+            helper={!errors.password ? 'At least 6 characters' : undefined}
+            icon={<Lock size={16} />}
+          />
+
+          <InputField
+            id="reg-phone"
+            label="Phone Number"
+            type="tel"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="+91 98765 43210"
+            required
+            autoComplete="tel"
+            error={errors.phone}
+            icon={<Phone size={16} />}
+          />
+
+          <button id="reg-submit" type="submit" className="luxury-btn luxury-btn-primary auth-submit" disabled={loading}>
+            {loading ? 'Creating account...' : 'Create account'}
+            {!loading && <ArrowRight size={18} />}
+          </button>
+        </form>
+
+        <p className="auth-switch">
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+      </section>
     </div>
   );
 };

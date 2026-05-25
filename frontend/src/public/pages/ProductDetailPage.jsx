@@ -1,8 +1,29 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import {
+  BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  MessageCircle,
+  RotateCcw,
+  ShieldCheck,
+  Sparkles,
+  Store,
+  Tag,
+  Truck,
+} from 'lucide-react';
 import { getProduct } from '../services/product.service.js';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
-import { MessageCircle, Store, MapPin, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const formatPrice = (value) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(Number(value || 0));
+
+const getImageUrl = (img) => (typeof img === 'object' ? img?.url : img);
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -14,232 +35,241 @@ const ProductDetailPage = () => {
   const [selectedColor, setSelectedColor] = useState('');
 
   useEffect(() => {
-    const fetch = async () => {
+    let mounted = true;
+
+    const fetchProduct = async () => {
       setLoading(true);
       try {
         const { data } = await getProduct(id);
-        setProduct(data.data);
+        if (mounted) {
+          setProduct(data.data);
+          setActiveImg(0);
+        }
       } catch (err) {
-        setError(err.response?.data?.message || 'Product not found');
+        if (mounted) setError(err.response?.data?.message || 'Product not found');
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
-    fetch();
+
+    void fetchProduct();
+
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
   if (loading) return <LoadingSpinner fullScreen />;
-  if (error || !product) return (
-    <div style={{ paddingTop: 100, textAlign: 'center', padding: '120px 24px' }}>
-      <p style={{ color: '#EF4444', fontSize: 18, marginBottom: 16 }}>{error || 'Product not found'}</p>
-      <Link to="/products" className="btn btn-primary">Browse Products</Link>
-    </div>
-  );
+  if (error || !product) {
+    return (
+      <div className="marketplace-page luxury-shell public-error-state">
+        <p>{error || 'Product not found'}</p>
+        <Link to="/products" className="luxury-btn luxury-btn-primary">Browse products</Link>
+      </div>
+    );
+  }
 
   const { name, description, price, discountPrice, images, category, sizes, colors, stock, shop } = product;
   const hasDiscount = discountPrice && discountPrice < price;
   const displayPrice = hasDiscount ? discountPrice : price;
-  const rawImgs = images?.length ? images : ['https://placehold.co/600x700/1A1033/9B8EC4?text=No+Image'];
-  const imgs = rawImgs.map(img => typeof img === 'object' ? img.url : img);
-
+  const rawImgs = images?.length ? images : ['https://placehold.co/900x1125/f0ece8/756f72?text=Fashion'];
+  const imgs = rawImgs.map(getImageUrl).filter(Boolean);
+  const categoryLabel = typeof category === 'object' ? category?.name : category;
+  const whatsappText = `Hi! I'm interested in "${name}" - Price: ${formatPrice(displayPrice)}`;
   const whatsappUrl = shop?.whatsappNumber
-    ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}" - Price: ₹${displayPrice}`
+    ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(whatsappText)}`
     : null;
 
   return (
-    <div style={{ paddingTop: 80, minHeight: '100vh' }}>
-      <div className="container" style={{ paddingTop: 40, paddingBottom: 80 }}>
-        {/* Breadcrumb */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, fontSize: 13, color: 'var(--text-faint)' }}>
-          <Link to="/" style={{ color: 'var(--text-faint)', textDecoration: 'none' }}>Home</Link>
+    <div className="marketplace-page product-detail-page">
+      <div className="container">
+        <div className="product-breadcrumb">
+          <Link to="/">Home</Link>
           <span>/</span>
-          <Link to="/products" style={{ color: 'var(--text-faint)', textDecoration: 'none' }}>Products</Link>
+          <Link to="/products">Products</Link>
           <span>/</span>
-          <span style={{ color: 'var(--text-muted)' }}>{name}</span>
+          <span>{name}</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 48, alignItems: 'start' }}>
-          {/* Images */}
-          <div>
-            <div style={{
-              aspectRatio: '4/5', borderRadius: 20, overflow: 'hidden',
-              background: 'var(--surface)', marginBottom: 16, position: 'relative',
-            }}>
-              <img
-                src={imgs[activeImg]}
-                alt={name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+        <div className="product-detail-grid">
+          <section className="product-gallery" aria-label={`${name} gallery`}>
+            {imgs.length > 1 && (
+              <div className="product-thumbs">
+                {imgs.map((img, index) => (
+                  <button
+                    key={img + index}
+                    type="button"
+                    className={`product-thumb ${index === activeImg ? 'product-thumb-active' : ''}`}
+                    onClick={() => setActiveImg(index)}
+                    aria-label={`View image ${index + 1}`}
+                  >
+                    <img src={img} alt="" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="product-main-image">
+              <img src={imgs[activeImg]} alt={name} />
               {imgs.length > 1 && (
                 <>
                   <button
-                    onClick={() => setActiveImg((a) => (a - 1 + imgs.length) % imgs.length)}
-                    style={{
-                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-                      background: 'rgba(10,6,20,0.7)', border: '1px solid var(--border)',
-                      borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', color: 'var(--text)',
-                    }}
+                    type="button"
+                    onClick={() => setActiveImg((current) => (current - 1 + imgs.length) % imgs.length)}
+                    className="gallery-arrow gallery-arrow-left"
                     id="img-prev"
+                    aria-label="Previous image"
                   >
-                    <ChevronLeft size={18} />
+                    <ChevronLeft size={19} />
                   </button>
                   <button
-                    onClick={() => setActiveImg((a) => (a + 1) % imgs.length)}
-                    style={{
-                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                      background: 'rgba(10,6,20,0.7)', border: '1px solid var(--border)',
-                      borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', color: 'var(--text)',
-                    }}
+                    type="button"
+                    onClick={() => setActiveImg((current) => (current + 1) % imgs.length)}
+                    className="gallery-arrow gallery-arrow-right"
                     id="img-next"
+                    aria-label="Next image"
                   >
-                    <ChevronRight size={18} />
+                    <ChevronRight size={19} />
                   </button>
                 </>
               )}
             </div>
-            {imgs.length > 1 && (
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {imgs.map((img, i) => (
-                  <img
-                    key={i}
-                    src={img}
-                    alt=""
-                    onClick={() => setActiveImg(i)}
-                    style={{
-                      width: 64, height: 64, objectFit: 'cover', borderRadius: 10, cursor: 'pointer',
-                      border: `2px solid ${i === activeImg ? 'var(--primary)' : 'var(--border)'}`,
-                      opacity: i === activeImg ? 1 : 0.6,
-                      transition: 'all 0.2s',
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          </section>
 
-          {/* Details */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-faint)', background: 'var(--surface)', padding: '4px 12px', borderRadius: 999 }}>
-                <Tag size={11} /> {category}
+          <aside className="product-info-panel">
+            <div className="product-status-row">
+              <span className="fashion-badge">
+                <Tag size={12} /> {categoryLabel || 'Fashion'}
               </span>
               {stock > 0 ? (
-                <span className="badge badge-approved">In Stock ({stock})</span>
+                <span className="fashion-badge product-stock-good">
+                  <BadgeCheck size={12} /> In stock
+                </span>
               ) : (
-                <span className="badge badge-rejected">Out of Stock</span>
+                <span className="fashion-badge product-stock-out">Out of stock</span>
               )}
             </div>
 
-            <h1 style={{ fontSize: 'clamp(22px, 3vw, 32px)', marginBottom: 20, lineHeight: 1.3 }}>{name}</h1>
+            <span className="luxury-eyebrow">Product story</span>
+            <h1 className="product-detail-title">{name}</h1>
 
-            {/* Price */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 24 }}>
-              <span style={{ fontSize: 36, fontWeight: 800, color: hasDiscount ? '#10B981' : 'var(--primary-light)', fontFamily: 'Outfit, sans-serif' }}>
-                ₹{displayPrice?.toLocaleString()}
-              </span>
+            <div className="product-detail-price">
+              <strong>{formatPrice(displayPrice)}</strong>
               {hasDiscount && (
                 <>
-                  <span style={{ fontSize: 20, color: 'var(--text-faint)', textDecoration: 'line-through' }}>₹{price?.toLocaleString()}</span>
-                  <span style={{ fontSize: 14, color: '#10B981', background: 'rgba(16,185,129,0.1)', padding: '2px 10px', borderRadius: 999 }}>
-                    {Math.round(((price - discountPrice) / price) * 100)}% OFF
+                  <del>{formatPrice(price)}</del>
+                  <span className="fashion-badge fashion-badge-sale">
+                    {Math.round(((price - discountPrice) / price) * 100)}% off
                   </span>
                 </>
               )}
             </div>
 
-            {/* Description */}
-            {description && (
-              <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 24, fontSize: 15 }}>{description}</p>
-            )}
+            {description && <p className="product-description">{description}</p>}
 
-            {/* Sizes */}
             {sizes?.length > 0 && (
-              <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10, fontWeight: 600 }}>SIZE</p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {sizes.map((s) => (
+              <div className="product-option-group">
+                <div className="product-option-label">
+                  <span>Size</span>
+                  {selectedSize && <span>Selected: {selectedSize}</span>}
+                </div>
+                <div className="product-option-list">
+                  {sizes.map((size) => (
                     <button
-                      key={s}
-                      onClick={() => setSelectedSize(s)}
-                      className={`btn ${selectedSize === s ? 'btn-primary' : 'btn-ghost'}`}
-                      style={{ padding: '8px 16px', fontSize: 13, minWidth: 44 }}
+                      key={size}
+                      type="button"
+                      onClick={() => setSelectedSize(size)}
+                      className={`product-option-btn ${selectedSize === size ? 'product-option-btn-active' : ''}`}
                     >
-                      {s}
+                      {size}
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Colors */}
             {colors?.length > 0 && (
-              <div style={{ marginBottom: 28 }}>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10, fontWeight: 600 }}>COLOR</p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {colors.map((c) => (
+              <div className="product-option-group">
+                <div className="product-option-label">
+                  <span>Color</span>
+                  {selectedColor && <span>Selected: {selectedColor}</span>}
+                </div>
+                <div className="product-option-list">
+                  {colors.map((color) => (
                     <button
-                      key={c}
-                      onClick={() => setSelectedColor(c)}
-                      className={`btn ${selectedColor === c ? 'btn-primary' : 'btn-ghost'}`}
-                      style={{ padding: '7px 16px', fontSize: 13 }}
+                      key={color}
+                      type="button"
+                      onClick={() => setSelectedColor(color)}
+                      className={`product-option-btn ${selectedColor === color ? 'product-option-btn-active' : ''}`}
                     >
-                      {c}
+                      {color}
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* WhatsApp CTA */}
             {whatsappUrl && (
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn"
-                style={{
-                  background: 'linear-gradient(135deg, #25D366, #128C7E)',
-                  color: '#fff', padding: '14px 28px', fontSize: 16,
-                  boxShadow: '0 8px 24px rgba(37,211,102,0.35)',
-                  marginBottom: 20, textDecoration: 'none', width: '100%',
-                }}
+                className="fashion-whatsapp product-primary-cta"
                 id="whatsapp-cta-main"
               >
                 <MessageCircle size={20} />
-                Contact Shop on WhatsApp
+                Contact shop on WhatsApp
               </a>
             )}
 
-            {/* Shop info */}
+            <div className="product-trust-grid">
+              <div className="product-trust-item">
+                <Truck size={20} />
+                <span>Confirm delivery</span>
+              </div>
+              <div className="product-trust-item">
+                <ShieldCheck size={20} />
+                <span>Verified shop</span>
+              </div>
+              <div className="product-trust-item">
+                <RotateCcw size={20} />
+                <span>Ask returns</span>
+              </div>
+            </div>
+
             {shop && (
-              <Link to={`/shops/${shop._id}`} style={{ textDecoration: 'none' }}>
-                <div className="card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <img
-                    src={shop.logo || `https://placehold.co/60x60/231845/9B8EC4?text=${shop.name?.charAt(0)}`}
-                    alt={shop.name}
-                    style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover' }}
-                  />
-                  <div>
-                    <p style={{ fontWeight: 600, marginBottom: 4, color: 'var(--text)' }}>{shop.name}</p>
-                    {shop.city && (
-                      <p style={{ fontSize: 13, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <MapPin size={11} /> {shop.city}
-                      </p>
-                    )}
-                  </div>
-                  <div style={{ marginLeft: 'auto' }}>
-                    <span style={{ fontSize: 12, color: 'var(--primary-light)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Store size={12} /> View Shop →
+              <Link to={`/shops/${shop._id}`} className="product-shop-card">
+                <img src={shop.logo || `https://placehold.co/120x120/f0ece8/756f72?text=${encodeURIComponent(shop.name?.charAt(0) || 'S')}`} alt={shop.name} />
+                <div>
+                  <strong>{shop.name}</strong>
+                  {shop.city && (
+                    <span>
+                      <MapPin size={12} /> {shop.city}
                     </span>
-                  </div>
+                  )}
                 </div>
+                <span className="product-shop-action">
+                  <Store size={13} /> View shop
+                </span>
               </Link>
             )}
-          </div>
+
+            <div className="product-note">
+              <Sparkles size={17} />
+              <span>Message the seller for fit guidance, availability, custom styling, and pickup or delivery details.</span>
+            </div>
+          </aside>
         </div>
       </div>
+
+      {whatsappUrl && (
+        <div className="product-mobile-buybar">
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="fashion-whatsapp" id="whatsapp-cta-sticky">
+            <MessageCircle size={18} />
+            Contact shop
+          </a>
+        </div>
+      )}
     </div>
   );
 };

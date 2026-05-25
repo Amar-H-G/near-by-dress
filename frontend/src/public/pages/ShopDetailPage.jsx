@@ -1,11 +1,20 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { BadgeCheck, MapPin, MessageCircle, Package, Sparkles, Store } from 'lucide-react';
 import { getShop, getShopProducts } from '../../shared/services/shop.service.js';
 import ProductCard from '../components/ProductCard';
 import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import EmptyState from '../../shared/components/EmptyState';
-import { MapPin, MessageCircle, Store } from 'lucide-react';
+
+const DEFAULT_COVER =
+  'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=1600&q=82';
+
+const normalizeProducts = (payload) => {
+  if (Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(payload.data?.products)) return payload.data.products;
+  return [];
+};
 
 const ShopDetailPage = () => {
   const { id } = useParams();
@@ -18,113 +27,144 @@ const ShopDetailPage = () => {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    const fetch = async () => {
+    let mounted = true;
+
+    const fetchShop = async () => {
       setLoading(true);
       try {
         const { data } = await getShop(id);
-        setShop(data.data);
+        if (mounted) setShop(data.data);
       } catch (err) {
-        setError(err.response?.data?.message || 'Shop not found');
+        if (mounted) setError(err.response?.data?.message || 'Shop not found');
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
-    fetch();
+
+    void fetchShop();
+
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
   useEffect(() => {
-    const fetch = async () => {
+    let mounted = true;
+
+    const fetchProducts = async () => {
       setProdLoading(true);
       try {
         const { data } = await getShopProducts(id, { page, limit: 12 });
-        setProducts(data.data);
-        setPagination({ page: data.page, totalPages: data.totalPages });
+        if (!mounted) return;
+        const productList = normalizeProducts(data);
+        setProducts(productList);
+        setPagination({
+          page: data.page || data.data?.page || page,
+          totalPages: data.totalPages || data.data?.totalPages || 1,
+        });
       } catch {
-        setProducts([]);
+        if (mounted) setProducts([]);
       } finally {
-        setProdLoading(false);
+        if (mounted) setProdLoading(false);
       }
     };
-    fetch();
+
+    void fetchProducts();
+
+    return () => {
+      mounted = false;
+    };
   }, [id, page]);
 
   if (loading) return <LoadingSpinner fullScreen />;
-  if (error || !shop) return (
-    <div style={{ paddingTop: 100, textAlign: 'center', padding: '120px 24px' }}>
-      <p style={{ color: '#EF4444', fontSize: 18, marginBottom: 16 }}>{error || 'Shop not found'}</p>
-      <Link to="/shops" className="btn btn-primary">Browse Shops</Link>
-    </div>
-  );
+  if (error || !shop) {
+    return (
+      <div className="marketplace-page luxury-shell public-error-state">
+        <p>{error || 'Shop not found'}</p>
+        <Link to="/shops" className="luxury-btn luxury-btn-primary">Browse shops</Link>
+      </div>
+    );
+  }
+
+  const whatsappUrl = shop.whatsappNumber
+    ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent('Hi! I found your shop on NearByDress')}`
+    : null;
 
   return (
-    <div style={{ paddingTop: 80, minHeight: '100vh' }}>
-      {/* Cover */}
-      <div style={{
-        height: 220, background: shop.coverImage
-          ? `url(${shop.coverImage}) center/cover`
-          : 'linear-gradient(135deg, var(--primary-dark), #EC4899)',
-        position: 'relative',
-      }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,6,20,0.5)' }} />
-      </div>
-
-      <div className="container" style={{ position: 'relative', marginTop: -56, paddingBottom: 80 }}>
-        {/* Shop header */}
-        <div className="glass-strong" style={{ borderRadius: 20, padding: '24px 28px', marginBottom: 40, display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-end' }}>
+    <div className="marketplace-page">
+      <header className="shopfront-hero">
+        <img src={shop.coverImage || DEFAULT_COVER} alt="" />
+        <div className="container shopfront-card">
           <img
-            src={shop.logo || `https://placehold.co/100x100/231845/9B8EC4?text=${shop.name?.charAt(0)}`}
+            src={shop.logo || `https://placehold.co/180x180/f0ece8/756f72?text=${encodeURIComponent(shop.name?.charAt(0) || 'S')}`}
             alt={shop.name}
-            style={{ width: 88, height: 88, borderRadius: 16, objectFit: 'cover', border: '3px solid var(--border)', flexShrink: 0 }}
+            className="shopfront-logo"
           />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 style={{ fontSize: 'clamp(22px, 3vw, 32px)', marginBottom: 6 }}>{shop.name}</h1>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
-              <span className={`badge badge-${shop.status}`}>{shop.status}</span>
+          <div>
+            <span className="luxury-eyebrow fashion-hero-kicker">
+              <Sparkles size={14} /> Seller storefront
+            </span>
+            <h1>{shop.name}</h1>
+            <div className="shopfront-meta">
+              {shop.status && (
+                <span>
+                  <BadgeCheck size={14} /> {shop.status}
+                </span>
+              )}
               {shop.city && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-muted)' }}>
-                  <MapPin size={12} /> {shop.city}
+                <span>
+                  <MapPin size={14} /> {shop.city}
                 </span>
               )}
               {shop.category && (
-                <span style={{ fontSize: 12, color: 'var(--text-faint)', background: 'var(--surface-2)', padding: '3px 10px', borderRadius: 999 }}>{shop.category}</span>
+                <span>
+                  <Store size={14} /> {shop.category}
+                </span>
               )}
+              <span>
+                <Package size={14} /> {products.length} products
+              </span>
             </div>
-            {shop.description && (
-              <p style={{ color: 'var(--text-muted)', marginTop: 10, fontSize: 14, lineHeight: 1.6, maxWidth: 600 }}>{shop.description}</p>
-            )}
+            {shop.description && <p className="shopfront-description">{shop.description}</p>}
           </div>
-          {shop.whatsappNumber && (
-            <a
-              href={`https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I found your shop on NearByDress`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn"
-              style={{ background: 'linear-gradient(135deg, #25D366, #128C7E)', color: '#fff', padding: '12px 24px', textDecoration: 'none', flexShrink: 0 }}
-              id="shop-whatsapp-btn"
-            >
-              <MessageCircle size={18} /> WhatsApp
+          {whatsappUrl && (
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="fashion-whatsapp shopfront-whatsapp" id="shop-whatsapp-btn">
+              <MessageCircle size={18} />
+              WhatsApp
             </a>
           )}
         </div>
+      </header>
 
-        {/* Products */}
-        <h2 style={{ fontSize: 24, marginBottom: 28, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Store size={22} style={{ color: 'var(--primary-light)' }} /> Shop Products
-        </h2>
+      <main className="container shopfront-content">
+        <div className="listing-results-header">
+          <div>
+            <span className="luxury-eyebrow">Shop collection</span>
+            <h2 className="luxury-title luxury-title-sm">Products from {shop.name}</h2>
+          </div>
+          <p>{products.length} styles shown</p>
+        </div>
 
         {prodLoading ? (
           <LoadingSpinner />
         ) : products.length === 0 ? (
-          <EmptyState icon="📦" title="No products yet" message="This shop hasn't added any products yet" />
+          <EmptyState icon="" title="No products yet" message="This shop has not added any products yet." />
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 24 }}>
-              {products.map((p) => <ProductCard key={p._id} product={{ ...p, shop }} />)}
+            <div className="fashion-product-grid">
+              {products.map((product) => <ProductCard key={product._id} product={{ ...product, shop }} />)}
             </div>
-            <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={(p) => { setPage(p); window.scrollTo({ top: 400, behavior: 'smooth' }); }} />
+            <Pagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={(nextPage) => {
+                setPage(nextPage);
+                window.scrollTo({ top: 420, behavior: 'smooth' });
+              }}
+            />
           </>
         )}
-      </div>
+      </main>
     </div>
   );
 };
