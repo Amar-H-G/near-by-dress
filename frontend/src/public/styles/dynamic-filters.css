@@ -1,0 +1,15 @@
+/* ─── Dynamic Filters ───────────────────────────────────────── */
+.dynamic-filters {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.filter-group-header:hover span {
+  color: var(--primary);
+}
+
+.filter-options {
+  padding-top: 4px;
+}

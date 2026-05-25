@@ -1,0 +1,11 @@
+/* ─── Utilities ──────────────────────────────────────────────── */
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.text-warning { color: var(--warning); }
+.text-faint { color: var(--text-faint); }
+.animate-spin { animation: spin 1s linear infinite; }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

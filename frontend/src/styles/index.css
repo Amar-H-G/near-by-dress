@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@import "../shared/styles/variables.css";
+@import "../shared/styles/base.css";
+@import "../shared/styles/primitives.css";
+@import "../shared/styles/workspace.css";
+@import "../public/styles/dynamic-filters.css";
+@import "../shared/styles/utilities.css";
+@import "../shared/styles/forms.css";
