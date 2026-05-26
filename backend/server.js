@@ -46,8 +46,8 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:3000',
   'https://near-dress.onrender.com',     // production frontend
-  'https://near-by-dress.onrender.com',  // backend itself (same-origin API calls)
-  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(u => u.trim()) : []),
+  'https://near-by-dress.onrender.com',  // backend itself
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(u => u.trim().replace(/\/$/, '')) : []),
 ];
 
 app.use(
@@ -55,8 +55,11 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
       if (!origin) return callback(null, true);
-      if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-      callback(new Error(`CORS: origin '${origin}' not allowed`));
+      const cleanOrigin = origin.replace(/\/$/, '');
+      if (ALLOWED_ORIGINS.includes(cleanOrigin)) {
+        return callback(null, true);
+      }
+      callback(null, false); // Reject naturally without crashing Express
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -85,9 +88,13 @@ const settingsCtrl   = require('./src/modules/admin/controllers/settings.control
 const categoryCtrl   = require('./src/modules/admin/controllers/category.controller');
 const filterCtrl     = require('./src/modules/admin/controllers/filter.controller');
 
-app.get('/api/settings', settingsCtrl.getSettings);
-app.get('/api/categories', categoryCtrl.getCategories);
-app.get('/api/filters', filterCtrl.getFilters);
+// Mount Caching Middleware for settings, categories, and filters
+const cacheMiddleware = require('./src/core/cache/cache.middleware');
+const { KEYS } = require('./src/core/cache/cacheKeys');
+
+app.get('/api/settings', cacheMiddleware(KEYS.SETTINGS, 1800), settingsCtrl.getSettings);
+app.get('/api/categories', cacheMiddleware(KEYS.CATEGORIES, 1800), categoryCtrl.getCategories);
+app.get('/api/filters', cacheMiddleware(KEYS.FILTERS, 1800), filterCtrl.getFilters);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/shops', shopRoutes);
