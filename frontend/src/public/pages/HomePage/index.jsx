@@ -8,6 +8,7 @@ import FeaturedProducts from './FeaturedProducts';
 import CategoriesSection from './CategoriesSection';
 import CampaignSection from './CampaignSection';
 import FeaturedShopsSection from './FeaturedShopsSection';
+import NearbyDiscoveryFeed from './NearbyDiscoveryFeed';
 import MoodSection from './MoodSection';
 import SellerCtaSection from './SellerCtaSection';
 import FooterSection from './FooterSection';
@@ -68,6 +69,7 @@ const HomePage = () => {
       />
       <MoodSection />
       <FeaturedShopsSection shops={featuredShops} />
+      <NearbyDiscoveryFeed />
       <SellerCtaSection />
       <FooterSection settings={settings} />
     </div>

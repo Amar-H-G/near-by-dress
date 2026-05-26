@@ -1,0 +1,146 @@
+================================================================================
+NEARBYDRESS SEEDED MARKETPLACE MERCHANTS (20 ACCOUNTS)
+Base Location: Siliguri, West Bengal (734001)
+Generated At: 2026-05-26T16:37:29.462Z
+================================================================================
+
+1. MERCHANT DETAILS
+   Name     : Amit Sharma
+   Email    : amitsharma.1@nearbydress.com
+   Password : DressNearby_amit_10
+   Boutique : Ethnic Essence
+   Phone    : +91952298128
+--------------------------------------------------------------------------------
+2. MERCHANT DETAILS
+   Name     : Priya Sen
+   Email    : priyasen.2@nearbydress.com
+   Password : DressNearby_priy_11
+   Boutique : Retro Threads
+   Phone    : +91948805784
+--------------------------------------------------------------------------------
+3. MERCHANT DETAILS
+   Name     : Rohan Roy
+   Email    : rohanroy.3@nearbydress.com
+   Password : DressNearby_roha_12
+   Boutique : Saree Sangam
+   Phone    : +91918701944
+--------------------------------------------------------------------------------
+4. MERCHANT DETAILS
+   Name     : Vikram Banerjee
+   Email    : vikrambanerjee.4@nearbydress.com
+   Password : DressNearby_vikr_13
+   Boutique : Urban Vogue Closet
+   Phone    : +91915119387
+--------------------------------------------------------------------------------
+5. MERCHANT DETAILS
+   Name     : Sneha Gupta
+   Email    : snehagupta.5@nearbydress.com
+   Password : DressNearby_sneh_14
+   Boutique : Label Priyam
+   Phone    : +91993257730
+--------------------------------------------------------------------------------
+6. MERCHANT DETAILS
+   Name     : Divya Patel
+   Email    : divyapatel.6@nearbydress.com
+   Password : DressNearby_divy_15
+   Boutique : Kora Silk Studio
+   Phone    : +91967740152
+--------------------------------------------------------------------------------
+7. MERCHANT DETAILS
+   Name     : Kavita Nair
+   Email    : kavitanair.7@nearbydress.com
+   Password : DressNearby_kavi_16
+   Boutique : Royal Drapes Bridal
+   Phone    : +91991716701
+--------------------------------------------------------------------------------
+8. MERCHANT DETAILS
+   Name     : Rajesh Khandelwal
+   Email    : rajeshkhandelwal.8@nearbydress.com
+   Password : DressNearby_raje_17
+   Boutique : Street Spark Couture
+   Phone    : +91946196541
+--------------------------------------------------------------------------------
+9. MERCHANT DETAILS
+   Name     : Ankita Das
+   Email    : ankitadas.9@nearbydress.com
+   Password : DressNearby_anki_18
+   Boutique : Neon Kicks & Apparel
+   Phone    : +91998459869
+--------------------------------------------------------------------------------
+10. MERCHANT DETAILS
+   Name     : Debolina Chowdhury
+   Email    : debolinachowdhury.10@nearbydress.com
+   Password : DressNearby_debo_19
+   Boutique : Kiddie Kouture
+   Phone    : +91975335255
+--------------------------------------------------------------------------------
+11. MERCHANT DETAILS
+   Name     : Sandeep Verma
+   Email    : sandeepverma.11@nearbydress.com
+   Password : DressNearby_sand_20
+   Boutique : Classic Cuts Formalwear
+   Phone    : +91924637548
+--------------------------------------------------------------------------------
+12. MERCHANT DETAILS
+   Name     : Neha Agarwal
+   Email    : nehaagarwal.12@nearbydress.com
+   Password : DressNearby_neha_21
+   Boutique : Loom & Craft Weaves
+   Phone    : +91934912108
+--------------------------------------------------------------------------------
+13. MERCHANT DETAILS
+   Name     : Pooja Mishra
+   Email    : poojamishra.13@nearbydress.com
+   Password : DressNearby_pooj_22
+   Boutique : Kolkata Karigari
+   Phone    : +91969344515
+--------------------------------------------------------------------------------
+14. MERCHANT DETAILS
+   Name     : Abhishek Saha
+   Email    : abhisheksaha.14@nearbydress.com
+   Password : DressNearby_abhi_23
+   Boutique : Siliguri Threads
+   Phone    : +91994248292
+--------------------------------------------------------------------------------
+15. MERCHANT DETAILS
+   Name     : Sourav Ghosh
+   Email    : souravghosh.15@nearbydress.com
+   Password : DressNearby_sour_24
+   Boutique : Thread & Needle Studio
+   Phone    : +91975527889
+--------------------------------------------------------------------------------
+16. MERCHANT DETAILS
+   Name     : Joydeep Paul
+   Email    : joydeeppaul.16@nearbydress.com
+   Password : DressNearby_joyd_25
+   Boutique : Glamour Galore
+   Phone    : +91952052575
+--------------------------------------------------------------------------------
+17. MERCHANT DETAILS
+   Name     : Trisha Sinha
+   Email    : trishasinha.17@nearbydress.com
+   Password : DressNearby_tris_26
+   Boutique : The Silk Route
+   Phone    : +91971483144
+--------------------------------------------------------------------------------
+18. MERCHANT DETAILS
+   Name     : Priyanka Dey
+   Email    : priyankadey.18@nearbydress.com
+   Password : DressNearby_priy_27
+   Boutique : Monsoon Magic
+   Phone    : +91999251965
+--------------------------------------------------------------------------------
+19. MERCHANT DETAILS
+   Name     : Manish Prasad
+   Email    : manishprasad.19@nearbydress.com
+   Password : DressNearby_mani_28
+   Boutique : Elite Weaves Boutique
+   Phone    : +91932168837
+--------------------------------------------------------------------------------
+20. MERCHANT DETAILS
+   Name     : Varun Bhatia
+   Email    : varunbhatia.20@nearbydress.com
+   Password : DressNearby_varu_29
+   Boutique : Vogue Aura
+   Phone    : +91956139566
+--------------------------------------------------------------------------------

@@ -3,12 +3,13 @@
  * Purpose: Main navigation bar
  */
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronDown,
   Home,
   LayoutDashboard,
   LogOut,
+  MapPin,
   Menu,
   Search,
   Shield,
@@ -19,6 +20,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../core/auth/useAuth';
 import { useSettings } from '../../core/contexts/useSettings';
+import { useLocation as useUserLocation } from '../../core/contexts/useLocation';
+import LocationSelectorModal from '../../shared/location/components/LocationSelectorModal';
 
 const navLinks = [
   { label: 'Home', to: '/', icon: Home },
@@ -29,12 +32,14 @@ const navLinks = [
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const { settings, categories } = useSettings();
-  const location = useLocation();
+  const location = useRouterLocation();
+  const { location: userLoc, clearLocation } = useUserLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const dropRef = useRef(null);
   const catDropRef = useRef(null);
 
@@ -73,6 +78,13 @@ const Navbar = () => {
   const selectedCategory = categories?.find((category) => category._id === selectedCategoryId);
   const rootCategories = categories?.filter((category) => !category.parentId) || [];
   const isDetailRoute = /^\/products\/[^/]+/.test(location.pathname) || /^\/shops\/[^/]+/.test(location.pathname);
+
+  // Location chip label
+  const locationLabel = userLoc.city
+    ? userLoc.city
+    : userLoc.pincode
+      ? userLoc.pincode
+      : null;
 
   return (
     <>
@@ -144,6 +156,46 @@ const Navbar = () => {
           </div>
 
           <div className="marketplace-nav-actions">
+            {/* Location chip — shown when location is resolved */}
+            {locationLabel ? (
+              <button
+                onClick={() => setIsLocationModalOpen(true)}
+                title="Change location"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '6px 12px', borderRadius: 999,
+                  background: 'rgba(124,58,237,0.08)',
+                  border: '1px solid rgba(124,58,237,0.2)',
+                  color: '#7c3aed', fontSize: 12, fontWeight: 700,
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(124,58,237,0.14)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; }}
+              >
+                <MapPin size={11} />
+                {locationLabel}
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsLocationModalOpen(true)}
+                title="Select delivery area"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '6px 12px', borderRadius: 999,
+                  background: 'none',
+                  border: '1px dashed var(--border)',
+                  color: 'var(--text-muted)', fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#7c3aed'; e.currentTarget.style.color = '#7c3aed'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+              >
+                <MapPin size={11} />
+                Set Location
+              </button>
+            )}
+
             <Link to="/products" className="marketplace-icon-btn" aria-label="Search products" title="Search">
               <Search size={18} />
             </Link>
@@ -252,6 +304,9 @@ const Navbar = () => {
           </Link>
         </div>
       )}
+
+      {/* Premium location selector modal */}
+      <LocationSelectorModal isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} />
     </>
   );
 };

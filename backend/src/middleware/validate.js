@@ -31,7 +31,17 @@ const createShopSchema = Joi.object({
   whatsappNumber: Joi.string().required(),
   address: Joi.string().allow('').optional(),
   city: Joi.string().allow('').optional(),
+  state: Joi.string().allow('').optional(),
+  pincode: Joi.string().allow('').optional(),
+  shopNo: Joi.string().allow('').optional(),
+  openingTime: Joi.string().allow('').optional(),
+  closingTime: Joi.string().allow('').optional(),
   category: Joi.string().allow('').optional(),
+  // Geo fields (optional at creation)
+  lat: Joi.number().min(-90).max(90).optional(),
+  lng: Joi.number().min(-180).max(180).optional(),
+  serviceRadiusKm: Joi.number().min(1).max(100).optional(),
+  formattedAddress: Joi.string().allow('', null).optional(),
 });
 
 const updateShopSchema = Joi.object({
@@ -40,7 +50,17 @@ const updateShopSchema = Joi.object({
   whatsappNumber: Joi.string().optional(),
   address: Joi.string().allow('').optional(),
   city: Joi.string().allow('').optional(),
+  state: Joi.string().allow('').optional(),
+  pincode: Joi.string().allow('').optional(),
+  shopNo: Joi.string().allow('').optional(),
+  openingTime: Joi.string().allow('').optional(),
+  closingTime: Joi.string().allow('').optional(),
   category: Joi.string().allow('').optional(),
+  // Geo fields
+  lat: Joi.number().min(-90).max(90).optional(),
+  lng: Joi.number().min(-180).max(180).optional(),
+  serviceRadiusKm: Joi.number().min(1).max(100).optional(),
+  formattedAddress: Joi.string().allow('', null).optional(),
 });
 
 const shopStatusSchema = Joi.object({

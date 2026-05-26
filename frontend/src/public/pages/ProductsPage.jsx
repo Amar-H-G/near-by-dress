@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { MapPin, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { getProducts } from '../services/product.service.js';
+import { useLocation as useUserLocation } from '../../core/contexts/useLocation';
 import ProductCard from '../components/ProductCard';
 import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
@@ -16,6 +17,7 @@ const normalizeProducts = (payload) => {
 
 const ProductsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { location: userLoc } = useUserLocation();
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(false);
@@ -82,6 +84,21 @@ const ProductsPage = () => {
           </span>
           <h1>Explore fashion from verified shops</h1>
           <p>{pagination.total > 0 ? `${pagination.total} products found` : 'Search new arrivals, categories, colors, and styles.'}</p>
+
+          {/* Location context pill */}
+          {userLoc.city && (
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '5px 12px', borderRadius: 999,
+              background: 'rgba(255,255,255,0.12)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.85)',
+              marginTop: 4,
+            }}>
+              <MapPin size={11} />
+              Showing from {userLoc.city}{userLoc.state ? `, ${userLoc.state}` : ''}
+            </div>
+          )}
 
           <form onSubmit={handleSearch} className="listing-toolbar">
             <div className="luxury-search">

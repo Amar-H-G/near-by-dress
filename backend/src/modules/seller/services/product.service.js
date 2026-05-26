@@ -27,9 +27,9 @@ const invalidateProductCache = async () => {
 /** Public: list active products with optional filters + Redis cache */
 const getProducts = async (query) => {
   const { page, limit, skip } = getPagination(query);
-  const { category, shop, search, minPrice, maxPrice } = query;
+  const { category, shop, search, minPrice, maxPrice, lat, lng, radiusKm, pincode } = query;
 
-  const cacheKey = `products:page:${page}:limit:${limit}:cat:${category || ''}:shop:${shop || ''}:q:${search || ''}:min:${minPrice || ''}:max:${maxPrice || ''}`;
+  const cacheKey = `products:page:${page}:limit:${limit}:cat:${category || ''}:shop:${shop || ''}:q:${search || ''}:min:${minPrice || ''}:max:${maxPrice || ''}:lat:${lat || ''}:lng:${lng || ''}:rad:${radiusKm || ''}:pin:${pincode || ''}`;
   const redis = getRedis();
 
   if (redis) {
@@ -51,7 +51,39 @@ const getProducts = async (query) => {
     if (foundCat) filter.category = foundCat._id;
     else filter.category = null; // Forces empty result if category doesn't exist
   }
-  if (shop) filter.shop = shop;
+
+  // Location filter overrides (optimized sub-queries using indexes)
+  if (shop) {
+    filter.shop = shop;
+  } else if (lat && lng) {
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    const parsedRadius = parseFloat(radiusKm) || 15; // Standard 15 KM!
+    if (!isNaN(parsedLat) && !isNaN(parsedLng)) {
+      const radiusMeters = parsedRadius * 1000;
+      const nearbyShops = await Shop.find({
+        status: 'approved',
+        isActive: true,
+        location: {
+          $near: {
+            $geometry: { type: 'Point', coordinates: [parsedLng, parsedLat] },
+            $maxDistance: radiusMeters,
+          },
+        },
+      }).select('_id');
+      const shopIds = nearbyShops.map(s => s._id);
+      filter.shop = { $in: shopIds };
+    }
+  } else if (pincode) {
+    const pincodeShops = await Shop.find({
+      status: 'approved',
+      isActive: true,
+      pincode: pincode
+    }).select('_id');
+    const shopIds = pincodeShops.map(s => s._id);
+    filter.shop = { $in: shopIds };
+  }
+
   if (minPrice || maxPrice) {
     filter.price = {};
     if (minPrice) filter.price.$gte = Number(minPrice);
@@ -60,7 +92,7 @@ const getProducts = async (query) => {
   if (search) filter.$text = { $search: search };
 
   // Dynamic Filters Integration
-  const standardParams = ['page', 'limit', 'category', 'shop', 'search', 'minPrice', 'maxPrice', 'sort'];
+  const standardParams = ['page', 'limit', 'category', 'shop', 'search', 'minPrice', 'maxPrice', 'sort', 'lat', 'lng', 'radiusKm', 'pincode'];
   Object.keys(query).forEach(key => {
     if (!standardParams.includes(key)) {
       const val = query[key];

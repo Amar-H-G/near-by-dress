@@ -4,6 +4,7 @@ import { updateSellerProfile } from '../services/sellerApi';
 import toast from 'react-hot-toast';
 import { Loader2, AlertCircle, Edit3 } from 'lucide-react';
 import ShopForm from '../components/ShopForm';
+import ShopLocationPicker from '../../shared/location/components/ShopLocationPicker';
 
 const Profile = () => {
   const { profile, loading, refresh } = useSellerProfile();
@@ -124,6 +125,22 @@ const Profile = () => {
             onCancel={() => setIsEditing(false)}
           />
         </div>
+
+        {/* ── Shop Location Card ───────────────────────────────────────── */}
+        {profile && (
+          <div className="card" style={{ padding: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+              <div style={{ width: 4, height: 20, background: '#7c3aed', borderRadius: 2 }} />
+              <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Shop Location</h2>
+            </div>
+            <div style={{ height: 1, background: 'var(--border)', marginBottom: 32, opacity: 0.5 }} />
+            <ShopLocationPicker
+              shop={profile}
+              onSaved={refresh}
+              readOnly={false}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

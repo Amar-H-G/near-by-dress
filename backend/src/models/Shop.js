@@ -77,12 +77,38 @@ const shopSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+
+    // ─── Geolocation ─────────────────────────────────────────────────────────
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]  — GeoJSON standard order
+        default: undefined,
+      },
+    },
+    formattedAddress: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    serviceRadiusKm: {
+      type: Number,
+      default: 10,
+      min: [1, 'Service radius must be at least 1 km'],
+      max: [100, 'Service radius cannot exceed 100 km'],
+    },
   },
   { timestamps: true }
 );
 
-// Index for fast lookups
+// ── Indexes ──────────────────────────────────────────────────────────────────
 shopSchema.index({ status: 1, city: 1 });
 shopSchema.index({ owner: 1 });
+// 2dsphere index — required for $near, $geoWithin, $geoNear queries
+shopSchema.index({ location: '2dsphere' }, { sparse: true }); // sparse so docs without location are not indexed
 
 module.exports = mongoose.model('Shop', shopSchema);

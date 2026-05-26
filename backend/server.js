@@ -79,10 +79,11 @@ app.get('/health', (_req, res) => {
 });
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
-const sellerRoutes  = require('./src/modules/seller/routes/seller.routes');
-const settingsCtrl  = require('./src/modules/admin/controllers/settings.controller');
-const categoryCtrl  = require('./src/modules/admin/controllers/category.controller');
-const filterCtrl    = require('./src/modules/admin/controllers/filter.controller');
+const sellerRoutes   = require('./src/modules/seller/routes/seller.routes');
+const locationRoutes = require('./src/modules/location/location.routes');
+const settingsCtrl   = require('./src/modules/admin/controllers/settings.controller');
+const categoryCtrl   = require('./src/modules/admin/controllers/category.controller');
+const filterCtrl     = require('./src/modules/admin/controllers/filter.controller');
 
 app.get('/api/settings', settingsCtrl.getSettings);
 app.get('/api/categories', categoryCtrl.getCategories);
@@ -93,6 +94,7 @@ app.use('/api/shops', shopRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/seller', sellerRoutes);
+app.use('/api/location', locationRoutes); // Geolocation module
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

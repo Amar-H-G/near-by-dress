@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Eye, Heart, MessageCircle, Sparkles, Star, Store } from 'lucide-react';
+import { useLocation } from '../../core/contexts/useLocation';
+import { haversineDistance, formatDistance } from '../../shared/location/utils/geoUtils';
 
 const formatPrice = (value) =>
   new Intl.NumberFormat('en-IN', {
@@ -17,6 +19,7 @@ const getProductImage = (images, name) => {
 
 const ProductCard = ({ product }) => {
   const { _id, name, price, discountPrice, images, category, shop } = product;
+  const { location: userLoc } = useLocation();
 
   const displayPrice = discountPrice && discountPrice < price ? discountPrice : price;
   const hasDiscount = discountPrice && discountPrice < price;
@@ -24,6 +27,16 @@ const ProductCard = ({ product }) => {
   const categoryLabel = typeof category === 'object' ? category?.name : category;
   const rating = product.rating || product.averageRating;
   const reviewCount = product.reviewCount || product.reviewsCount;
+
+  const shopCoords = shop?.location?.coordinates;
+  const hasUserCoords = userLoc.status === 'resolved' && userLoc.lat && userLoc.lng;
+  const hasShopCoords = Array.isArray(shopCoords) && shopCoords.length === 2 && shopCoords[0] && shopCoords[1];
+
+  let distanceText = null;
+  if (hasUserCoords && hasShopCoords) {
+    const dist = haversineDistance(userLoc.lat, userLoc.lng, shopCoords[1], shopCoords[0]);
+    distanceText = formatDistance(dist);
+  }
 
   const whatsappUrl = shop?.whatsappNumber
     ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}"`
@@ -41,6 +54,19 @@ const ProductCard = ({ product }) => {
             <Heart size={16} />
           </span>
         </div>
+        {distanceText && (
+          <div style={{
+            position: 'absolute', bottom: '12px', left: '12px',
+            background: 'rgba(15, 12, 30, 0.75)', backdropFilter: 'blur(8px)',
+            color: '#fff', fontSize: '10px', fontWeight: 800,
+            padding: '4px 8px', borderRadius: '6px',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            display: 'flex', alignItems: 'center', gap: '4px', zIndex: 2
+          }}>
+            <span style={{ fontSize: '10px' }}>⚡</span>
+            <span>{distanceText} away</span>
+          </div>
+        )}
         <div className="fashion-product-overlay" aria-hidden="true">
           <span className="fashion-quick-action">
             <Eye size={15} />

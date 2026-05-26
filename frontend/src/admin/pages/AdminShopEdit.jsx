@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { adminGetShop, adminUpdateShop } from '../services/admin.service.js';
 import ShopForm from '../../seller/components/ShopForm';
+import ShopLocationPicker from '../../shared/location/components/ShopLocationPicker';
 import toast from 'react-hot-toast';
-import { Loader2, ArrowLeft, Store } from 'lucide-react';
+import { Loader2, ArrowLeft, Store, MapPin } from 'lucide-react';
 
 const AdminShopEdit = () => {
   const { id } = useParams();
@@ -94,6 +95,35 @@ const AdminShopEdit = () => {
             onCancel={() => navigate('/admin/shops')}
           />
         </div>
+
+        {/* ── Admin Location Control & Map Placement Card ────────────────── */}
+        {shop && (
+          <div className="admin-section" style={{ padding: 32, marginTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+              <div className="admin-modal-icon admin-modal-icon-primary" style={{ background: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed' }}>
+                <MapPin size={20} />
+              </div>
+              <div>
+                <h2 className="admin-section-title" style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Geospatial Control & Validation</h2>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  Assign coordinates, verify map pin placement, and update pincode or delivery coverage boundaries.
+                </p>
+              </div>
+            </div>
+            
+            <div style={{ height: 1, background: 'var(--border)', marginBottom: 32, opacity: 0.5 }} />
+
+            <ShopLocationPicker
+              shop={shop}
+              onSaved={async () => {
+                // Refresh shop details from backend to ensure data remains perfectly in sync
+                const { data } = await adminGetShop(id);
+                setShop(data.data);
+              }}
+              readOnly={false}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
