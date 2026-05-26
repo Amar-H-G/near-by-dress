@@ -5,7 +5,7 @@ import Navbar from '../public/components/Navbar';
 
 const PublicRoutes = lazy(() => import('./publicRoutes'));
 const SellerRoutes = lazy(() => import('./sellerRoutes'));
-const AdminRoutes = lazy(() => import('./adminRoutes'));
+const AdminRoutes = lazy(() => import('./AdminRoutes'));
 const LoginPage = lazy(() => import('../public/pages/LoginPage'));
 const RegisterPage = lazy(() => import('../public/pages/RegisterPage'));
 
