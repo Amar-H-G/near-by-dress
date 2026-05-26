@@ -16,6 +16,10 @@ import {
 import { getProduct } from '../services/product.service.js';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 
+// SEO & Schema Injections
+import SEO from '../../shared/seo/SEO';
+import SchemaMarkup from '../../shared/seo/SchemaMarkup';
+
 const formatPrice = (value) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -80,8 +84,23 @@ const ProductDetailPage = () => {
     ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(whatsappText)}`
     : null;
 
+  const breadcrumbs = [
+    { name: 'Home', url: window.location.origin },
+    { name: 'Products', url: `${window.location.origin}/products` },
+    { name: name, url: window.location.href }
+  ];
+
   return (
     <div className="marketplace-page product-detail-page">
+      <SEO
+        title={name}
+        description={description ? description.substring(0, 155) : `Buy ${name} at ${shop?.name || 'our boutique'} online near you. High-quality fashion collection.`}
+        keywords={`${name}, buy ${name} near me, ${categoryLabel || 'ethnic wear'}, ${shop?.name || ''}, clothes shopping by pincode`}
+        ogImage={imgs[0]}
+      />
+      <SchemaMarkup type="product" data={product} />
+      <SchemaMarkup type="breadcrumbs" data={breadcrumbs} />
+
       <div className="container">
         <div className="product-breadcrumb">
           <Link to="/">Home</Link>

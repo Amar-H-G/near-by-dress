@@ -13,6 +13,10 @@ import MoodSection from './MoodSection';
 import SellerCtaSection from './SellerCtaSection';
 import FooterSection from './FooterSection';
 
+// SEO components
+import SEO from '../../../shared/seo/SEO';
+import SchemaMarkup from '../../../shared/seo/SchemaMarkup';
+
 const normalizeList = (payload, nestedKey) => {
   const data = payload?.data?.data;
   if (Array.isArray(data)) return data;
@@ -49,8 +53,19 @@ const HomePage = () => {
     };
   }, []);
 
+  const pageKeywords = categories?.map(c => c.name).join(', ') || 'sarees, kurtis, boutiques, nearby fashion';
+
   return (
     <div className="marketplace-page">
+      <SEO
+        title="Home"
+        description={settings?.description || "NearByDress - Discover and buy premium fashion wear, sarees, kurtis, and designer wear from boutiques and tailors near you."}
+        keywords={`nearby dress shops, boutiques near me, ethnic wear near me, local fashion discovery, ${pageKeywords}`}
+      />
+      <SchemaMarkup
+        type="website"
+        data={{ _id: 'global' }}
+      />
       <HeroSection siteName={settings?.siteName || 'NearByDress'} />
       <FeaturesSection siteName={settings?.siteName || 'NearByDress'} />
       <CampaignSection />

@@ -81,6 +81,11 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', env: process.env.NODE_ENV, timestamp: new Date().toISOString() });
 });
 
+// ─── Root SEO crawlers ───────────────────────────────────────────────────────
+const seoCtrl = require('./src/modules/seo/seo.controller');
+app.get('/robots.txt', seoCtrl.getRobotsTxt);
+app.get('/sitemap.xml', seoCtrl.getSitemapXml);
+
 // ─── API Routes ──────────────────────────────────────────────────────────────
 const sellerRoutes   = require('./src/modules/seller/routes/seller.routes');
 const locationRoutes = require('./src/modules/location/location.routes');

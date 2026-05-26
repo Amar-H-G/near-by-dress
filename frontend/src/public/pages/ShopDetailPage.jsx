@@ -7,6 +7,10 @@ import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import EmptyState from '../../shared/components/EmptyState';
 
+// SEO & Schema Injections
+import SEO from '../../shared/seo/SEO';
+import SchemaMarkup from '../../shared/seo/SchemaMarkup';
+
 const DEFAULT_COVER =
   'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=1600&q=82';
 
@@ -90,8 +94,23 @@ const ShopDetailPage = () => {
     ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent('Hi! I found your shop on NearByDress')}`
     : null;
 
+  const breadcrumbs = [
+    { name: 'Home', url: window.location.origin },
+    { name: 'Shops', url: `${window.location.origin}/shops` },
+    { name: shop.name, url: window.location.href }
+  ];
+
   return (
     <div className="marketplace-page">
+      <SEO
+        title={shop.name}
+        description={shop.description || `Visit ${shop.name} boutique in ${shop.city || 'your city'}. Explore customized styles, ethnic wear, sarees, kurtis, and designer wear.`}
+        keywords={`${shop.name}, fashion shop near me, clothing store ${shop.city || ''}, boutique ${shop.pincode || ''}, local boutiques`}
+        ogImage={shop.logo || shop.coverImage}
+      />
+      <SchemaMarkup type="localbusiness" data={shop} />
+      <SchemaMarkup type="breadcrumbs" data={breadcrumbs} />
+
       <header className="shopfront-hero">
         <img src={shop.coverImage || DEFAULT_COVER} alt="" />
         <div className="container shopfront-card">
