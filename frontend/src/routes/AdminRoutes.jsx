@@ -15,28 +15,28 @@ const AdminAddShop = lazy(() => import('../admin/pages/AdminAddShop'));
 const AdminShopEdit = lazy(() => import('../admin/pages/AdminShopEdit'));
 
 const AdminRoutes = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <ProtectedRoute roles={['admin']}>
-          <AdminLayout />
-        </ProtectedRoute>
-      }
-    >
-      <Route index element={<Navigate to="dashboard" replace />} />
-      <Route path="dashboard" element={<Dashboard />} />
-      <Route path="users" element={<Users />} />
-      <Route path="sellers" element={<Sellers />} />
-      <Route path="shops" element={<Shops />} />
-      <Route path="shops/add" element={<AdminAddShop />} />
-      <Route path="shops/edit/:id" element={<AdminShopEdit />} />
-      <Route path="products" element={<Products />} />
-      <Route path="settings" element={<Settings />} />
-      <Route path="categories" element={<Categories />} />
-      <Route path="filters" element={<Filters />} />
-    </Route>
-  </Routes>
+    <Routes>
+        <Route
+            path="/"
+            element={
+                <ProtectedRoute roles={['admin']}>
+                    <AdminLayout />
+                </ProtectedRoute>
+            }
+        >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="sellers" element={<Sellers />} />
+            <Route path="shops" element={<Shops />} />
+            <Route path="shops/add" element={<AdminAddShop />} />
+            <Route path="shops/edit/:id" element={<AdminShopEdit />} />
+            <Route path="products" element={<Products />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="filters" element={<Filters />} />
+        </Route>
+    </Routes>
 );
 
 export default AdminRoutes;
