@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Plus, Sparkles, Tag, Shirt, Info } from 'lucide-react';
+import { Loader2, Plus, Sparkles, Tag, Shirt, Info, Image } from 'lucide-react';
 import { useSettings } from '../../core/contexts/useSettings';
 import InputField from '../../shared/components/form/InputField';
 import SelectField from '../../shared/components/form/SelectField';
@@ -452,7 +452,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
       {/* Product Images */}
       <div className="admin-section" style={{ padding: 28, borderTop: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-          <Pocket size={20} color="var(--primary)" />
+          <Image size={20} color="var(--primary)" />
           <h3 className="admin-section-title" style={{ margin: 0 }}>Product Images</h3>
         </div>
         <FileUpload
