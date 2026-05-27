@@ -180,3 +180,166 @@
   .section { padding: 56px 0; }
   .container { padding: 0 16px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NBD BRAND LOGO SYSTEM
+   Premium luxury haute-couture Display System.
+   Utilizes Cormorant Garamond for an elite, high-end fashion house look.
+   Uses fluid screen-relative (vw/vh) typography for breathtaking scale.
+═══════════════════════════════════════════════════════════════ */
+
+.nbd-logo-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  outline: none;
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.nbd-logo-link:hover {
+  transform: scale(1.02);
+}
+.nbd-logo-link:focus-visible .nbd-logo {
+  outline: 2px solid var(--primary, #7c3aed);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+
+.nbd-logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ── Brand mark: "NBD" ── */
+.nbd-mark {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text, #111);
+  line-height: 0.9;
+  letter-spacing: 0.08em;
+  transition:
+    opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    letter-spacing 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  display: block;
+}
+
+/* ── Expanded name: "Near By Dresses" ── */
+.nbd-expand {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 300;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text, #111);
+  line-height: 0.9;
+  /* Premium reveal state */
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
+  transition:
+    max-width 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    letter-spacing 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  transform: translateX(-8px);
+}
+
+/* ── Elegant Tagline ── */
+.nbd-tagline {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted, #8b8b9c);
+  display: block;
+  margin-top: 2px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 2px;
+  width: 100%;
+}
+
+/* ── Luxury hover reveal mechanics ── */
+.nbd-logo-link:hover .nbd-mark,
+.nbd-logo:hover .nbd-mark {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.95);
+  letter-spacing: 0.16em;
+}
+
+.nbd-logo-link:hover .nbd-expand,
+.nbd-logo:hover .nbd-expand {
+  max-width: 400px;
+  opacity: 1;
+  letter-spacing: 0.28em;
+  transform: translateX(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCREEN-RELATIVE FLUID BRAND METRICS (vw/vh)
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Nav (Navbar Logo) ── */
+.nbd-logo--nav .nbd-mark {
+  font-size: clamp(24px, 2.2vw, 36px);
+}
+.nbd-logo--nav .nbd-expand {
+  font-size: clamp(12px, 1.1vw, 18px);
+}
+
+/* ── Footer Logo ── */
+.nbd-logo--footer .nbd-mark {
+  font-size: clamp(32px, 3.5vw, 56px);
+}
+.nbd-logo--footer .nbd-expand {
+  font-size: clamp(14px, 1.4vw, 24px);
+}
+
+/* ── Mobile Nav Logo ── */
+.nbd-logo--mobile .nbd-mark {
+  font-size: clamp(20px, 5vw, 26px);
+}
+.nbd-logo--mobile .nbd-expand {
+  font-size: clamp(10px, 2.5vw, 12px);
+}
+.nbd-logo--mobile .nbd-tagline {
+  display: none;
+}
+
+/* ── Auth pages ── */
+.nbd-logo--auth .nbd-mark {
+  font-size: clamp(36px, 4vw, 58px);
+}
+.nbd-logo--auth .nbd-expand {
+  font-size: clamp(14px, 1.6vw, 22px);
+}
+
+/* ── Loading screen logo ── */
+.nbd-logo--loading .nbd-mark {
+  font-size: clamp(48px, 6vw, 84px);
+}
+.nbd-logo--loading .nbd-expand {
+  font-size: clamp(16px, 2vw, 28px);
+  max-width: 500px;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Touch devices fallback */
+@media (hover: none) {
+  .nbd-expand { max-width: 0; opacity: 0; }
+  .nbd-mark { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nbd-mark, .nbd-expand, .nbd-tagline {
+    transition: none;
+  }
+}
+

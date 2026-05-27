@@ -5,6 +5,8 @@ import { ArrowRight, Lock, Mail, ShoppingBag, Sparkles } from 'lucide-react';
 import { useAuth } from '../../core/auth/useAuth';
 import { useSettings } from '../../core/contexts/useSettings';
 import InputField from '../../shared/components/form/InputField';
+import NBDLogo from '../../shared/components/NBDLogo';
+import { BRAND } from '../../shared/config/branding';
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -50,12 +52,9 @@ const LoginPage = () => {
 
   return (
     <div className="auth-page">
-      <Link to="/" className="auth-brand">
-        <span className="marketplace-brand-mark">
-          {settings?.logo ? <img src={settings.logo} alt={settings.siteName} /> : <ShoppingBag size={20} />}
-        </span>
-        <span>{settings?.siteName || 'NearByDress'}</span>
-      </Link>
+      <div className="auth-brand">
+        <NBDLogo variant="auth" />
+      </div>
 
       <section className="auth-visual">
         <span className="luxury-eyebrow fashion-hero-kicker">
@@ -69,7 +68,7 @@ const LoginPage = () => {
         <div className="auth-panel-header">
           <span className="luxury-eyebrow">Welcome back</span>
           <h2>Sign in</h2>
-          <p>Access your NearByDress account.</p>
+          <p>Access your {BRAND.short} account.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>

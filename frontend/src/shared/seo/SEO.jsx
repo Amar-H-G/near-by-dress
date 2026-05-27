@@ -1,5 +1,5 @@
-// [ignoring loop detection]
 import { useEffect } from 'react';
+import { BRAND } from '../config/branding';
 
 /**
  * SEO.jsx
@@ -18,8 +18,8 @@ const SEO = ({
 }) => {
   useEffect(() => {
     // 1. Title
-    const baseTitle = 'NearByDress | Local Fashion Marketplace';
-    document.title = title ? `${title} | NearByDress` : baseTitle;
+    const baseTitle = `${BRAND.short} | ${BRAND.full} — Local Fashion Marketplace`;
+    document.title = title ? `${title} | ${BRAND.short}` : baseTitle;
 
     // Helper to find or create a meta tag
     const setMetaTag = (attributeName, attributeValue, contentValue) => {
@@ -46,8 +46,8 @@ const SEO = ({
     };
 
     // 2. Standard Metadata
-    setMetaTag('name', 'description', description || 'Discover premium fashion shops and boutiques near you. NearByDress connects you with authentic local ethnic wear, sarees, and customized apparel.');
-    setMetaTag('name', 'keywords', keywords || 'fashion marketplace, dress shops near me, local boutiques, ethnic wear, sarees near me, local clothes shopping');
+    setMetaTag('name', 'description', description || `Discover premium fashion shops and boutiques near you. ${BRAND.short} connects you with authentic local ethnic wear, sarees, and customized apparel.`);
+    setMetaTag('name', 'keywords', keywords || `${BRAND.short}, ${BRAND.full}, fashion marketplace, dress shops near me, local boutiques, ethnic wear, sarees near me, local clothes shopping`);
     setMetaTag('name', 'robots', robots);
 
     // 3. Canonical Link
@@ -55,17 +55,17 @@ const SEO = ({
     setLinkTag('canonical', canonical || currentUrl);
 
     // 4. OpenGraph Cards (Facebook / LinkedIn)
-    setMetaTag('property', 'og:title', title ? `${title} | NearByDress` : baseTitle);
-    setMetaTag('property', 'og:description', description || 'Find and order premium fashion products from boutiques in your locality.');
+    setMetaTag('property', 'og:title', title ? `${title} | ${BRAND.short}` : baseTitle);
+    setMetaTag('property', 'og:description', description || `Find and order premium fashion products from boutiques in your locality.`);
     setMetaTag('property', 'og:type', ogType);
     setMetaTag('property', 'og:url', canonical || currentUrl);
     setMetaTag('property', 'og:image', ogImage || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600');
-    setMetaTag('property', 'og:site_name', 'NearByDress');
+    setMetaTag('property', 'og:site_name', BRAND.ogSiteName);
 
     // 5. Twitter Cards
     setMetaTag('name', 'twitter:card', 'summary_large_image');
-    setMetaTag('name', 'twitter:title', title ? `${title} | NearByDress` : baseTitle);
-    setMetaTag('name', 'twitter:description', description || 'Find and order premium fashion products from boutiques in your locality.');
+    setMetaTag('name', 'twitter:title', title ? `${title} | ${BRAND.short}` : baseTitle);
+    setMetaTag('name', 'twitter:description', description || `Find and order premium fashion products from boutiques in your locality.`);
     setMetaTag('name', 'twitter:image', ogImage || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600');
 
   }, [title, description, keywords, canonical, ogImage, ogType, robots]);

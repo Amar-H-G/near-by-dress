@@ -22,6 +22,7 @@ const WhatsAppOrderModal  = lazy(() => import('../../../shared/whatsapp/WhatsApp
 // SEO — small, keep eager
 import SEO from '../../../shared/seo/SEO';
 import SchemaMarkup from '../../../shared/seo/SchemaMarkup';
+import { BRAND } from '../../../shared/config/branding';
 
 // ── Intersection-observer lazy mount — only render when near viewport ─────
 const LazySection = memo(({ children, fallback = null, rootMargin = '200px' }) => {
@@ -93,14 +94,14 @@ const HomePage = () => {
     <div className="marketplace-page">
       <SEO
         title="Home"
-        description={settings?.description || "NearByDress - Discover and buy premium fashion wear, sarees, kurtis, and designer wear from boutiques and tailors near you."}
+        description={settings?.description || `${BRAND.full} (${BRAND.short}) - Discover and buy premium fashion wear, sarees, kurtis, and designer wear from boutiques and tailors near you.`}
         keywords={`nearby dress shops, boutiques near me, ethnic wear near me, local fashion discovery, ${pageKeywords}`}
       />
       <SchemaMarkup type="website" data={{ _id: 'global' }} />
 
       {/* ── Above fold: eagerly render, critical for LCP ── */}
-      <HeroSection siteName={settings?.siteName || 'NearByDress'} />
-      <FeaturesSection siteName={settings?.siteName || 'NearByDress'} />
+      <HeroSection />
+      <FeaturesSection />
       <CampaignSection />
 
       {/* ── Below fold: lazy-mount via IntersectionObserver ── */}

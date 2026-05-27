@@ -1,4 +1,5 @@
 import { BadgeCheck, MessageCircle, ShieldCheck, Sparkles } from 'lucide-react';
+import { BRAND } from '../../../shared/config/branding';
 
 const FEATURES = [
   { icon: <Sparkles size={23} />, title: 'Curated discovery', desc: 'Browse trend-led edits instead of endless unstyled product grids.' },
@@ -7,7 +8,7 @@ const FEATURES = [
   { icon: <ShieldCheck size={23} />, title: 'Local trust', desc: 'Shop fashion from nearby sellers with visible identity and details.' },
 ];
 
-const FeaturesSection = ({ siteName }) => (
+const FeaturesSection = () => (
   <section className="luxury-section-tight">
     <div className="container">
       <div className="luxury-section-header">
@@ -16,7 +17,7 @@ const FeaturesSection = ({ siteName }) => (
           <h2 className="luxury-title luxury-title-sm">A marketplace that feels like a fashion house</h2>
         </div>
         <p className="luxury-copy">
-          {siteName} gives every shop a premium stage while keeping product discovery fast, trustworthy, and local.
+          {BRAND.short} ({BRAND.full}) gives every shop a premium stage while keeping product discovery fast, trustworthy, and local.
         </p>
       </div>
 

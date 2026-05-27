@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import API from '../api/client';
 import { SettingsContext } from '../contexts/settings-context';
+import NBDLogo from '../../shared/components/NBDLogo';
+import { BRAND } from '../../shared/config/branding';
+import { CONTACT } from '../../shared/config/contact';
 
 const DEFAULT_SETTINGS = {
-  siteName: 'NearByDress',
-  primaryColor: '#2563EB',
+  siteName: BRAND.full,
+  primaryColor: '#7c3aed',
   secondaryColor: '#10B981',
-  contactEmail: 'support@nearbydress.com',
-  contactPhone: '+91 99999 99999',
+  contactEmail: CONTACT.email,
+  contactPhone: '',
 };
 
 const applyThemeColors = (settingsData) => {
@@ -93,9 +96,40 @@ export const SettingsProvider = ({ children }) => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg)' }}>
-        <div style={{ width: 40, height: 40, border: '3px solid var(--border)', borderTopColor: 'var(--primary, #2563EB)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: '#ffffff',
+        gap: '24px'
+      }}>
+        {/* Cinematic Luxury Brand Reveal */}
+        <div style={{ animation: 'pulseLogo 2.5s infinite ease-in-out' }}>
+          <NBDLogo variant="loading" noLink />
+        </div>
+        
+        {/* Minimal Luxury Loading Indicator */}
+        <div style={{
+          width: '28px',
+          height: '28px',
+          border: '1.5px solid rgba(0, 0, 0, 0.06)',
+          borderTopColor: '#000000',
+          borderRadius: '50%',
+          animation: 'spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+        }} />
+        
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes pulseLogo {
+            0%, 100% { opacity: 0.8; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1); }
+          }
+        `}</style>
       </div>
     );
   }

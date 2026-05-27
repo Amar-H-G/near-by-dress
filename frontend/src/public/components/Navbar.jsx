@@ -22,6 +22,7 @@ import { useAuth } from '../../core/auth/useAuth';
 import { useSettings } from '../../core/contexts/useSettings';
 import { useLocation as useUserLocation } from '../../core/contexts/useLocation';
 import LocationSelectorModal from '../../shared/location/components/LocationSelectorModal';
+import NBDLogo from '../../shared/components/NBDLogo';
 
 const navLinks = [
   { label: 'Home', to: '/', icon: Home },
@@ -105,15 +106,8 @@ const Navbar = () => {
     <>
       <nav className={`marketplace-nav ${scrolled ? 'marketplace-nav-scrolled' : ''} ${mobileOpen ? 'marketplace-nav-open' : ''}`} id="navbar">
         <div className="container marketplace-nav-inner">
-          <Link to="/" className="marketplace-brand" aria-label={settings?.siteName || 'NearByDress'}>
-            <span className="marketplace-brand-mark">
-              {settings?.logo ? <img src={settings.logo} alt={settings.siteName} /> : <ShoppingBag size={21} />}
-            </span>
-            <span>
-              <span className="marketplace-brand-name">{settings?.siteName || 'NearByDress'}</span>
-              <span className="marketplace-brand-sub">Fashion marketplace</span>
-            </span>
-          </Link>
+          {/* ── NBD Brand mark ── */}
+          <NBDLogo variant="nav" />
 
           <div className="marketplace-nav-links">
             {navLinks.map((link) => (

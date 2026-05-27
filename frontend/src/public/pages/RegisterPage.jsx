@@ -5,6 +5,8 @@ import { ArrowRight, Lock, Mail, Phone, ShoppingBag, Store, User } from 'lucide-
 import { useAuth } from '../../core/auth/useAuth';
 import { useSettings } from '../../core/contexts/useSettings';
 import InputField from '../../shared/components/form/InputField';
+import NBDLogo from '../../shared/components/NBDLogo';
+import { BRAND } from '../../shared/config/branding';
 
 const RegisterPage = () => {
   const { register } = useAuth();
@@ -60,12 +62,9 @@ const RegisterPage = () => {
 
   return (
     <div className="auth-page auth-page-register">
-      <Link to="/" className="auth-brand">
-        <span className="marketplace-brand-mark">
-          {settings?.logo ? <img src={settings.logo} alt={settings.siteName} /> : <ShoppingBag size={20} />}
-        </span>
-        <span>{settings?.siteName || 'NearByDress'}</span>
-      </Link>
+      <div className="auth-brand">
+        <NBDLogo variant="auth" />
+      </div>
 
       <section className="auth-visual">
         <span className="luxury-eyebrow fashion-hero-kicker">Join the marketplace</span>
@@ -76,7 +75,7 @@ const RegisterPage = () => {
       <section className="auth-panel">
         <div className="auth-panel-header">
           <span className="luxury-eyebrow">Create account</span>
-          <h2>Start with NearByDress</h2>
+          <h2>Start with {BRAND.short}</h2>
           <p>Choose your role and continue.</p>
         </div>
 

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, BadgeCheck, Sparkles, Store } from 'lucide-react';
+import { BRAND } from '../../../shared/config/branding';
 
 const STATS = [
   { value: '500+', label: 'Local shops' },
@@ -7,7 +8,7 @@ const STATS = [
   { value: '50+', label: 'Cities served' },
 ];
 
-const HeroSection = ({ siteName }) => (
+const HeroSection = () => (
   <section className="fashion-hero">
     <div className="container">
       <div className="fashion-hero-content">
@@ -20,7 +21,7 @@ const HeroSection = ({ siteName }) => (
           Your <span>new wardrobe.</span>
         </h1>
         <p className="fashion-hero-copy">
-          {siteName} brings verified local boutiques, fresh drops, seasonal campaigns, and direct WhatsApp shopping into one premium marketplace.
+          {BRAND.full} ({BRAND.short}) brings verified local boutiques, fresh drops, seasonal campaigns, and direct WhatsApp shopping into one premium marketplace.
         </p>
         <div className="fashion-hero-actions">
           <Link to="/products" className="luxury-btn luxury-btn-primary" id="hero-browse-btn">
