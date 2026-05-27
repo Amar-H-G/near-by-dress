@@ -2,40 +2,69 @@ import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import LoadingSpinner from '../shared/components/LoadingSpinner';
 import Navbar from '../public/components/Navbar';
+import ProtectedRoute from '../core/router/ProtectedRoute';
 
-const PublicRoutes = lazy(() => import('./publicRoutes'));
 const SellerRoutes = lazy(() => import('./sellerRoutes'));
 const AdminRoutes = lazy(() => import('./AdminRoutes'));
 const LoginPage = lazy(() => import('../public/pages/LoginPage'));
 const RegisterPage = lazy(() => import('../public/pages/RegisterPage'));
 
+// Public pages — inlined here to avoid double-Routes nesting
+const HomePage = lazy(() => import('../public/pages/HomePage'));
+const ProductsPage = lazy(() => import('../public/pages/ProductsPage'));
+const ProductDetailPage = lazy(() => import('../public/pages/ProductDetailPage'));
+const ShopsPage = lazy(() => import('../public/pages/ShopsPage'));
+const ShopDetailPage = lazy(() => import('../public/pages/ShopDetailPage'));
+const UserProfilePage = lazy(() => import('../public/pages/UserProfilePage'));
+
 const NotFound = () => (
-  <div style={{ paddingTop: 80, textAlign: 'center', padding: '120px 24px' }}>
+  <div style={{ textAlign: 'center', padding: '120px 24px' }}>
     <h1 style={{ fontSize: 64, marginBottom: 16 }}>404</h1>
     <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>Page not found</p>
     <a href="/" className="btn btn-primary">Go Home</a>
   </div>
 );
 
+// Layout wrapper that includes the Navbar for public pages
+const PublicLayout = ({ children }) => (
+  <>
+    <Navbar />
+    {children}
+  </>
+);
+
 const AppRoutes = () => (
   <Suspense fallback={<LoadingSpinner fullScreen />}>
     <Routes>
+      {/* Auth routes — no Navbar */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/admin/*" element={<AdminRoutes />} />
+
+      {/* Seller routes — own layout handles Navbar */}
       <Route path="/seller/*" element={<SellerRoutes />} />
+
+      {/* Admin routes — own layout handles Navbar */}
+      <Route path="/admin/*" element={<AdminRoutes />} />
+
+      {/* Public routes — wrapped in PublicLayout for Navbar */}
+      <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
+      <Route path="/products" element={<PublicLayout><ProductsPage /></PublicLayout>} />
+      <Route path="/products/:id" element={<PublicLayout><ProductDetailPage /></PublicLayout>} />
+      <Route path="/shops" element={<PublicLayout><ShopsPage /></PublicLayout>} />
+      <Route path="/shops/:id" element={<PublicLayout><ShopDetailPage /></PublicLayout>} />
       <Route
-        path="*"
+        path="/profile"
         element={
-          <>
-            <Navbar />
-            <Routes>
-              <Route path="/*" element={<PublicRoutes />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </>
+          <PublicLayout>
+            <ProtectedRoute roles={['customer', 'shop_owner', 'admin']}>
+              <UserProfilePage />
+            </ProtectedRoute>
+          </PublicLayout>
         }
       />
+
+      {/* 404 fallback */}
+      <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
     </Routes>
   </Suspense>
 );
