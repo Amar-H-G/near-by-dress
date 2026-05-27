@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { BadgeCheck, MapPin, MessageCircle, Package, Sparkles, Store } from 'lucide-react';
 import { getShop, getShopProducts } from '../../shared/services/shop.service.js';
@@ -6,6 +6,8 @@ import ProductCard from '../components/ProductCard';
 import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import EmptyState from '../../shared/components/EmptyState';
+
+const WhatsAppOrderModal = lazy(() => import('../../shared/whatsapp/WhatsAppOrderModal'));
 
 // SEO & Schema Injections
 import SEO from '../../shared/seo/SEO';
@@ -29,6 +31,10 @@ const ShopDetailPage = () => {
   const [prodLoading, setProdLoading] = useState(false);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+
+  const openOrderModal = useCallback(() => setOrderModalOpen(true), []);
+  const closeOrderModal = useCallback(() => setOrderModalOpen(false), []);
 
   useEffect(() => {
     let mounted = true;
@@ -90,9 +96,15 @@ const ShopDetailPage = () => {
     );
   }
 
-  const whatsappUrl = shop.whatsappNumber
-    ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent('Hi! I found your shop on NearByDress')}`
-    : null;
+  // Shop inquiry product object for the modal
+  const shopOrderProduct = shop ? {
+    name: `Shop Inquiry — ${shop.name}`,
+    price: null,
+    discountPrice: null,
+    image: shop.logo || shop.coverImage,
+    shopName: shop.name,
+    shop,
+  } : null;
 
   const breadcrumbs = [
     { name: 'Home', url: window.location.origin },
@@ -146,8 +158,13 @@ const ShopDetailPage = () => {
             </div>
             {shop.description && <p className="shopfront-description">{shop.description}</p>}
           </div>
-          {whatsappUrl && (
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="fashion-whatsapp shopfront-whatsapp" id="shop-whatsapp-btn">
+          {(
+            <a
+              href="#whatsapp-order"
+              onClick={(e) => { e.preventDefault(); openOrderModal(); }}
+              className="fashion-whatsapp shopfront-whatsapp"
+              id="shop-whatsapp-btn"
+            >
               <MessageCircle size={18} />
               WhatsApp
             </a>
@@ -184,6 +201,15 @@ const ShopDetailPage = () => {
           </>
         )}
       </main>
+
+      {/* WhatsApp Order Modal */}
+      <Suspense fallback={null}>
+        <WhatsAppOrderModal
+          isOpen={orderModalOpen}
+          onClose={closeOrderModal}
+          product={shopOrderProduct}
+        />
+      </Suspense>
     </div>
   );
 };

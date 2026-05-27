@@ -536,3 +536,309 @@
   .admin-content { padding: 20px; }
   .admin-navbar { padding: 0 20px; height: 64px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   WHATSAPP ORDER MODAL
+   Premium order collection UI — routes all orders to admin
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Overlay ─────────────────────────────────────────────────── */
+.wa-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(10, 8, 20, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  animation: waOverlayIn 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .wa-overlay {
+    align-items: center;
+    padding: 24px;
+  }
+}
+
+@keyframes waOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal card ──────────────────────────────────────────────── */
+.wa-modal {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 28px 28px 0 0;
+  width: 100%;
+  max-width: 560px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.06);
+  animation: waModalIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (min-width: 640px) {
+  .wa-modal {
+    border-radius: 28px;
+    max-height: 90vh;
+  }
+}
+
+@keyframes waModalIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+.wa-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  position: sticky;
+  top: 0;
+  background: var(--surface, #fff);
+  z-index: 2;
+  border-radius: 28px 28px 0 0;
+}
+
+.wa-modal-brand { display: flex; align-items: center; gap: 12px; }
+
+.wa-modal-icon {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+}
+
+.wa-modal-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text, #111);
+  margin: 0;
+}
+
+.wa-modal-sub {
+  font-size: 12px;
+  color: var(--text-muted, #6b7280);
+  margin: 2px 0 0;
+}
+
+.wa-close-btn {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--bg-2, #f9fafb);
+  color: var(--text-muted, #6b7280);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.wa-close-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
+/* ── Product preview strip ───────────────────────────────────── */
+.wa-product-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;
+  background: rgba(37, 211, 102, 0.05);
+  border-bottom: 1px solid rgba(37, 211, 102, 0.12);
+}
+
+.wa-product-img {
+  width: 60px; height: 76px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--border, #e5e7eb);
+  flex-shrink: 0;
+}
+
+.wa-product-info { flex: 1; min-width: 0; }
+.wa-product-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #16a34a; }
+.wa-product-name  { display: block; font-size: 14px; font-weight: 700; color: var(--text, #111); margin: 2px 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wa-product-meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.wa-product-price { font-size: 16px; font-weight: 800; color: #16a34a; }
+.wa-product-option {
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 6px;
+  background: var(--bg-2, #f3f4f6);
+  color: var(--text-muted, #6b7280);
+}
+
+/* ── Form ────────────────────────────────────────────────────── */
+.wa-form { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+.wa-section-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--text-muted, #6b7280);
+  margin-bottom: 2px;
+}
+
+.wa-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.wa-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+@media (max-width: 480px) {
+  .wa-grid-2 { grid-template-columns: 1fr; }
+  .wa-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+
+.wa-field { display: flex; flex-direction: column; gap: 5px; }
+
+.wa-label {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600;
+  color: var(--text-muted, #6b7280);
+}
+
+.wa-required { color: #ef4444; font-size: 13px; }
+
+.wa-input {
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border, #e5e7eb);
+  background: var(--bg-2, #f9fafb);
+  color: var(--text, #111);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  width: 100%;
+}
+
+.wa-input:focus {
+  border-color: #25d366;
+  box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.12);
+  background: var(--surface, #fff);
+}
+
+.wa-input-error { border-color: #ef4444 !important; }
+.wa-input-error:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12) !important; }
+
+.wa-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+
+.wa-error-msg { font-size: 11px; color: #ef4444; font-weight: 600; }
+
+/* ── Quantity control ────────────────────────────────────────── */
+.wa-qty-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1.5px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.wa-qty-btn {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700;
+  background: var(--bg-2, #f9fafb);
+  border: none;
+  cursor: pointer;
+  color: var(--text, #111);
+  transition: background 0.15s;
+}
+
+.wa-qty-btn:hover { background: #dcfce7; color: #16a34a; }
+.wa-qty-value { padding: 0 20px; font-weight: 700; font-size: 15px; color: var(--text, #111); min-width: 40px; text-align: center; }
+
+/* ── Admin note ──────────────────────────────────────────────── */
+.wa-admin-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(37, 211, 102, 0.06);
+  border: 1px solid rgba(37, 211, 102, 0.15);
+  font-size: 12px;
+  color: var(--text-muted, #6b7280);
+  line-height: 1.5;
+}
+
+.wa-admin-note svg { flex-shrink: 0; margin-top: 1px; color: #16a34a; }
+
+/* ── Submit button ───────────────────────────────────────────── */
+.wa-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 24px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.35);
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+
+.wa-btn-primary:hover {
+  box-shadow: 0 6px 28px rgba(37, 211, 102, 0.45);
+  transform: translateY(-1px);
+}
+
+.wa-btn-primary:active { transform: translateY(0); }
+.wa-btn-primary:disabled { opacity: 0.75; cursor: not-allowed; transform: none; }
+
+/* ── Success state ───────────────────────────────────────────── */
+.wa-success {
+  padding: 40px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.wa-success-icon {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dcfce7, #a7f3d0);
+  display: flex; align-items: center; justify-content: center;
+  color: #16a34a;
+  margin-bottom: 4px;
+}
+
+.wa-success h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text, #111);
+  margin: 0;
+}
+
+.wa-success p {
+  font-size: 14px;
+  color: var(--text-muted, #6b7280);
+  line-height: 1.6;
+  max-width: 340px;
+  margin: 0;
+}
+

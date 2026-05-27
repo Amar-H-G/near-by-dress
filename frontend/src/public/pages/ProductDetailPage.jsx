@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   BadgeCheck,
@@ -20,13 +20,16 @@ import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import SEO from '../../shared/seo/SEO';
 import SchemaMarkup from '../../shared/seo/SchemaMarkup';
 
-const formatPrice = (value) =>
-  new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(Number(value || 0));
+// WhatsApp Order Modal — lazy loaded (not on initial bundle)
+const WhatsAppOrderModal = lazy(() => import('../../shared/whatsapp/WhatsAppOrderModal'));
 
+const priceFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  maximumFractionDigits: 0,
+});
+
+const formatPrice = (value) => priceFormatter.format(Number(value || 0));
 const getImageUrl = (img) => (typeof img === 'object' ? img?.url : img);
 
 const ProductDetailPage = () => {
@@ -37,6 +40,7 @@ const ProductDetailPage = () => {
   const [activeImg, setActiveImg] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -57,11 +61,11 @@ const ProductDetailPage = () => {
     };
 
     void fetchProduct();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [id]);
+
+  const openOrderModal = useCallback(() => setOrderModalOpen(true), []);
+  const closeOrderModal = useCallback(() => setOrderModalOpen(false), []);
 
   if (loading) return <LoadingSpinner fullScreen />;
   if (error || !product) {
@@ -79,16 +83,26 @@ const ProductDetailPage = () => {
   const rawImgs = images?.length ? images : ['https://placehold.co/900x1125/f0ece8/756f72?text=Fashion'];
   const imgs = rawImgs.map(getImageUrl).filter(Boolean);
   const categoryLabel = typeof category === 'object' ? category?.name : category;
-  const whatsappText = `Hi! I'm interested in "${name}" - Price: ${formatPrice(displayPrice)}`;
-  const whatsappUrl = shop?.whatsappNumber
-    ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(whatsappText)}`
-    : null;
 
   const breadcrumbs = [
     { name: 'Home', url: window.location.origin },
     { name: 'Products', url: `${window.location.origin}/products` },
     { name: name, url: window.location.href }
   ];
+
+  // Product data passed to the order modal
+  const orderProduct = {
+    _id: id,
+    name,
+    price,
+    discountPrice,
+    image: imgs[0],
+    selectedSize,
+    selectedColor,
+    quantity: 1,
+    shopName: shop?.name,
+    shop,
+  };
 
   return (
     <div className="marketplace-page product-detail-page">
@@ -122,14 +136,14 @@ const ProductDetailPage = () => {
                     onClick={() => setActiveImg(index)}
                     aria-label={`View image ${index + 1}`}
                   >
-                    <img src={img} alt="" />
+                    <img src={img} alt="" loading="lazy" decoding="async" />
                   </button>
                 ))}
               </div>
             )}
 
             <div className="product-main-image">
-              <img src={imgs[activeImg]} alt={name} />
+              <img src={imgs[activeImg]} alt={name} decoding="async" />
               {imgs.length > 1 && (
                 <>
                   <button
@@ -228,18 +242,16 @@ const ProductDetailPage = () => {
               </div>
             )}
 
-            {whatsappUrl && (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="fashion-whatsapp product-primary-cta"
-                id="whatsapp-cta-main"
-              >
-                <MessageCircle size={20} />
-                Contact shop on WhatsApp
-              </a>
-            )}
+            {/* ── Primary WhatsApp Order CTA ── */}
+            <button
+              type="button"
+              className="fashion-whatsapp product-primary-cta"
+              id="whatsapp-cta-main"
+              onClick={openOrderModal}
+            >
+              <MessageCircle size={20} />
+              Order on WhatsApp
+            </button>
 
             <div className="product-trust-grid">
               <div className="product-trust-item">
@@ -258,7 +270,7 @@ const ProductDetailPage = () => {
 
             {shop && (
               <Link to={`/shops/${shop._id}`} className="product-shop-card">
-                <img src={shop.logo || `https://placehold.co/120x120/f0ece8/756f72?text=${encodeURIComponent(shop.name?.charAt(0) || 'S')}`} alt={shop.name} />
+                <img src={shop.logo || `https://placehold.co/120x120/f0ece8/756f72?text=${encodeURIComponent(shop.name?.charAt(0) || 'S')}`} alt={shop.name} loading="lazy" />
                 <div>
                   <strong>{shop.name}</strong>
                   {shop.city && (
@@ -281,14 +293,27 @@ const ProductDetailPage = () => {
         </div>
       </div>
 
-      {whatsappUrl && (
-        <div className="product-mobile-buybar">
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="fashion-whatsapp" id="whatsapp-cta-sticky">
-            <MessageCircle size={18} />
-            Contact shop
-          </a>
-        </div>
-      )}
+      {/* ── Mobile sticky buy bar ── */}
+      <div className="product-mobile-buybar">
+        <button
+          type="button"
+          className="fashion-whatsapp"
+          id="whatsapp-cta-sticky"
+          onClick={openOrderModal}
+        >
+          <MessageCircle size={18} />
+          Order on WhatsApp
+        </button>
+      </div>
+
+      {/* ── WhatsApp Order Modal (lazy) ── */}
+      <Suspense fallback={null}>
+        <WhatsAppOrderModal
+          isOpen={orderModalOpen}
+          onClose={closeOrderModal}
+          product={orderProduct}
+        />
+      </Suspense>
     </div>
   );
 };

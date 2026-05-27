@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../../components/ProductCard';
 
-const FeaturedProducts = memo(({ products, eyebrow, title, copy }) => {
+const FeaturedProducts = memo(({ products, eyebrow, title, copy, onOrderClick }) => {
   if (!products.length) return null;
 
   return (
@@ -21,7 +21,7 @@ const FeaturedProducts = memo(({ products, eyebrow, title, copy }) => {
 
         <div className="fashion-product-grid">
           {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
+            <ProductCard key={product._id} product={product} onOrderClick={onOrderClick} />
           ))}
         </div>
       </div>

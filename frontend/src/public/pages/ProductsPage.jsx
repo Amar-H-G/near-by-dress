@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { MapPin, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { getProducts } from '../services/product.service.js';
@@ -8,6 +8,8 @@ import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import EmptyState from '../../shared/components/EmptyState';
 import DynamicFilters from '../components/DynamicFilters';
+
+const WhatsAppOrderModal = lazy(() => import('../../shared/whatsapp/WhatsAppOrderModal'));
 
 const normalizeProducts = (payload) => {
   if (Array.isArray(payload.data)) return payload.data;
@@ -23,6 +25,10 @@ const ProductsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [orderModal, setOrderModal] = useState({ open: false, product: null });
+
+  const openOrderModal = useCallback((product) => setOrderModal({ open: true, product }), []);
+  const closeOrderModal = useCallback(() => setOrderModal({ open: false, product: null }), []);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const search = searchParams.get('search') || '';
@@ -143,7 +149,7 @@ const ProductsPage = () => {
             <>
               <div className="fashion-product-grid">
                 {products.map((product) => (
-                  <ProductCard key={product._id} product={product} />
+                  <ProductCard key={product._id} product={product} onOrderClick={openOrderModal} />
                 ))}
               </div>
               <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={handlePageChange} />
@@ -168,6 +174,15 @@ const ProductsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Shared WhatsApp Order Modal for all product cards */}
+      <Suspense fallback={null}>
+        <WhatsAppOrderModal
+          isOpen={orderModal.open}
+          onClose={closeOrderModal}
+          product={orderModal.product}
+        />
+      </Suspense>
     </div>
   );
 };

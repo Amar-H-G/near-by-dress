@@ -21,7 +21,7 @@ const getProductImage = (images, name) => {
 };
 
 // ── Wrapped in memo — only re-renders when `product` prop changes ──────────
-const ProductCard = memo(({ product }) => {
+const ProductCard = memo(({ product, onOrderClick }) => {
   const { _id, name, price, discountPrice, images, category, shop } = product;
   const { location: userLoc } = useLocation();
 
@@ -54,9 +54,10 @@ const ProductCard = memo(({ product }) => {
     const whatsappUrl = shop?.whatsappNumber
       ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}"`
       : null;
+    const whatsappClick = onOrderClick ? null : whatsappUrl; // if no callback, fall back to direct url
     const discountPct = hasDiscount ? Math.round(((price - discountPrice) / price) * 100) : 0;
-    return { displayPrice, hasDiscount, image, categoryLabel, rating, reviewCount, distanceText, whatsappUrl, discountPct };
-  }, [product, userLoc.status, userLoc.lat, userLoc.lng]);
+    return { displayPrice, hasDiscount, image, categoryLabel, rating, reviewCount, distanceText, whatsappUrl, whatsappClick, discountPct };
+  }, [product, userLoc.status, userLoc.lat, userLoc.lng, onOrderClick]);
 
   return (
     <article className="fashion-product-card">
@@ -137,17 +138,35 @@ const ProductCard = memo(({ product }) => {
           </Link>
         )}
 
-        {whatsappUrl && (
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="fashion-whatsapp"
-            id={`whatsapp-${_id}`}
-          >
-            <MessageCircle size={15} />
-            WhatsApp
-          </a>
+        {(onOrderClick || whatsappUrl) && (
+          onOrderClick ? (
+            <button
+              type="button"
+              className="fashion-whatsapp"
+              id={`whatsapp-${_id}`}
+              onClick={() => onOrderClick({
+                ...product,
+                image,
+                selectedSize: undefined,
+                selectedColor: undefined,
+                shopName: shop?.name,
+              })}
+            >
+              <MessageCircle size={15} />
+              WhatsApp
+            </button>
+          ) : (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="fashion-whatsapp"
+              id={`whatsapp-${_id}`}
+            >
+              <MessageCircle size={15} />
+              WhatsApp
+            </a>
+          )
         )}
       </div>
     </article>

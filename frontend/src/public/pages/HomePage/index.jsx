@@ -1,4 +1,4 @@
-import { lazy, memo, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, memo, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useSettings } from '../../../core/contexts/useSettings';
 import { getProducts } from '../../services/product.service';
 import { getShops } from '../../../shared/services/shop.service';
@@ -17,6 +17,7 @@ const NearbyDiscoveryFeed = lazy(() => import('./NearbyDiscoveryFeed'));
 const NearbyShopsSection  = lazy(() => import('./NearbyShopsSection'));
 const SellerCtaSection    = lazy(() => import('./SellerCtaSection'));
 const FooterSection       = lazy(() => import('./FooterSection'));
+const WhatsAppOrderModal  = lazy(() => import('../../../shared/whatsapp/WhatsAppOrderModal'));
 
 // SEO — small, keep eager
 import SEO from '../../../shared/seo/SEO';
@@ -61,6 +62,10 @@ const HomePage = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [featuredShops, setFeaturedShops] = useState([]);
+  const [orderModal, setOrderModal] = useState({ open: false, product: null });
+
+  const openOrderModal = useCallback((product) => setOrderModal({ open: true, product }), []);
+  const closeOrderModal = useCallback(() => setOrderModal({ open: false, product: null }), []);
 
   useEffect(() => {
     let mounted = true;
@@ -105,6 +110,7 @@ const HomePage = () => {
           eyebrow="Editor's rail"
           title="Featured by local stylists"
           copy="Fresh pieces from verified boutiques, presented like a premium fashion floor."
+          onOrderClick={openOrderModal}
         />
       </LazySection>
 
@@ -118,6 +124,7 @@ const HomePage = () => {
           eyebrow="Just dropped"
           title="New arrivals worth opening first"
           copy="Recently added fashion from shops around you, ready for direct WhatsApp buying."
+          onOrderClick={openOrderModal}
         />
       </LazySection>
 
@@ -144,6 +151,15 @@ const HomePage = () => {
       <LazySection>
         <FooterSection settings={settings} />
       </LazySection>
+
+      {/* Shared WhatsApp Order Modal — used by all homepage product cards */}
+      <Suspense fallback={null}>
+        <WhatsAppOrderModal
+          isOpen={orderModal.open}
+          onClose={closeOrderModal}
+          product={orderModal.product}
+        />
+      </Suspense>
     </div>
   );
 };
