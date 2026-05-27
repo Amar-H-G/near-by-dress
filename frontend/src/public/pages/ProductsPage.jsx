@@ -7,6 +7,9 @@ import ProductCard from '../components/ProductCard';
 import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import EmptyState from '../../shared/components/EmptyState';
+import SEO from '../../shared/seo/SEO';
+import SchemaMarkup from '../../shared/seo/SchemaMarkup';
+import { useSettings } from '../../core/contexts/useSettings';
 import DynamicFilters from '../components/DynamicFilters';
 
 const normalizeProducts = (payload) => {
@@ -16,6 +19,7 @@ const normalizeProducts = (payload) => {
 };
 
 const ProductsPage = () => {
+  const { settings } = useSettings();
   const [searchParams, setSearchParams] = useSearchParams();
   const { location: userLoc } = useUserLocation();
   const [products, setProducts] = useState([]);
@@ -77,6 +81,11 @@ const ProductsPage = () => {
 
   return (
     <div className="marketplace-page luxury-shell">
+      <SEO
+        title={settings?.seo?.productsTitle || 'Premium Fashion Collection'}
+        description={settings?.seo?.productsDescription || 'Browse local boutiques.'}
+      />
+      <SchemaMarkup type="website" data={settings} />
       <header className="listing-hero">
         <div className="container">
           <span className="luxury-eyebrow fashion-hero-kicker">

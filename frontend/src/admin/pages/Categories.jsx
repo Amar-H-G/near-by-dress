@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Loader2, Folder, FileText, ChevronRight, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Loader2, Folder, FileText, ChevronRight, X, ChevronUp, ChevronDown, Image } from 'lucide-react';
 import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory } from '../services/admin.service.js';
 import toast from 'react-hot-toast';
 import { useSettings } from '../../core/contexts/useSettings';
@@ -14,6 +14,7 @@ const Categories = () => {
   const [catToDelete, setCatToDelete] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const { refreshCategories } = useSettings();
 
   const [formData, setFormData] = useState({
@@ -21,7 +22,8 @@ const Categories = () => {
     slug: '',
     parentId: '',
     order: 0,
-    isActive: true
+    isActive: true,
+    description: ''
   });
   const [expandedCats, setExpandedCats] = useState([]);
 
@@ -49,6 +51,7 @@ const Categories = () => {
   useEffect(() => { queueMicrotask(loadCategories); }, []);
 
   const handleOpenModal = (cat = null, parentId = '') => {
+    setImageFile(null);
     if (cat) {
       setEditingCategory(cat);
       setFormData({
@@ -56,7 +59,8 @@ const Categories = () => {
         slug: cat.slug || '',
         parentId: cat.parentId?._id || '',
         order: cat.order || 0,
-        isActive: cat.isActive
+        isActive: cat.isActive,
+        description: cat.description || ''
       });
     } else {
       setEditingCategory(null);
@@ -66,7 +70,8 @@ const Categories = () => {
         slug: '',
         parentId: initialParent,
         order: getNextOrder(initialParent),
-        isActive: true
+        isActive: true,
+        description: ''
       });
     }
     setIsModalOpen(true);
@@ -82,7 +87,7 @@ const Categories = () => {
     setIsSubmitting(true);
     try {
       await adminDeleteCategory(catToDelete._id);
-      toast.success('Category deleted');
+      toast.success('Category deleted successfully');
       setIsDeleteModalOpen(false);
       loadCategories();
       refreshCategories();
@@ -94,16 +99,68 @@ const Categories = () => {
     }
   };
 
+  const moveCategoryOrder = async (cat, direction) => {
+    const siblings = categories
+      .filter(c => (c.parentId?._id || c.parentId || null) === (cat.parentId?._id || cat.parentId || null))
+      .sort((a, b) => a.order - b.order);
+    
+    const index = siblings.findIndex(s => s._id === cat._id);
+    if (index === -1) return;
+
+    let targetIndex = -1;
+    if (direction === 'up' && index > 0) targetIndex = index - 1;
+    if (direction === 'down' && index < siblings.length - 1) targetIndex = index + 1;
+
+    if (targetIndex !== -1) {
+      const targetCat = siblings[targetIndex];
+      const originalOrder = cat.order;
+      const targetOrder = targetCat.order;
+
+      try {
+        toast.loading('Reordering...', { id: 'reorder' });
+        // Swap orders in parallel
+        const f1 = new FormData();
+        f1.append('order', targetOrder);
+        const f2 = new FormData();
+        f2.append('order', originalOrder);
+
+        await Promise.all([
+          adminUpdateCategory(cat._id, f1),
+          adminUpdateCategory(targetCat._id, f2)
+        ]);
+
+        toast.success('Reordered successfully', { id: 'reorder' });
+        loadCategories();
+        refreshCategories();
+      } catch (err) {
+        toast.error('Failed to swap orders', { id: 'reorder' });
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('slug', formData.slug);
+    data.append('parentId', formData.parentId || '');
+    data.append('order', formData.order);
+    data.append('isActive', formData.isActive);
+    data.append('description', formData.description);
+
+    if (imageFile) {
+      data.append('image', imageFile);
+    }
+
     try {
       if (editingCategory) {
-        await adminUpdateCategory(editingCategory._id, formData);
-        toast.success('Category updated');
+        await adminUpdateCategory(editingCategory._id, data);
+        toast.success('Category updated successfully');
       } else {
-        await adminCreateCategory(formData);
-        toast.success('Category created');
+        await adminCreateCategory(data);
+        toast.success('Category created successfully');
       }
       setIsModalOpen(false);
       loadCategories();
@@ -115,10 +172,7 @@ const Categories = () => {
     }
   };
 
-  // Filter out the category itself from parent options when editing
   const parentOptions = categories.filter(c => !editingCategory || c._id !== editingCategory._id);
-
-  // Group categories by parent for hierarchical display
   const rootCategories = categories.filter(c => !c.parentId);
   const getSubCategories = (parentId) => categories.filter(c => c.parentId?._id === parentId);
 
@@ -126,8 +180,8 @@ const Categories = () => {
     <div className="admin-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Category System</h1>
-          <p className="admin-page-subtitle">Manage hierarchical categories for your marketplace.</p>
+          <h1 className="admin-page-title">Category Management</h1>
+          <p className="admin-page-subtitle">Configure main rails, subcategories, custom images, and visibility.</p>
         </div>
         <button className="btn btn-primary" onClick={() => handleOpenModal()}>
           <Plus size={18} /> Add Category
@@ -144,21 +198,32 @@ const Categories = () => {
             <table className="admin-table">
               <thead>
                 <tr>
+                  <th style={{ width: 60 }}>Cover</th>
                   <th>Category Name</th>
                   <th>Hierarchy</th>
-                  <th>Order</th>
+                  <th>Description</th>
+                  <th style={{ width: 100 }}>Order</th>
                   <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  <th style={{ textAlign: 'right', width: 200 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {rootCategories.map((cat) => {
+                {rootCategories.map((cat, rootIdx) => {
                   const subs = getSubCategories(cat._id);
                   const isExpanded = expandedCats.includes(cat._id);
 
                   return (
                     <>
                       <tr key={cat._id} className={isExpanded ? 'row-expanded' : ''}>
+                        <td>
+                          {cat.image ? (
+                            <img src={cat.image} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--border)' }} />
+                          ) : (
+                            <div style={{ width: 44, height: 44, borderRadius: 8, background: 'rgba(124, 58, 237, 0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                              <Image size={18} />
+                            </div>
+                          )}
+                        </td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             {subs.length > 0 ? (
@@ -172,12 +237,30 @@ const Categories = () => {
                             ) : (
                               <Folder size={16} color="var(--primary)" style={{ marginLeft: 28 }} />
                             )}
-                            <span className="admin-table-primary" style={{ fontWeight: 600 }}>{cat.name}</span>
+                            <div>
+                              <span className="admin-table-primary" style={{ fontWeight: 700 }}>{cat.name}</span>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>/{cat.slug}</div>
+                            </div>
                             {subs.length > 0 && <span className="badge badge-pending" style={{ fontSize: 10, padding: '2px 6px' }}>{subs.length} Subs</span>}
                           </div>
                         </td>
                         <td><span className="badge" style={{ background: 'var(--surface-2)', color: 'var(--text-faint)' }}>Root Category</span></td>
-                        <td><span className="admin-table-date">{cat.order}</span></td>
+                        <td><span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{cat.description || '—'}</span></td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ minWidth: 20, fontWeight: 700, fontSize: 13 }}>{cat.order}</span>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <button type="button" onClick={() => moveCategoryOrder(cat, 'up')} disabled={rootIdx === 0}
+                                style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 2, color: 'var(--text-muted)', opacity: rootIdx === 0 ? 0.3 : 1 }}>
+                                <ChevronUp size={14} />
+                              </button>
+                              <button type="button" onClick={() => moveCategoryOrder(cat, 'down')} disabled={rootIdx === rootCategories.length - 1}
+                                style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 2, color: 'var(--text-muted)', opacity: rootIdx === rootCategories.length - 1 ? 0.3 : 1 }}>
+                                <ChevronDown size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        </td>
                         <td>
                           <span className={`badge ${cat.isActive ? 'badge-approved' : 'badge-rejected'}`}>
                             {cat.isActive ? 'Active' : 'Inactive'}
@@ -198,22 +281,49 @@ const Categories = () => {
                       </tr>
 
                       {/* Sub-categories */}
-                      {isExpanded && subs.map(sub => (
+                      {isExpanded && subs.sort((a,b)=>a.order-b.order).map((sub, subIdx) => (
                         <tr key={sub._id} style={{ background: 'rgba(124, 58, 237, 0.02)' }}>
+                          <td>
+                            {sub.image ? (
+                              <img src={sub.image} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--border)' }} />
+                            ) : (
+                              <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)' }}>
+                                <Image size={14} />
+                              </div>
+                            )}
+                          </td>
                           <td style={{ paddingLeft: 48 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <FileText size={14} color="var(--text-faint)" />
-                              <span className="admin-table-primary">{sub.name}</span>
+                              <div>
+                                <span className="admin-table-primary" style={{ fontWeight: 600 }}>{sub.name}</span>
+                                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>/{sub.slug}</div>
+                              </div>
                             </div>
                           </td>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
                               <span>{cat.name}</span>
                               <ChevronRight size={12} />
-                              <span style={{ color: 'var(--text)' }}>{sub.name}</span>
+                              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{sub.name}</span>
                             </div>
                           </td>
-                          <td><span className="admin-table-date">{sub.order}</span></td>
+                          <td><span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{sub.description || '—'}</span></td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span style={{ minWidth: 20, fontWeight: 700, fontSize: 13 }}>{sub.order}</span>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <button type="button" onClick={() => moveCategoryOrder(sub, 'up')} disabled={subIdx === 0}
+                                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 1, color: 'var(--text-muted)', opacity: subIdx === 0 ? 0.3 : 1 }}>
+                                  <ChevronUp size={13} />
+                                </button>
+                                <button type="button" onClick={() => moveCategoryOrder(sub, 'down')} disabled={subIdx === subs.length - 1}
+                                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 1, color: 'var(--text-muted)', opacity: subIdx === subs.length - 1 ? 0.3 : 1 }}>
+                                  <ChevronDown size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          </td>
                           <td>
                             <span className={`badge ${sub.isActive ? 'badge-approved' : 'badge-rejected'}`}>
                               {sub.isActive ? 'Active' : 'Inactive'}
@@ -261,7 +371,7 @@ const Categories = () => {
 
       {isModalOpen && (
         <div className="admin-modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="admin-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
+          <div className="admin-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
             <div className="admin-modal-header">
               <h3 className="admin-modal-title">{editingCategory ? 'Edit Category' : 'New Category'}</h3>
               <button className="admin-modal-close" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
@@ -308,6 +418,28 @@ const Categories = () => {
                 placeholder="--- Make this a Main Category ---"
                 helper="If this is a sub-category, select its parent above. Otherwise, leave it as 'Main Category'."
               />
+
+              <InputField
+                id="cat-desc"
+                label="Description"
+                placeholder="Brief description for category cards..."
+                value={formData.description}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+              />
+
+              <div className="form-field">
+                <span className="form-label">Category Image / Banner</span>
+                {editingCategory?.image && !imageFile && (
+                  <img src={editingCategory.image} alt="" style={{ height: 60, borderRadius: 8, marginBottom: 8, objectFit: 'cover' }} />
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setImageFile(e.target.files[0])}
+                  className="input"
+                  style={{ padding: '8px 12px' }}
+                />
+              </div>
 
               <div className="admin-form-row">
                 <InputField

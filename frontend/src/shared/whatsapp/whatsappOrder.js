@@ -1,24 +1,28 @@
 /**
  * whatsappOrder.js
  * Central WhatsApp order utility for NearByDress.
- * ALL customer orders route through the PLATFORM ADMIN number first.
- * Admin: +91 8167827523
+ * ALL customer orders route through the PLATFORM ADMIN number.
+ * The admin number is read from DB settings at runtime.
  */
-
-// ── Platform admin WhatsApp number (E.164, digits only) ────────────────────
-export const ADMIN_WA_NUMBER = '918167827523';
 
 /**
  * Sanitize a string so it is safe inside a WhatsApp URL text param.
- * Removes any HTML/script injection attempts.
  */
 export const sanitizeText = (value) => {
   if (!value) return '';
   return String(value)
-    .replace(/[<>]/g, '')           // strip angle brackets (XSS guard)
-    .replace(/javascript:/gi, '')   // strip JS protocol
+    .replace(/[<>]/g, '')         // strip angle brackets (XSS guard)
+    .replace(/javascript:/gi, '') // strip JS protocol
     .trim();
 };
+
+/**
+ * Get the platform admin WhatsApp number from settings.
+ * Falls back to empty string (will render gracefully).
+ * @param {Object} settings - From SettingsContext
+ */
+export const getAdminWaNumber = (settings) =>
+  settings?.whatsapp?.adminNumber || '';
 
 /**
  * Validate customer form fields.
@@ -44,20 +48,24 @@ export const validateOrderForm = ({ name, phone, address, pincode, city }) => {
 
 /**
  * Build the final WhatsApp URL to open in a new tab.
- * Always targets the ADMIN number.
+ * @param {Object} settings - From SettingsContext
+ * @param {string} message  - Full order message text
  */
-export const buildAdminWhatsAppUrl = (message) => {
+export const buildAdminWhatsAppUrl = (settings, message) => {
+  const number = getAdminWaNumber(settings);
+  if (!number) return '#';
   const encoded = encodeURIComponent(sanitizeText(message));
-  return `https://wa.me/${ADMIN_WA_NUMBER}?text=${encoded}`;
+  return `https://wa.me/${number}?text=${encoded}`;
 };
 
 /**
  * Open WhatsApp in a new tab.
- * Uses window.open for both Android and iOS compatibility.
+ * @param {Object} settings - From SettingsContext
+ * @param {string} message  - Full order message text
  */
-export const openAdminWhatsApp = (message) => {
-  const url = buildAdminWhatsAppUrl(message);
+export const openAdminWhatsApp = (settings, message) => {
+  const url = buildAdminWhatsAppUrl(settings, message);
+  if (url === '#') return;
   const win = window.open(url, '_blank', 'noopener,noreferrer');
-  // Fallback: if popup blocked, navigate directly
   if (!win) window.location.href = url;
 };

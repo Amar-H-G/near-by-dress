@@ -42,6 +42,22 @@ const productSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    materials: {
+      type: [String],
+      default: [],
+    },
+    styleTags: {
+      type: [String],
+      default: [],
+    },
+    fashionLabels: {
+      type: [String],
+      default: [],
+    },
+    customAttributes: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
     stock: {
       type: Number,
       default: 0,

@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import { BRAND } from '../config/branding';
+import { useSettings } from '../../core/contexts/useSettings';
 
 /**
  * SEO.jsx
- * Lightweight, high-performance, package-free React component to dynamically
- * manage document metadata, OpenGraph tags, Twitter cards, and canonical links.
- * Works perfectly on React 19 and is highly optimized for search engine bots.
+ * Lightweight, package-free React component to dynamically manage document
+ * metadata, OpenGraph tags, Twitter cards, and canonical links.
+ * All brand/SEO strings are sourced from DB-driven SettingsContext.
  */
 const SEO = ({
   title,
@@ -14,63 +14,87 @@ const SEO = ({
   canonical,
   ogImage,
   ogType = 'website',
-  robots = 'index, follow'
+  robots = 'index, follow',
 }) => {
-  useEffect(() => {
-    // 1. Title
-    const baseTitle = `${BRAND.short} | ${BRAND.full} — Local Fashion Marketplace`;
-    document.title = title ? `${title} | ${BRAND.short}` : baseTitle;
+  const { settings } = useSettings();
 
-    // Helper to find or create a meta tag
-    const setMetaTag = (attributeName, attributeValue, contentValue) => {
+  useEffect(() => {
+    const siteName  = settings?.siteName  || 'NearByDress';
+    const siteShort = settings?.siteName?.split(' ')[0] || 'NBD';
+    const seoBase   = settings?.seo || {};
+
+    const baseTitle = seoBase.homeTitle || `${siteName} — Local Fashion Marketplace`;
+    const baseDesc  = seoBase.homeDescription || `Discover local fashion shops near you and shop directly via WhatsApp.`;
+    const baseKws   = seoBase.homeKeywords || 'fashion, local shops, marketplace, boutique';
+    const baseOgImg = seoBase.ogImage || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600';
+
+    // 1. Title
+    document.title = title ? `${title} | ${siteShort}` : baseTitle;
+
+    const setMetaTag = (attrName, attrValue, contentValue) => {
       if (!contentValue) return;
-      let element = document.querySelector(`meta[${attributeName}="${attributeValue}"]`);
-      if (!element) {
-        element = document.createElement('meta');
-        element.setAttribute(attributeName, attributeValue);
-        document.head.appendChild(element);
+      let el = document.querySelector(`meta[${attrName}="${attrValue}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attrName, attrValue);
+        document.head.appendChild(el);
       }
-      element.setAttribute('content', contentValue);
+      el.setAttribute('content', contentValue);
     };
 
-    // Helper to set link tags
     const setLinkTag = (rel, hrefValue) => {
       if (!hrefValue) return;
-      let element = document.querySelector(`link[rel="${rel}"]`);
-      if (!element) {
-        element = document.createElement('link');
-        element.setAttribute('rel', rel);
-        document.head.appendChild(element);
+      let el = document.querySelector(`link[rel="${rel}"]`);
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
       }
-      element.setAttribute('href', hrefValue);
+      el.setAttribute('href', hrefValue);
     };
 
     // 2. Standard Metadata
-    setMetaTag('name', 'description', description || `Discover premium fashion shops and boutiques near you. ${BRAND.short} connects you with authentic local ethnic wear, sarees, and customized apparel.`);
-    setMetaTag('name', 'keywords', keywords || `${BRAND.short}, ${BRAND.full}, fashion marketplace, dress shops near me, local boutiques, ethnic wear, sarees near me, local clothes shopping`);
-    setMetaTag('name', 'robots', robots);
+    setMetaTag('name', 'description', description || baseDesc);
+    setMetaTag('name', 'keywords',    keywords    || baseKws);
+    setMetaTag('name', 'robots',      robots);
 
-    // 3. Canonical Link
-    const currentUrl = window.location.href;
-    setLinkTag('canonical', canonical || currentUrl);
+    // 3. Canonical
+    setLinkTag('canonical', canonical || window.location.href);
 
-    // 4. OpenGraph Cards (Facebook / LinkedIn)
-    setMetaTag('property', 'og:title', title ? `${title} | ${BRAND.short}` : baseTitle);
-    setMetaTag('property', 'og:description', description || `Find and order premium fashion products from boutiques in your locality.`);
-    setMetaTag('property', 'og:type', ogType);
-    setMetaTag('property', 'og:url', canonical || currentUrl);
-    setMetaTag('property', 'og:image', ogImage || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600');
-    setMetaTag('property', 'og:site_name', BRAND.ogSiteName);
+    // 4. OpenGraph
+    const ogTitle = title ? `${title} | ${siteShort}` : baseTitle;
+    const ogDesc  = description || baseDesc;
+    const ogImg   = ogImage || baseOgImg;
+
+    setMetaTag('property', 'og:title',     ogTitle);
+    setMetaTag('property', 'og:description', ogDesc);
+    setMetaTag('property', 'og:type',      ogType);
+    setMetaTag('property', 'og:url',       canonical || window.location.href);
+    setMetaTag('property', 'og:image',     ogImg);
+    setMetaTag('property', 'og:site_name', siteName);
 
     // 5. Twitter Cards
-    setMetaTag('name', 'twitter:card', 'summary_large_image');
-    setMetaTag('name', 'twitter:title', title ? `${title} | ${BRAND.short}` : baseTitle);
-    setMetaTag('name', 'twitter:description', description || `Find and order premium fashion products from boutiques in your locality.`);
-    setMetaTag('name', 'twitter:image', ogImage || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600');
+    setMetaTag('name', 'twitter:card',        seoBase.twitterCard || 'summary_large_image');
+    setMetaTag('name', 'twitter:site',        seoBase.twitterSite || '@nearbydress');
+    setMetaTag('name', 'twitter:creator',     seoBase.twitterCreator || '@nearbydress');
+    setMetaTag('name', 'twitter:title',       ogTitle);
+    setMetaTag('name', 'twitter:description', ogDesc);
+    setMetaTag('name', 'twitter:image',       ogImg);
 
-  }, [title, description, keywords, canonical, ogImage, ogType, robots]);
+    // 6. Geo-SEO / Local Target Metadata
+    const geoRegion = seoBase.localBusinessRegion || '';
+    const geoPlacename = seoBase.localBusinessLocality || '';
+    const geoCountry = seoBase.localBusinessCountry || 'IN';
+    const geoPostal = seoBase.localBusinessPostalCode || '';
 
-  return null; // Side-effect component, renders nothing visibly
+    if (geoRegion) setMetaTag('name', 'geo.region', geoRegion);
+    if (geoPlacename) setMetaTag('name', 'geo.placename', geoPlacename);
+    if (geoCountry) setMetaTag('name', 'geo.country', geoCountry);
+    if (geoPostal) setMetaTag('name', 'postal-code', geoPostal);
+
+  }, [title, description, keywords, canonical, ogImage, ogType, robots, settings]);
+
+  return null;
 };
 
 export default SEO;

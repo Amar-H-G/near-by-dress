@@ -2,7 +2,9 @@ import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import LoadingSpinner from '../shared/components/LoadingSpinner';
 import Navbar from '../public/components/Navbar';
+import AnnouncementBar from '../public/components/AnnouncementBar';
 import ProtectedRoute from '../core/router/ProtectedRoute';
+
 
 const SellerRoutes = lazy(() => import('./sellerRoutes'));
 const AdminRoutes = lazy(() => import('./AdminRoutes'));
@@ -16,6 +18,7 @@ const ProductDetailPage = lazy(() => import('../public/pages/ProductDetailPage')
 const ShopsPage = lazy(() => import('../public/pages/ShopsPage'));
 const ShopDetailPage = lazy(() => import('../public/pages/ShopDetailPage'));
 const UserProfilePage = lazy(() => import('../public/pages/UserProfilePage'));
+const CMSPage = lazy(() => import('../public/pages/CMSPage'));
 
 const NotFound = () => (
   <div style={{ textAlign: 'center', padding: '120px 24px' }}>
@@ -28,6 +31,7 @@ const NotFound = () => (
 // Layout wrapper that includes the Navbar for public pages
 const PublicLayout = ({ children }) => (
   <>
+    <AnnouncementBar />
     <Navbar />
     {children}
   </>
@@ -84,6 +88,8 @@ const AppRoutes = () => (
           </PublicLayout>
         }
       />
+
+      <Route path="/pages/:slug" element={<PublicLayout><CMSPage /></PublicLayout>} />
 
       {/* 404 fallback */}
       <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />

@@ -1,5 +1,5 @@
-// [ignoring loop detection]
 import { useEffect } from 'react';
+import { useSettings } from '../../core/contexts/useSettings';
 
 /**
  * SchemaMarkup.jsx
@@ -7,10 +7,15 @@ import { useEffect } from 'react';
  * maximizing rich-snippet eligibility on Google, Bing, and AI search systems.
  */
 const SchemaMarkup = ({ type, data }) => {
+  const { settings } = useSettings();
+
   useEffect(() => {
-    if (!data) return;
+    if (!data && type !== 'website') return;
 
     let schemaObj = null;
+    const brandName = settings?.siteName || 'NearByDress';
+    const seoBase = settings?.seo || {};
+    const siteLogo = settings?.logo || seoBase.organizationLogo || '';
 
     switch (type) {
       case 'product':
@@ -24,19 +29,20 @@ const SchemaMarkup = ({ type, data }) => {
           mpn: data._id,
           brand: {
             '@type': 'Brand',
-            name: 'NearByDress'
+            name: data.fashionLabels?.length ? data.fashionLabels[0] : brandName
           },
           offers: {
             '@type': 'Offer',
             url: window.location.href,
             priceCurrency: 'INR',
             price: data.discountPrice || data.price,
-            priceValidUntil: '2030-12-31',
+            priceValidUntil: '2032-12-31',
             itemCondition: 'https://schema.org/NewCondition',
             availability: data.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             seller: {
               '@type': 'Organization',
-              name: 'NearByDress'
+              name: brandName,
+              logo: siteLogo
             }
           }
         };
@@ -49,17 +55,17 @@ const SchemaMarkup = ({ type, data }) => {
           '@type': 'Store',
           '@id': window.location.href,
           name: data.name,
-          image: data.logo || data.coverImage || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600',
+          image: data.logo || data.coverImage || siteLogo || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600',
           description: data.description || '',
-          telephone: data.whatsappNumber || '',
+          telephone: data.whatsappNumber || settings?.contactPhone || '',
           url: window.location.href,
           address: {
             '@type': 'PostalAddress',
-            streetAddress: data.address || '',
-            addressLocality: data.city || '',
-            addressRegion: data.state || '',
-            postalCode: data.pincode || '',
-            addressCountry: 'IN'
+            streetAddress: data.address || seoBase.localBusinessStreetAddress || '',
+            addressLocality: data.city || seoBase.localBusinessLocality || '',
+            addressRegion: data.state || seoBase.localBusinessRegion || '',
+            postalCode: data.pincode || seoBase.localBusinessPostalCode || '',
+            addressCountry: seoBase.localBusinessCountry || 'IN'
           },
           geo: data.location?.coordinates ? {
             '@type': 'GeoCoordinates',
@@ -86,7 +92,7 @@ const SchemaMarkup = ({ type, data }) => {
         schemaObj = {
           '@context': 'https://schema.org',
           '@type': 'WebSite',
-          name: 'NearByDress',
+          name: brandName,
           url: window.location.origin,
           potentialAction: {
             '@type': 'SearchAction',
@@ -106,7 +112,7 @@ const SchemaMarkup = ({ type, data }) => {
     if (!schemaObj) return;
 
     // Create script block and append to head
-    const scriptId = `jsonld-schema-${type}-${data._id || 'global'}`;
+    const scriptId = `jsonld-schema-${type}-${data?._id || 'global'}`;
     let scriptEl = document.getElementById(scriptId);
     if (!scriptEl) {
       scriptEl = document.createElement('script');
@@ -121,7 +127,7 @@ const SchemaMarkup = ({ type, data }) => {
       const el = document.getElementById(scriptId);
       if (el) el.remove();
     };
-  }, [type, data]);
+  }, [type, data, settings]);
 
   return null; // Invisible component
 };

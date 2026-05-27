@@ -17,10 +17,13 @@ const { shopUpload } = require('../../../middleware/upload');
 router.use(authenticate, authorize('admin'));
 
 // ── Global Settings & Categories ────────────────────────────────────────────
-router.put('/settings', shopUpload.fields([{ name: 'logo', maxCount: 1 }]), settingsCtrl.updateSettings);
+router.put('/settings', shopUpload.fields([
+  { name: 'logo',    maxCount: 1 },
+  { name: 'favicon', maxCount: 1 },
+]), settingsCtrl.updateSettings);
 router.get('/categories', categoryCtrl.getAdminCategories);
-router.post('/categories', categoryCtrl.createCategory);
-router.put('/categories/:id', categoryCtrl.updateCategory);
+router.post('/categories', shopUpload.single('image'), categoryCtrl.createCategory);
+router.put('/categories/:id', shopUpload.single('image'), categoryCtrl.updateCategory);
 router.delete('/categories/:id', categoryCtrl.deleteCategory);
 
 // ── Filter Management ─────────────────────────────────────────────────────────

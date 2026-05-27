@@ -12,12 +12,24 @@ const AdminShopEdit = () => {
   const [shop, setShop] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [discoveryForm, setDiscoveryForm] = useState({
+    isFeatured: false,
+    isTrending: false,
+    rankingScore: 0,
+    visibility: 'public'
+  });
 
   useEffect(() => {
     const load = async () => {
       try {
         const { data } = await adminGetShop(id);
         setShop(data.data);
+        setDiscoveryForm({
+          isFeatured: !!data.data.isFeatured,
+          isTrending: !!data.data.isTrending,
+          rankingScore: Number(data.data.rankingScore || 0),
+          visibility: data.data.visibility || 'public'
+        });
       } catch {
         toast.error('Failed to load shop details');
         navigate('/admin/shops');
@@ -49,6 +61,27 @@ const AdminShopEdit = () => {
       navigate('/admin/shops');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update shop');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdateDiscovery = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const submitData = new FormData();
+      submitData.append('isFeatured', String(discoveryForm.isFeatured));
+      submitData.append('isTrending', String(discoveryForm.isTrending));
+      submitData.append('rankingScore', String(discoveryForm.rankingScore));
+      submitData.append('visibility', String(discoveryForm.visibility));
+
+      await adminUpdateShop(id, submitData);
+      toast.success('Shop discovery options updated successfully');
+      const { data } = await adminGetShop(id);
+      setShop(data.data);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update discovery settings');
     } finally {
       setSubmitting(false);
     }
@@ -95,6 +128,96 @@ const AdminShopEdit = () => {
             onCancel={() => navigate('/admin/shops')}
           />
         </div>
+
+        {/* ── Admin Discovery Placement & Ranking Card ────────────────── */}
+        {shop && (
+          <div className="admin-section" style={{ padding: 32, marginTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+              <div className="admin-modal-icon admin-modal-icon-primary" style={{ background: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed' }}>
+                <Store size={20} />
+              </div>
+              <div>
+                <h2 className="admin-section-title" style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Discovery & Proximity Settings</h2>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  Manage the shop's featured status, search ranking priority, and platform visibility.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ height: 1, background: 'var(--border)', marginBottom: 32, opacity: 0.5 }} />
+
+            <form onSubmit={handleUpdateDiscovery} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>Platform Visibility</label>
+                  <select
+                    className="input"
+                    value={discoveryForm.visibility}
+                    onChange={(e) => setDiscoveryForm(prev => ({ ...prev, visibility: e.target.value }))}
+                    style={{ height: 42, padding: '0 12px', borderRadius: 8, fontSize: 14, background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                  >
+                    <option value="public">Public (Visible in public listing/proximity feed)</option>
+                    <option value="hidden">Hidden (Completely excluded from public searches/feeds)</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>Search Ranking Priority Score</label>
+                  <input
+                    type="number"
+                    className="input"
+                    value={discoveryForm.rankingScore}
+                    onChange={(e) => setDiscoveryForm(prev => ({ ...prev, rankingScore: parseInt(e.target.value) || 0 }))}
+                    placeholder="0"
+                    style={{ height: 42, padding: '0 12px', borderRadius: 8, fontSize: 14, background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                  />
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', opacity: 0.7 }}>
+                    Higher value ranks the shop higher in public proximity discovery feeds.
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', userSelect: 'none', background: 'var(--surface-2)', padding: '16px 20px', borderRadius: 12, border: '1px solid var(--border)' }}>
+                  <input
+                    type="checkbox"
+                    checked={discoveryForm.isFeatured}
+                    onChange={(e) => setDiscoveryForm(prev => ({ ...prev, isFeatured: e.target.checked }))}
+                    style={{ width: 18, height: 18, cursor: 'pointer' }}
+                  />
+                  <div>
+                    <span style={{ fontSize: 14, fontWeight: 700, display: 'block', color: 'var(--text)' }}>Featured Shop</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Places shop inside featured carousel sliders.</span>
+                  </div>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', userSelect: 'none', background: 'var(--surface-2)', padding: '16px 20px', borderRadius: 12, border: '1px solid var(--border)' }}>
+                  <input
+                    type="checkbox"
+                    checked={discoveryForm.isTrending}
+                    onChange={(e) => setDiscoveryForm(prev => ({ ...prev, isTrending: e.target.checked }))}
+                    style={{ width: 18, height: 18, cursor: 'pointer' }}
+                  />
+                  <div>
+                    <span style={{ fontSize: 14, fontWeight: 700, display: 'block', color: 'var(--text)' }}>Trending Shop</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Flags the shop as trending on the discovery rail.</span>
+                  </div>
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px' }}
+                >
+                  Save Discovery Placement
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* ── Admin Location Control & Map Placement Card ────────────────── */}
         {shop && (

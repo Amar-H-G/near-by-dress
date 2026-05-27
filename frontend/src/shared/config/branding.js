@@ -1,7 +1,12 @@
 /**
  * branding.js
- * Single source of truth for all brand identity in NearByDress.
- * Update this file to change branding platform-wide.
+ * Static fallback brand values — used ONLY as last-resort defaults
+ * when the SettingsProvider hasn't loaded yet (e.g. error boundary).
+ *
+ * All runtime usage should prefer `settings.siteName`, `settings.siteTagline`, etc.
+ * from SettingsContext (via `useSettings()`).
+ *
+ * Kept for backward compatibility with any remaining imports.
  */
 
 export const BRAND = {

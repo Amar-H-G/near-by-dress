@@ -30,8 +30,8 @@ export const adminToggleFeature = (id, data) => API.put(`/admin/products/${id}/f
 export const adminUpdateSettings = (formData) =>
   API.put('/admin/settings', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminGetCategories = () => API.get('/admin/categories');
-export const adminCreateCategory = (data) => API.post('/admin/categories', data);
-export const adminUpdateCategory = (id, data) => API.put(`/admin/categories/${id}`, data);
+export const adminCreateCategory = (formData) => API.post('/admin/categories', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const adminUpdateCategory = (id, formData) => API.put(`/admin/categories/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminDeleteCategory = (id) => API.delete(`/admin/categories/${id}`);
 
 // ─── Filters ─────────────────────────────────────────────────────────────────

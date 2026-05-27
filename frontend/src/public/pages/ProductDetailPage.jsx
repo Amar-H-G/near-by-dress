@@ -75,7 +75,7 @@ const ProductDetailPage = () => {
     );
   }
 
-  const { name, description, price, discountPrice, images, category, sizes, colors, stock, shop } = product;
+  const { name, description, price, discountPrice, images, category, sizes, colors, stock, shop, materials, styleTags, fashionLabels, customAttributes } = product;
   const hasDiscount = discountPrice && discountPrice < price;
   const displayPrice = hasDiscount ? discountPrice : price;
   const rawImgs = images?.length ? images : ['https://placehold.co/900x1125/f0ece8/756f72?text=Fashion'];
@@ -265,6 +265,50 @@ const ProductDetailPage = () => {
                 <span>Ask returns</span>
               </div>
             </div>
+
+            {/* Dynamic Attributes Grid */}
+            {(materials?.length > 0 || styleTags?.length > 0 || fashionLabels?.length > 0 || (customAttributes && Object.keys(customAttributes).length > 0)) && (
+              <div style={{
+                marginTop: '28px',
+                padding: '20px',
+                background: 'rgba(124, 58, 237, 0.03)',
+                borderRadius: '16px',
+                border: '1.5px dashed rgba(124, 58, 237, 0.15)'
+              }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--primary)', display: 'block', marginBottom: '14px' }}>
+                  Product Specifications
+                </span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '14px' }}>
+                  {fashionLabels?.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-faint)', textTransform: 'uppercase' }}>Brand Label</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginTop: '2px' }}>{fashionLabels.join(', ')}</div>
+                    </div>
+                  )}
+                  {materials?.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-faint)', textTransform: 'uppercase' }}>Material</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginTop: '2px' }}>{materials.join(', ')}</div>
+                    </div>
+                  )}
+                  {styleTags?.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-faint)', textTransform: 'uppercase' }}>Style / Fit</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginTop: '2px' }}>{styleTags.join(', ')}</div>
+                    </div>
+                  )}
+                  {customAttributes && Object.entries(customAttributes).map(([key, val]) => {
+                    if (!val) return null;
+                    return (
+                      <div key={key}>
+                        <div style={{ fontSize: '11px', color: 'var(--text-faint)', textTransform: 'uppercase' }}>{key}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginTop: '2px', textTransform: 'capitalize' }}>{String(val)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="product-note">
               <Sparkles size={17} />

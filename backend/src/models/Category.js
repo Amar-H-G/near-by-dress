@@ -22,6 +22,14 @@ const categorySchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  image: {
+    type: String,
+    default: null
+  },
+  description: {
+    type: String,
+    default: ''
+  },
   isDeleted: {
     type: Boolean,
     default: false

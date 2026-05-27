@@ -40,11 +40,7 @@ export const validateOrderForm = ({ name, phone, address, pincode, city }) => {
   return { valid: Object.keys(errors).length === 0, errors };
 };
 
-/**
- * Formats a premium, structured order message.
- * Matches specifications exactly.
- */
-export const generateOrderMessage = (customer, product) => {
+export const generateOrderMessage = (customer, product, settings) => {
   const displayPrice = product.discountPrice && product.discountPrice < product.price
     ? product.discountPrice
     : product.price;
@@ -59,10 +55,14 @@ export const generateOrderMessage = (customer, product) => {
     ? `${window.location.origin}/products/${product.id}`
     : window.location.href;
 
+  const orderPrefix = settings?.whatsapp?.orderPrefix || '🛍️ New Order via NearByDress';
+  const orderIntro = settings?.whatsapp?.orderIntro || 'Hello NearByDress Admin Team,';
+  const orderOutro = settings?.whatsapp?.orderOutro || 'Please confirm availability.';
+
   const lines = [
-    `Hello NearByDress Admin Team,`,
+    orderPrefix,
     ``,
-    `I want to place an order.`,
+    orderIntro,
     ``,
     `Customer Details:`,
     `Name: ${sanitizeText(customer.name)}`,
@@ -84,7 +84,7 @@ export const generateOrderMessage = (customer, product) => {
     ``,
     `Additional Notes: ${sanitizeText(customer.note || 'N/A')}`,
     ``,
-    `Please confirm availability.`,
+    orderOutro,
   ];
 
   return lines.join('\n');
@@ -93,16 +93,17 @@ export const generateOrderMessage = (customer, product) => {
 /**
  * Direct WhatsApp URL construction targeting Admin queue.
  */
-export const buildAdminWhatsAppUrl = (message) => {
+export const buildAdminWhatsAppUrl = (message, settings) => {
+  const adminWaNumber = settings?.whatsapp?.adminNumber || '918167827523';
   const encoded = encodeURIComponent(message);
-  return `https://wa.me/${ADMIN_WA_NUMBER}?text=${encoded}`;
+  return `https://wa.me/${adminWaNumber}?text=${encoded}`;
 };
 
 /**
  * Opens WhatsApp in client browser window.
  */
-export const openAdminWhatsApp = (message) => {
-  const url = buildAdminWhatsAppUrl(message);
+export const openAdminWhatsApp = (message, settings) => {
+  const url = buildAdminWhatsAppUrl(message, settings);
   const win = window.open(url, '_blank', 'noopener,noreferrer');
   if (!win) window.location.href = url;
 };

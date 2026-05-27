@@ -1,31 +1,25 @@
-const Settings = require('../../../models/Settings');
+/**
+ * settings.controller.js
+ * Handles GET /api/settings (public, cached) and PUT /api/admin/settings (admin-only).
+ */
+const settingsService = require('../services/settings.service');
 const { sendSuccess } = require('../../../utils/response');
 
+/**
+ * GET /api/settings
+ * Public endpoint — cached by Redis middleware in server.js.
+ */
 exports.getSettings = async (req, res) => {
-  let settings = await Settings.findOne();
-  if (!settings) {
-    settings = await Settings.create({});
-  }
+  const settings = await settingsService.getSettings();
   return sendSuccess(res, { data: settings });
 };
 
+/**
+ * PUT /api/admin/settings
+ * Admin-only — full or partial settings update.
+ * Accepts multipart/form-data (for logo/favicon file uploads) or application/json.
+ */
 exports.updateSettings = async (req, res) => {
-  let settings = await Settings.findOne();
-  if (!settings) {
-    settings = await Settings.create({});
-  }
-
-  const { siteName, primaryColor, secondaryColor, contactEmail, contactPhone } = req.body;
-  if (siteName) settings.siteName = siteName;
-  if (primaryColor) settings.primaryColor = primaryColor;
-  if (secondaryColor) settings.secondaryColor = secondaryColor;
-  if (contactEmail) settings.contactEmail = contactEmail;
-  if (contactPhone) settings.contactPhone = contactPhone;
-
-  if (req.files && req.files.logo) {
-    settings.logo = req.files.logo[0].path;
-  }
-
-  await settings.save();
+  const settings = await settingsService.updateSettings(req.body, req.files);
   return sendSuccess(res, { data: settings }, 'Settings updated successfully');
 };

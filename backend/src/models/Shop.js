@@ -101,6 +101,24 @@ const shopSchema = new mongoose.Schema(
       min: [1, 'Service radius must be at least 1 km'],
       max: [100, 'Service radius cannot exceed 100 km'],
     },
+    // ─── Visibility, Feature & Ranking controls ─────────────────────────────
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+    isTrending: {
+      type: Boolean,
+      default: false,
+    },
+    rankingScore: {
+      type: Number,
+      default: 0,
+    },
+    visibility: {
+      type: String,
+      enum: ['public', 'hidden'],
+      default: 'public',
+    },
   },
   { timestamps: true }
 );

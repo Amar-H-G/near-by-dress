@@ -3,12 +3,16 @@ import { useSettings } from '../../../core/contexts/useSettings';
 import { getProducts } from '../../services/product.service';
 import { getShops } from '../../../shared/services/shop.service';
 
-// ── Critical above-fold sections — eagerly imported ───────────────────────
+// SEO — small, keep eager
+import SEO from '../../../shared/seo/SEO';
+import SchemaMarkup from '../../../shared/seo/SchemaMarkup';
+
+// ── Eager imports for critical sections to maintain LCP ──
 import HeroSection from './HeroSection';
 import FeaturesSection from './FeaturesSection';
 import CampaignSection from './CampaignSection';
 
-// ── Below-fold sections — lazy-loaded to reduce initial JS parse time ─────
+// ── Below-fold sections — lazy-loaded ──
 const FeaturedProducts    = lazy(() => import('./FeaturedProducts'));
 const CategoriesSection   = lazy(() => import('./CategoriesSection'));
 const MoodSection         = lazy(() => import('./MoodSection'));
@@ -17,14 +21,10 @@ const NearbyDiscoveryFeed = lazy(() => import('./NearbyDiscoveryFeed'));
 const NearbyShopsSection  = lazy(() => import('./NearbyShopsSection'));
 const SellerCtaSection    = lazy(() => import('./SellerCtaSection'));
 const FooterSection       = lazy(() => import('./FooterSection'));
+const TestimonialsSection = lazy(() => import('./TestimonialsSection'));
+const OffersSection       = lazy(() => import('./OffersSection'));
 
-
-// SEO — small, keep eager
-import SEO from '../../../shared/seo/SEO';
-import SchemaMarkup from '../../../shared/seo/SchemaMarkup';
-import { BRAND } from '../../../shared/config/branding';
-
-// ── Intersection-observer lazy mount — only render when near viewport ─────
+// ── Intersection-observer lazy mount ──
 const LazySection = memo(({ children, fallback = null, rootMargin = '200px' }) => {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -64,7 +64,6 @@ const HomePage = () => {
   const [newArrivals, setNewArrivals] = useState([]);
   const [featuredShops, setFeaturedShops] = useState([]);
 
-
   useEffect(() => {
     let mounted = true;
 
@@ -87,66 +86,140 @@ const HomePage = () => {
 
   const pageKeywords = categories?.map(c => c.name).join(', ') || 'sarees, kurtis, boutiques, nearby fashion';
 
+  // ── Builder Configs ──
+  const sec = settings?.homepageSections || {};
+  const order = settings?.homepageSectionsOrder || [
+    'hero',
+    'features',
+    'campaigns',
+    'featuredProducts',
+    'categories',
+    'newArrivals',
+    'mood',
+    'featuredShops',
+    'nearbyShops',
+    'nearbyDiscovery',
+    'testimonials',
+    'offers',
+    'sellerCta'
+  ];
+
+  // Headers configs
+  const fHeader = settings?.featuredProductsHeader || {};
+  const nHeader = settings?.newArrivalsHeader || {};
+
+  // Render maps
+  const renderSection = (key) => {
+    switch (key) {
+      case 'hero':
+        return sec.showHero !== false ? <HeroSection key="hero" /> : null;
+
+      case 'features':
+        return sec.showFeatures !== false ? <FeaturesSection key="features" /> : null;
+
+      case 'campaigns':
+        return sec.showCampaigns !== false ? <CampaignSection key="campaigns" /> : null;
+
+      case 'featuredProducts':
+        return sec.showFeatured !== false ? (
+          <LazySection key="featuredProducts">
+            <FeaturedProducts
+              products={featuredProducts}
+              eyebrow={fHeader.eyebrow || "Editor's rail"}
+              title={fHeader.title || "Featured by local stylists"}
+              copy={fHeader.copy || "Fresh pieces from verified boutiques, presented like a premium fashion floor."}
+            />
+          </LazySection>
+        ) : null;
+
+      case 'categories':
+        return (
+          <LazySection key="categories">
+            <CategoriesSection categories={categories} />
+          </LazySection>
+        );
+
+      case 'newArrivals':
+        return sec.showNewArrivals !== false ? (
+          <LazySection key="newArrivals">
+            <FeaturedProducts
+              products={newArrivals}
+              eyebrow={nHeader.eyebrow || "Just dropped"}
+              title={nHeader.title || "New arrivals worth opening first"}
+              copy={nHeader.copy || "Recently added fashion from shops around you, ready for direct WhatsApp buying."}
+            />
+          </LazySection>
+        ) : null;
+
+      case 'mood':
+        return sec.showMoodSection !== false ? (
+          <LazySection key="mood">
+            <MoodSection />
+          </LazySection>
+        ) : null;
+
+      case 'featuredShops':
+        return sec.showFeaturedShops !== false ? (
+          <LazySection key="featuredShops">
+            <FeaturedShopsSection shops={featuredShops} />
+          </LazySection>
+        ) : null;
+
+      case 'nearbyShops':
+        return sec.showNearbyShops !== false ? (
+          <LazySection key="nearbyShops" rootMargin="400px">
+            <NearbyShopsSection />
+          </LazySection>
+        ) : null;
+
+      case 'nearbyDiscovery':
+        return sec.showNearbyFeed !== false ? (
+          <LazySection key="nearbyDiscovery" rootMargin="400px">
+            <NearbyDiscoveryFeed />
+          </LazySection>
+        ) : null;
+
+      case 'testimonials':
+        return sec.showTestimonials !== false ? (
+          <LazySection key="testimonials">
+            <TestimonialsSection />
+          </LazySection>
+        ) : null;
+
+      case 'offers':
+        return sec.showOffers !== false ? (
+          <LazySection key="offers">
+            <OffersSection />
+          </LazySection>
+        ) : null;
+
+      case 'sellerCta':
+        return sec.showSellerCta !== false ? (
+          <LazySection key="sellerCta">
+            <SellerCtaSection />
+          </LazySection>
+        ) : null;
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="marketplace-page">
       <SEO
         title="Home"
-        description={settings?.description || `${BRAND.full} (${BRAND.short}) - Discover and buy premium fashion wear, sarees, kurtis, and designer wear from boutiques and tailors near you.`}
+        description={settings?.seo?.homeDescription || undefined}
         keywords={`nearby dress shops, boutiques near me, ethnic wear near me, local fashion discovery, ${pageKeywords}`}
       />
       <SchemaMarkup type="website" data={{ _id: 'global' }} />
 
-      {/* ── Above fold: eagerly render, critical for LCP ── */}
-      <HeroSection />
-      <FeaturesSection />
-      <CampaignSection />
-
-      {/* ── Below fold: lazy-mount via IntersectionObserver ── */}
-      <LazySection>
-        <FeaturedProducts
-          products={featuredProducts}
-          eyebrow="Editor's rail"
-          title="Featured by local stylists"
-          copy="Fresh pieces from verified boutiques, presented like a premium fashion floor."
-        />
-      </LazySection>
+      {/* Render sections in the precise order specified by the builder */}
+      {order.map((key) => renderSection(key))}
 
       <LazySection>
-        <CategoriesSection categories={categories} />
+        <FooterSection />
       </LazySection>
-
-      <LazySection>
-        <FeaturedProducts
-          products={newArrivals}
-          eyebrow="Just dropped"
-          title="New arrivals worth opening first"
-          copy="Recently added fashion from shops around you, ready for direct WhatsApp buying."
-        />
-      </LazySection>
-
-      <LazySection>
-        <MoodSection />
-      </LazySection>
-      <LazySection>
-        <FeaturedShopsSection shops={featuredShops} />
-      </LazySection>
-
-      <LazySection rootMargin="400px">
-        <NearbyShopsSection />
-      </LazySection>
-      <LazySection rootMargin="400px">
-        <NearbyDiscoveryFeed />
-      </LazySection>
-
-      <LazySection>
-        <SellerCtaSection />
-      </LazySection>
-
-      <LazySection>
-        <FooterSection settings={settings} />
-      </LazySection>
-
-
     </div>
   );
 };

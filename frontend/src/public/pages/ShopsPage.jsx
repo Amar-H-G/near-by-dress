@@ -7,6 +7,9 @@ import { useLocation as useUserLocation } from '../../core/contexts/useLocation'
 import ShopCard from '../components/ShopCard';
 import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
+import SEO from '../../shared/seo/SEO';
+import SchemaMarkup from '../../shared/seo/SchemaMarkup';
+import { useSettings } from '../../core/contexts/useSettings';
 import EmptyState from '../../shared/components/EmptyState';
 
 const normalizeShops = (payload) => {
@@ -16,6 +19,7 @@ const normalizeShops = (payload) => {
 };
 
 const ShopsPage = () => {
+  const { settings } = useSettings();
   const [searchParams, setSearchParams] = useSearchParams();
   const { location: userLoc } = useUserLocation();
   const [shops, setShops] = useState([]);
@@ -100,6 +104,14 @@ const ShopsPage = () => {
 
   return (
     <div className="marketplace-page luxury-shell">
+      <SEO
+        title={settings?.seo?.shopsTitle || 'Verified Local Fashion Boutiques'}
+        description={settings?.seo?.shopsDescription || 'Find the best clothing shops and design boutiques in your area.'}
+      />
+      <SchemaMarkup type="localbusiness" data={{
+        name: settings?.siteName || 'NearByDress Network',
+        description: settings?.seo?.shopsDescription || 'Local Boutique network',
+      }} />
       <header className="listing-hero listing-hero-shops">
         <div className="container">
           <span className="luxury-eyebrow fashion-hero-kicker">

@@ -10,6 +10,7 @@ import {
   Phone, ShoppingBag, User, X, Edit3, HelpCircle
 } from 'lucide-react';
 import { openAdminWhatsApp, validateOrderForm, generateOrderMessage } from './whatsappOrder';
+import { useSettings } from '../../core/contexts/useSettings';
 
 // Saved address integration
 import { fetchAddresses, addAddress as apiAddAddress, updateAddress as apiUpdateAddress } from '../../features/profile/services/profileService';
@@ -76,6 +77,7 @@ const Field = ({ label, id, icon: Icon, error, required, ...props }) => (
 );
 
 const WhatsAppOrderModal = memo(({ isOpen, onClose, product, userProfile, currentLoc }) => {
+  const { settings } = useSettings();
   const [form, setForm] = useState({
     name: '', phone: '', address: '', city: '', state: '', pincode: '', note: '', qty: 1
   });
@@ -234,15 +236,16 @@ const WhatsAppOrderModal = memo(({ isOpen, onClose, product, userProfile, curren
         selectedColor: product?.selectedColor,
         quantity: form.qty,
         shopName: product?.shopName || product?.shop?.name
-      }
+      },
+      settings
     );
 
     setTimeout(() => {
       setSending(false);
       setSubmitted(true);
-      openAdminWhatsApp(message);
+      openAdminWhatsApp(message, settings);
     }, 600);
-  }, [form, product]);
+  }, [form, product, settings]);
 
   const handleOverlayClick = useCallback((e) => {
     if (e.target === overlayRef.current) onClose();

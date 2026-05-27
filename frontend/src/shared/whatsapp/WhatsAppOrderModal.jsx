@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { generateOrderMessage } from './generateOrderMessage';
 import { openAdminWhatsApp, validateOrderForm } from './whatsappOrder';
+import { useSettings } from '../../core/contexts/useSettings';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const formatPrice = (value) =>
@@ -53,6 +54,7 @@ const Field = ({ label, id, icon: Icon, error, required, ...props }) => (
 
 // ── Main Modal ─────────────────────────────────────────────────────────────
 const WhatsAppOrderModal = memo(({ isOpen, onClose, product }) => {
+  const { settings } = useSettings();
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -131,7 +133,7 @@ const WhatsAppOrderModal = memo(({ isOpen, onClose, product }) => {
     setTimeout(() => {
       setSending(false);
       setSubmitted(true);
-      openAdminWhatsApp(message);
+      openAdminWhatsApp(settings, message);
     }, 600);
   }, [form, product]);
 

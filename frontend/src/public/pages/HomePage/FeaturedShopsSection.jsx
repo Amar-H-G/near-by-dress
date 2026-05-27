@@ -1,19 +1,27 @@
 import { Link } from 'react-router-dom';
 import ShopCard from '../../components/ShopCard';
+import { useSettings } from '../../../core/contexts/useSettings';
 
 const FeaturedShopsSection = ({ shops }) => {
-  if (!shops.length) return null;
+  const { settings } = useSettings();
+  const header = settings?.featuredShopsHeader || {};
+
+  const eyebrow = header.eyebrow || 'Boutique discovery';
+  const title   = header.title   || 'Meet the shops behind the look';
+  const copy    = header.copy    || 'Every storefront gets a premium brand moment so multi-vendor browsing feels polished and trusted.';
+
+  if (!shops?.length) return null;
 
   return (
     <section className="luxury-section">
       <div className="container">
         <div className="luxury-section-header">
           <div>
-            <span className="luxury-eyebrow">Boutique discovery</span>
-            <h2 className="luxury-title luxury-title-sm">Meet the shops behind the look</h2>
+            <span className="luxury-eyebrow">{eyebrow}</span>
+            <h2 className="luxury-title luxury-title-sm">{title}</h2>
           </div>
           <div>
-            <p className="luxury-copy">Every storefront gets a premium brand moment so multi-vendor browsing feels polished and trusted.</p>
+            <p className="luxury-copy">{copy}</p>
             <Link to="/shops" className="luxury-link">Explore all shops</Link>
           </div>
         </div>

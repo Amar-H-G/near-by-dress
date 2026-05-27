@@ -6,6 +6,7 @@
 
 const Shop = require('../../models/Shop');
 const Product = require('../../models/Product');
+const Settings = require('../../models/Settings');
 const AppError = require('../../utils/AppError');
 const { getPagination } = require('../../utils/pagination');
 const { getRedis } = require('../../config/redis');
@@ -193,21 +194,44 @@ const setShopLocation = async (shopId, requesterId, requesterRole, { lat, lng, s
  * Falls back to all approved shops if no geo-indexed shops are nearby.
  */
 const getNearbyShops = async (query) => {
-  const { lat, lng, radiusKm = 20, page, limit, skip } = (() => {
+  const settings = await Settings.findOne().lean();
+  const locSettings = settings?.locationDefaults || {};
+  const maxRadius = locSettings.maxRadius || 50;
+  const defaultRadius = locSettings.defaultRadius || 20;
+
+  let radiusKm = parseFloat(query.radiusKm) || defaultRadius;
+  if (radiusKm > maxRadius) radiusKm = maxRadius;
+
+  const { lat, lng, page, limit, skip } = (() => {
     const p = getPagination(query);
-    return { ...p, lat: parseFloat(query.lat), lng: parseFloat(query.lng), radiusKm: parseFloat(query.radiusKm) || 20 };
+    return { ...p, lat: parseFloat(query.lat), lng: parseFloat(query.lng) };
   })();
 
   if (isNaN(lat) || isNaN(lng)) {
     throw new AppError('lat and lng query params are required for nearby search', 400);
   }
 
+  // Reverse geocode to find current city/pincode to validate operational bounds
+  let currentCity = '';
+  try {
+    const geoData = await reverseGeocode(lat, lng);
+    currentCity = (geoData.city || '').toLowerCase();
+  } catch (_) {}
+
+  // Serviceable City Validation Check
+  if (locSettings.serviceableCities?.length > 0 && currentCity) {
+    const cityConfig = locSettings.serviceableCities.find(c => c.name.toLowerCase() === currentCity);
+    if (cityConfig && !cityConfig.isActive) {
+      throw new AppError(`We do not currently serve the ${currentCity} region.`, 403);
+    }
+  }
+
   const radiusMeters = radiusKm * 1000;
 
-  // $geoNear requires a geo-indexed field — only shops WITH coordinates are returned
   const geoFilter = {
     status: 'approved',
     isActive: true,
+    visibility: { $ne: 'hidden' },
     location: {
       $near: {
         $geometry: { type: 'Point', coordinates: [lng, lat] },
@@ -233,14 +257,30 @@ const getNearbyShops = async (query) => {
  * Uses 2dsphere indexing and sub-queries to prevent slow Cartesian geo-joins.
  */
 const getNearbyDiscoveryFeed = async (query) => {
+  const settings = await Settings.findOne().lean();
+  const locSettings = settings?.locationDefaults || {};
+  const maxRadius = locSettings.maxRadius || 50;
+  const defaultRadius = locSettings.defaultRadius || 15;
+
   const lat = parseFloat(query.lat);
   const lng = parseFloat(query.lng);
-  const radiusKm = parseFloat(query.radiusKm) || 15; // default 15 KM!
+  let radiusKm = parseFloat(query.radiusKm) || defaultRadius;
+  if (radiusKm > maxRadius) radiusKm = maxRadius;
   const pincode = query.pincode;
 
-  let geoFilter = { status: 'approved', isActive: true };
+  // Validate Serviceable area constraints if pincode is searched
+  if (pincode && locSettings.serviceableCities?.length > 0) {
+    const allPincodes = locSettings.serviceableCities
+      .filter(c => c.isActive)
+      .flatMap(c => c.pincodes || []);
 
-  // If coordinates are provided, perform 2dsphere proximity search
+    if (allPincodes.length > 0 && !allPincodes.includes(pincode)) {
+      throw new AppError(`Pincode ${pincode} is outside of our active service delivery zones.`, 403);
+    }
+  }
+
+  let geoFilter = { status: 'approved', isActive: true, visibility: { $ne: 'hidden' } };
+
   if (!isNaN(lat) && !isNaN(lng)) {
     const radiusMeters = radiusKm * 1000;
     geoFilter.location = {
@@ -250,10 +290,8 @@ const getNearbyDiscoveryFeed = async (query) => {
       },
     };
   } else if (pincode) {
-    // Fallback to pincode filtering if coordinates are not available
     geoFilter.pincode = pincode;
   } else {
-    // Return early if no search bounds are specified to prevent massive scans
     return {
       shops: [],
       products: [],
@@ -263,8 +301,18 @@ const getNearbyDiscoveryFeed = async (query) => {
     };
   }
 
-  // 1. Fetch nearby shops (fast index matching)
-  const shops = await Shop.find(geoFilter).limit(30);
+  const rawShops = await Shop.find(geoFilter);
+  // Dynamic Ranking Logic: Sort by rankingScore descending, then preserve geo-distance
+  const sortedShops = [...rawShops].sort((a, b) => {
+    const scoreA = a.rankingScore || 0;
+    const scoreB = b.rankingScore || 0;
+    if (scoreB !== scoreA) {
+      return scoreB - scoreA; // Higher score first
+    }
+    return 0; // Maintain distance sort order
+  });
+
+  const shops = sortedShops.slice(0, 30);
   const shopIds = shops.map(s => s._id);
 
   if (!shopIds.length) {
@@ -277,21 +325,17 @@ const getNearbyDiscoveryFeed = async (query) => {
     };
   }
 
-  // 2. Fetch products, featured items, and trending items from these shops in parallel
   const [products, featuredItems, trendingProducts] = await Promise.all([
-    // Active products in the nearby area (latest first)
     Product.find({ shop: { $in: shopIds }, isActive: true })
       .populate('shop', 'name logo city')
       .sort({ createdAt: -1 })
       .limit(20),
 
-    // Featured items in the nearby area
     Product.find({ shop: { $in: shopIds }, isActive: true, isFeatured: true })
       .populate('shop', 'name logo city')
       .sort({ createdAt: -1 })
       .limit(10),
 
-    // Trending products in the nearby area
     Product.find({ shop: { $in: shopIds }, isActive: true, isTrending: true })
       .populate('shop', 'name logo city')
       .sort({ createdAt: -1 })
