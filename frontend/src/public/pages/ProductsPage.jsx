@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { MapPin, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { getProducts } from '../services/product.service.js';
 import { useLocation as useUserLocation } from '../../core/contexts/useLocation';
+import { usePageTransition } from '../../shared/animations/usePageTransition';
 import ProductCard from '../components/ProductCard';
 import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
@@ -19,6 +20,7 @@ const normalizeProducts = (payload) => {
 };
 
 const ProductsPage = () => {
+  const pageRef = usePageTransition();
   const { settings } = useSettings();
   const [searchParams, setSearchParams] = useSearchParams();
   const { location: userLoc } = useUserLocation();
@@ -80,7 +82,7 @@ const ProductsPage = () => {
   };
 
   return (
-    <div className="marketplace-page luxury-shell">
+    <div ref={pageRef} className="marketplace-page luxury-shell">
       <SEO
         title={settings?.seo?.productsTitle || 'Premium Fashion Collection'}
         description={settings?.seo?.productsDescription || 'Browse local boutiques.'}

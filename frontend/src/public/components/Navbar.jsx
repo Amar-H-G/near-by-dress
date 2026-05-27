@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
+import { initNavbarScrollAnimation } from '../../shared/animations/animations/navbarAnimations';
 import {
   ChevronDown,
   Home,
@@ -60,6 +61,14 @@ const Navbar = () => {
       window.removeEventListener('scroll', handleScroll);
       if (rafId) cancelAnimationFrame(rafId);
     };
+  }, []);
+
+  useEffect(() => {
+    const navbar = document.getElementById('navbar');
+    if (navbar) {
+      const cleanup = initNavbarScrollAnimation(navbar);
+      return cleanup;
+    }
   }, []);
 
   useEffect(() => {
@@ -281,11 +290,11 @@ const Navbar = () => {
           <div className="marketplace-mobile-panel">
             <div className="container">
               {/* Premium Location section inside drawer */}
-              <div 
-                className="mobile-drawer-location-card" 
-                onClick={() => { 
-                  setMobileOpen(false); 
-                  setIsLocationModalOpen(true); 
+              <div
+                className="mobile-drawer-location-card"
+                onClick={() => {
+                  setMobileOpen(false);
+                  setIsLocationModalOpen(true);
                 }}
               >
                 <div className="mobile-drawer-loc-left">

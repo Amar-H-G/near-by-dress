@@ -4,6 +4,7 @@ import { MapPin, Navigation, Search, Sparkles, X } from 'lucide-react';
 import { getShops } from '../../shared/services/shop.service.js';
 import { getNearbyShops } from '../../shared/location/services/locationService';
 import { useLocation as useUserLocation } from '../../core/contexts/useLocation';
+import { usePageTransition } from '../../shared/animations/usePageTransition';
 import ShopCard from '../components/ShopCard';
 import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
@@ -19,6 +20,7 @@ const normalizeShops = (payload) => {
 };
 
 const ShopsPage = () => {
+  const pageRef = usePageTransition();
   const { settings } = useSettings();
   const [searchParams, setSearchParams] = useSearchParams();
   const { location: userLoc } = useUserLocation();
@@ -103,7 +105,7 @@ const ShopsPage = () => {
   };
 
   return (
-    <div className="marketplace-page luxury-shell">
+    <div ref={pageRef} className="marketplace-page luxury-shell">
       <SEO
         title={settings?.seo?.shopsTitle || 'Verified Local Fashion Boutiques'}
         description={settings?.seo?.shopsDescription || 'Find the best clothing shops and design boutiques in your area.'}

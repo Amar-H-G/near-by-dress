@@ -2,6 +2,7 @@ import { lazy, memo, Suspense, useCallback, useEffect, useRef, useState } from '
 import { useSettings } from '../../../core/contexts/useSettings';
 import { getProducts } from '../../services/product.service';
 import { getShops } from '../../../shared/services/shop.service';
+import { usePageTransition } from '../../../shared/animations/usePageTransition';
 
 // SEO — small, keep eager
 import SEO from '../../../shared/seo/SEO';
@@ -59,6 +60,7 @@ const normalizeList = (payload, nestedKey) => {
 };
 
 const HomePage = () => {
+  const pageRef = usePageTransition();
   const { settings, categories } = useSettings();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
@@ -206,7 +208,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="marketplace-page">
+    <div ref={pageRef} className="marketplace-page">
       <SEO
         title="Home"
         description={settings?.seo?.homeDescription || undefined}

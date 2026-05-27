@@ -1,10 +1,39 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BadgeCheck, Sparkles, Store } from 'lucide-react';
+import gsap from 'gsap';
 import { useSettings } from '../../../core/contexts/useSettings';
 
 const HeroSection = () => {
+  const heroRef = useRef(null);
   const { settings } = useSettings();
   const hero = settings?.heroBanner || {};
+
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+
+    // Grab inner elements
+    const kicker = el.querySelector('.fashion-hero-kicker');
+    const title = el.querySelector('.fashion-hero-title');
+    const copy = el.querySelector('.fashion-hero-copy');
+    const actions = el.querySelector('.fashion-hero-actions');
+    const stats = el.querySelector('.fashion-hero-stats');
+
+    // Create premium cinematic stagger animation sequence
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.85 } });
+    gsap.set([kicker, title, copy, actions, stats], { opacity: 0, y: 25 });
+
+    tl.to(kicker, { opacity: 1, y: 0, delay: 0.15 })
+      .to(title, { opacity: 1, y: 0 }, '-=0.65')
+      .to(copy, { opacity: 1, y: 0 }, '-=0.6')
+      .to(actions, { opacity: 1, y: 0 }, '-=0.55')
+      .to(stats, { opacity: 1, y: 0 }, '-=0.5');
+
+    return () => {
+      tl.kill();
+    };
+  }, []);
   const siteName = settings?.siteName || 'NearByDress';
 
   const title  = hero.title  || 'Your city.\nYour new wardrobe.';
@@ -20,7 +49,7 @@ const HeroSection = () => {
   ];
 
   return (
-    <section className="fashion-hero">
+    <section ref={heroRef} className="fashion-hero">
       <div className="container">
         <div className="fashion-hero-content">
           <span className="luxury-eyebrow fashion-hero-kicker">

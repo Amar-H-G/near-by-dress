@@ -4,12 +4,14 @@ import { SettingsProvider } from './SettingsProvider';
 import { LocationProvider } from './LocationProvider';
 import { OrderFlowProvider } from '../../shared/order/OrderFlowProvider';
 import LocationPopup from '../../public/components/LocationPopup';
+import { SmoothScroll } from '../../shared/animations/smoothScroll';
 
 export const AppProviders = ({ children }) => (
   <SettingsProvider>
     <AuthProvider>
       <LocationProvider>
         <OrderFlowProvider>
+          <SmoothScroll>
           <Toaster
             position="top-right"
             toastOptions={{
@@ -27,6 +29,7 @@ export const AppProviders = ({ children }) => (
           {children}
           {/* Global location permission popup — renders on all public pages */}
           <LocationPopup />
+          </SmoothScroll>
         </OrderFlowProvider>
       </LocationProvider>
     </AuthProvider>

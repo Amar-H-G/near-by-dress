@@ -1,12 +1,21 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../../components/ProductCard';
+import { useRevealAnimation } from '../../../shared/animations/useRevealAnimation';
 
 const FeaturedProducts = memo(({ products, eyebrow, title, copy }) => {
+  const containerRef = useRevealAnimation({
+    type: 'fade-up',
+    duration: 0.85,
+    stagger: 0.08,
+    childSelector: '.fashion-product-grid > *',
+    once: true,
+  });
+
   if (!products.length) return null;
 
   return (
-    <section className="luxury-section">
+    <section ref={containerRef} className="luxury-section">
       <div className="container">
         <div className="luxury-section-header">
           <div>

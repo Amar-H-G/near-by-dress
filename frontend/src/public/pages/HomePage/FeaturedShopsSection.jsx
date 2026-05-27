@@ -1,10 +1,19 @@
 import { Link } from 'react-router-dom';
 import ShopCard from '../../components/ShopCard';
 import { useSettings } from '../../../core/contexts/useSettings';
+import { useRevealAnimation } from '../../../shared/animations/useRevealAnimation';
 
 const FeaturedShopsSection = ({ shops }) => {
   const { settings } = useSettings();
   const header = settings?.featuredShopsHeader || {};
+
+  const containerRef = useRevealAnimation({
+    type: 'fade-up',
+    duration: 0.85,
+    stagger: 0.1,
+    childSelector: '.shop-grid > *',
+    once: true,
+  });
 
   const eyebrow = header.eyebrow || 'Boutique discovery';
   const title   = header.title   || 'Meet the shops behind the look';
@@ -13,7 +22,7 @@ const FeaturedShopsSection = ({ shops }) => {
   if (!shops?.length) return null;
 
   return (
-    <section className="luxury-section">
+    <section ref={containerRef} className="luxury-section">
       <div className="container">
         <div className="luxury-section-header">
           <div>
