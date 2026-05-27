@@ -36,7 +36,13 @@ const SellerLayout = () => {
     setIsSubmitting(true);
     const submitData = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
-      if (value) submitData.append(key, value);
+      if (value !== undefined && value !== null) {
+        if (typeof value === 'object' && !(value instanceof File)) {
+          submitData.append(key, JSON.stringify(value));
+        } else {
+          submitData.append(key, value);
+        }
+      }
     });
     if (logoFile) submitData.append('logo', logoFile);
 

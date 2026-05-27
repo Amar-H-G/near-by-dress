@@ -35,6 +35,13 @@ const getSellerProfile = async (userId) => {
 const upsertSellerProfile = async (userId, data, files) => {
   let shop = await Shop.findOne({ owner: userId });
 
+  let parsedLocation;
+  if (data.location) {
+    try {
+      parsedLocation = typeof data.location === 'string' ? JSON.parse(data.location) : data.location;
+    } catch (_) {}
+  }
+
   const shopData = {
     name: data.name || data.shopName,
     whatsappNumber: data.whatsappNumber || data.phone,
@@ -48,6 +55,10 @@ const upsertSellerProfile = async (userId, data, files) => {
     closingTime: data.closingTime,
     owner: userId,
   };
+
+  if (parsedLocation && parsedLocation.coordinates && parsedLocation.coordinates.length === 2) {
+    shopData.location = parsedLocation;
+  }
 
   if (files?.logo?.[0]) shopData.logo = files.logo[0].path;
   if (files?.coverImage?.[0]) shopData.coverImage = files.coverImage[0].path;

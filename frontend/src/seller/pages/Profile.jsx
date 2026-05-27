@@ -32,7 +32,11 @@ const Profile = () => {
 
     Object.entries(formData).forEach(([key, value]) => {
       if (!excludeFields.includes(key) && value !== undefined && value !== null) {
-        submitData.append(key, value);
+        if (typeof value === 'object' && !(value instanceof File)) {
+          submitData.append(key, JSON.stringify(value));
+        } else {
+          submitData.append(key, value);
+        }
       }
     });
 

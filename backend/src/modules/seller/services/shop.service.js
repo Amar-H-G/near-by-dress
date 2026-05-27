@@ -120,6 +120,20 @@ const createShop = async (ownerId, data, files) => {
   if (existing) throw new AppError('You already have a registered shop', 400);
 
   const shopData = { ...data, owner: ownerId };
+
+  if (typeof shopData.location === 'string') {
+    try {
+      shopData.location = JSON.parse(shopData.location);
+    } catch (_) {
+      delete shopData.location;
+    }
+  }
+
+  // Ensure location.coordinates exists and is valid
+  if (shopData.location && (!shopData.location.coordinates || shopData.location.coordinates.length !== 2)) {
+    delete shopData.location;
+  }
+
   if (files?.logo?.[0]) shopData.logo = files.logo[0].path;
   if (files?.coverImage?.[0]) shopData.coverImage = files.coverImage[0].path;
 
@@ -137,10 +151,25 @@ const updateShop = async (shopId, userId, role, data, files) => {
     throw new AppError('Not authorized to update this shop', 403);
   }
 
-  if (files?.logo?.[0]) data.logo = files.logo[0].path;
-  if (files?.coverImage?.[0]) data.coverImage = files.coverImage[0].path;
+  const updateData = { ...data };
 
-  const updated = await Shop.findByIdAndUpdate(shopId, data, { new: true, runValidators: true })
+  if (typeof updateData.location === 'string') {
+    try {
+      updateData.location = JSON.parse(updateData.location);
+    } catch (_) {
+      delete updateData.location;
+    }
+  }
+
+  // Ensure location.coordinates exists and is valid
+  if (updateData.location && (!updateData.location.coordinates || updateData.location.coordinates.length !== 2)) {
+    delete updateData.location;
+  }
+
+  if (files?.logo?.[0]) updateData.logo = files.logo[0].path;
+  if (files?.coverImage?.[0]) updateData.coverImage = files.coverImage[0].path;
+
+  const updated = await Shop.findByIdAndUpdate(shopId, updateData, { new: true, runValidators: true })
     .populate('owner', 'name email phone');
 
   await invalidateShopCache();
