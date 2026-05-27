@@ -4,6 +4,8 @@ import { Eye, Heart, MessageCircle, Sparkles, Star, Store } from 'lucide-react';
 import { useLocation } from '../../core/contexts/useLocation';
 import { haversineDistance, formatDistance } from '../../shared/location/utils/geoUtils';
 
+import { useOrderFlow } from '../../shared/order/useOrderFlow';
+
 // ── Stable formatter instance (created once, not on every render) ──────────
 const priceFormatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -21,9 +23,10 @@ const getProductImage = (images, name) => {
 };
 
 // ── Wrapped in memo — only re-renders when `product` prop changes ──────────
-const ProductCard = memo(({ product, onOrderClick }) => {
+const ProductCard = memo(({ product }) => {
   const { _id, name, price, discountPrice, images, category, shop } = product;
   const { location: userLoc } = useLocation();
+  const { startOrderFlow } = useOrderFlow();
 
   // ── All derived values memoized — no recalculation on parent re-renders ──
   const {
@@ -34,7 +37,6 @@ const ProductCard = memo(({ product, onOrderClick }) => {
     rating,
     reviewCount,
     distanceText,
-    whatsappUrl,
     discountPct,
   } = useMemo(() => {
     const hasDiscount = !!(discountPrice && discountPrice < price);
@@ -51,13 +53,9 @@ const ProductCard = memo(({ product, onOrderClick }) => {
       const dist = haversineDistance(userLoc.lat, userLoc.lng, shopCoords[1], shopCoords[0]);
       distanceText = formatDistance(dist);
     }
-    const whatsappUrl = shop?.whatsappNumber
-      ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}"`
-      : null;
-    const whatsappClick = onOrderClick ? null : whatsappUrl; // if no callback, fall back to direct url
     const discountPct = hasDiscount ? Math.round(((price - discountPrice) / price) * 100) : 0;
-    return { displayPrice, hasDiscount, image, categoryLabel, rating, reviewCount, distanceText, whatsappUrl, whatsappClick, discountPct };
-  }, [product, userLoc.status, userLoc.lat, userLoc.lng, onOrderClick]);
+    return { displayPrice, hasDiscount, image, categoryLabel, rating, reviewCount, distanceText, discountPct };
+  }, [product, userLoc.status, userLoc.lat, userLoc.lng]);
 
   return (
     <article className="fashion-product-card">
@@ -138,36 +136,25 @@ const ProductCard = memo(({ product, onOrderClick }) => {
           </Link>
         )}
 
-        {(onOrderClick || whatsappUrl) && (
-          onOrderClick ? (
-            <button
-              type="button"
-              className="fashion-whatsapp"
-              id={`whatsapp-${_id}`}
-              onClick={() => onOrderClick({
-                ...product,
-                image,
-                selectedSize: undefined,
-                selectedColor: undefined,
-                shopName: shop?.name,
-              })}
-            >
-              <MessageCircle size={15} />
-              WhatsApp
-            </button>
-          ) : (
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="fashion-whatsapp"
-              id={`whatsapp-${_id}`}
-            >
-              <MessageCircle size={15} />
-              WhatsApp
-            </a>
-          )
-        )}
+        <button
+          type="button"
+          className="fashion-whatsapp"
+          id={`whatsapp-${_id}`}
+          onClick={() => startOrderFlow({
+            id: _id,
+            name,
+            price,
+            discountPrice,
+            image,
+            selectedSize: undefined,
+            selectedColor: undefined,
+            shopName: shop?.name,
+            shop,
+          })}
+        >
+          <MessageCircle size={15} />
+          WhatsApp
+        </button>
       </div>
     </article>
   );

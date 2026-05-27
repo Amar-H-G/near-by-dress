@@ -7,7 +7,7 @@ import Pagination from '../../shared/components/Pagination';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import EmptyState from '../../shared/components/EmptyState';
 
-const WhatsAppOrderModal = lazy(() => import('../../shared/whatsapp/WhatsAppOrderModal'));
+import { useOrderFlow } from '../../shared/order/useOrderFlow';
 
 // SEO & Schema Injections
 import SEO from '../../shared/seo/SEO';
@@ -31,10 +31,7 @@ const ShopDetailPage = () => {
   const [prodLoading, setProdLoading] = useState(false);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
-  const [orderModalOpen, setOrderModalOpen] = useState(false);
-
-  const openOrderModal = useCallback(() => setOrderModalOpen(true), []);
-  const closeOrderModal = useCallback(() => setOrderModalOpen(false), []);
+  const { startOrderFlow } = useOrderFlow();
 
   useEffect(() => {
     let mounted = true;
@@ -161,7 +158,7 @@ const ShopDetailPage = () => {
           {(
             <a
               href="#whatsapp-order"
-              onClick={(e) => { e.preventDefault(); openOrderModal(); }}
+              onClick={(e) => { e.preventDefault(); startOrderFlow(shopOrderProduct); }}
               className="fashion-whatsapp shopfront-whatsapp"
               id="shop-whatsapp-btn"
             >
@@ -202,14 +199,7 @@ const ShopDetailPage = () => {
         )}
       </main>
 
-      {/* WhatsApp Order Modal */}
-      <Suspense fallback={null}>
-        <WhatsAppOrderModal
-          isOpen={orderModalOpen}
-          onClose={closeOrderModal}
-          product={shopOrderProduct}
-        />
-      </Suspense>
+
     </div>
   );
 };

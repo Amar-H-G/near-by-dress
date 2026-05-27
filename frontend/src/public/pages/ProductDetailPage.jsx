@@ -20,8 +20,7 @@ import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import SEO from '../../shared/seo/SEO';
 import SchemaMarkup from '../../shared/seo/SchemaMarkup';
 
-// WhatsApp Order Modal — lazy loaded (not on initial bundle)
-const WhatsAppOrderModal = lazy(() => import('../../shared/whatsapp/WhatsAppOrderModal'));
+import { useOrderFlow } from '../../shared/order/useOrderFlow';
 
 const priceFormatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -40,7 +39,7 @@ const ProductDetailPage = () => {
   const [activeImg, setActiveImg] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-  const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const { startOrderFlow } = useOrderFlow();
 
   useEffect(() => {
     let mounted = true;
@@ -64,8 +63,7 @@ const ProductDetailPage = () => {
     return () => { mounted = false; };
   }, [id]);
 
-  const openOrderModal = useCallback(() => setOrderModalOpen(true), []);
-  const closeOrderModal = useCallback(() => setOrderModalOpen(false), []);
+
 
   if (loading) return <LoadingSpinner fullScreen />;
   if (error || !product) {
@@ -247,7 +245,7 @@ const ProductDetailPage = () => {
               type="button"
               className="fashion-whatsapp product-primary-cta"
               id="whatsapp-cta-main"
-              onClick={openOrderModal}
+              onClick={() => startOrderFlow(orderProduct)}
             >
               <MessageCircle size={20} />
               Order on WhatsApp
@@ -299,21 +297,12 @@ const ProductDetailPage = () => {
           type="button"
           className="fashion-whatsapp"
           id="whatsapp-cta-sticky"
-          onClick={openOrderModal}
+          onClick={() => startOrderFlow(orderProduct)}
         >
           <MessageCircle size={18} />
           Order on WhatsApp
         </button>
       </div>
-
-      {/* ── WhatsApp Order Modal (lazy) ── */}
-      <Suspense fallback={null}>
-        <WhatsAppOrderModal
-          isOpen={orderModalOpen}
-          onClose={closeOrderModal}
-          product={orderProduct}
-        />
-      </Suspense>
     </div>
   );
 };

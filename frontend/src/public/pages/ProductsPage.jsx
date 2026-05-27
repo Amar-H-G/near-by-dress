@@ -9,8 +9,6 @@ import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import EmptyState from '../../shared/components/EmptyState';
 import DynamicFilters from '../components/DynamicFilters';
 
-const WhatsAppOrderModal = lazy(() => import('../../shared/whatsapp/WhatsAppOrderModal'));
-
 const normalizeProducts = (payload) => {
   if (Array.isArray(payload.data)) return payload.data;
   if (Array.isArray(payload.data?.products)) return payload.data.products;
@@ -25,10 +23,6 @@ const ProductsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
-  const [orderModal, setOrderModal] = useState({ open: false, product: null });
-
-  const openOrderModal = useCallback((product) => setOrderModal({ open: true, product }), []);
-  const closeOrderModal = useCallback(() => setOrderModal({ open: false, product: null }), []);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const search = searchParams.get('search') || '';
@@ -149,7 +143,7 @@ const ProductsPage = () => {
             <>
               <div className="fashion-product-grid">
                 {products.map((product) => (
-                  <ProductCard key={product._id} product={product} onOrderClick={openOrderModal} />
+                  <ProductCard key={product._id} product={product} />
                 ))}
               </div>
               <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={handlePageChange} />
@@ -175,14 +169,7 @@ const ProductsPage = () => {
         </div>
       )}
 
-      {/* Shared WhatsApp Order Modal for all product cards */}
-      <Suspense fallback={null}>
-        <WhatsAppOrderModal
-          isOpen={orderModal.open}
-          onClose={closeOrderModal}
-          product={orderModal.product}
-        />
-      </Suspense>
+
     </div>
   );
 };
