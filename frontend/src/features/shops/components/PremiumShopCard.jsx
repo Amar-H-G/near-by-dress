@@ -4,6 +4,9 @@ import { BadgeCheck, MapPin, Sparkles, Store, ArrowRight, Clock } from 'lucide-r
 import { useLocation } from '../../../core/contexts/useLocation';
 import { haversineDistance, formatDistance } from '../../../shared/location/utils/geoUtils';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const DEFAULT_COVER =
   'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=600&q=70';

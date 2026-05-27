@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { PackageOpen, Sparkles, Navigation, Award } from 'lucide-react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const ShopStats = ({ productsCount = 12 }) => {
   const statsRef = useRef(null);

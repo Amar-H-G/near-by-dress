@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Camera, Sparkles } from 'lucide-react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const GALLERY_IMAGES = [
   'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=600&q=80',
