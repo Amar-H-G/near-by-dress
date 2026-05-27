@@ -33,8 +33,30 @@ const PublicLayout = ({ children }) => (
   </>
 );
 
+const PremiumProgressBar = () => (
+  <div style={{
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: 'linear-gradient(90deg, #7c3aed, #ec4899)',
+    zIndex: 99999,
+    animation: 'loadingBar 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+    transformOrigin: '0% 50%'
+  }}>
+    <style>{`
+      @keyframes loadingBar {
+        0% { transform: scaleX(0); }
+        50% { transform: scaleX(0.7); }
+        100% { transform: scaleX(1); }
+      }
+    `}</style>
+  </div>
+);
+
 const AppRoutes = () => (
-  <Suspense fallback={<LoadingSpinner fullScreen />}>
+  <Suspense fallback={<PremiumProgressBar />}>
     <Routes>
       {/* Auth routes — no Navbar */}
       <Route path="/login" element={<LoginPage />} />
