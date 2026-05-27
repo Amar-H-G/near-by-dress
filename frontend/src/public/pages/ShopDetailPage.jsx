@@ -9,6 +9,12 @@ import EmptyState from '../../shared/components/EmptyState';
 
 import { useOrderFlow } from '../../shared/order/useOrderFlow';
 
+import ShopHero from '../../features/shops/components/ShopHero';
+import ShopOverview from '../../features/shops/components/ShopOverview';
+import ShopStats from '../../features/shops/components/ShopStats';
+import ShopGallery from '../../features/shops/components/ShopGallery';
+import ShopCollections from '../../features/shops/components/ShopCollections';
+
 // SEO & Schema Injections
 import SEO from '../../shared/seo/SEO';
 import SchemaMarkup from '../../shared/seo/SchemaMarkup';
@@ -120,62 +126,26 @@ const ShopDetailPage = () => {
       <SchemaMarkup type="localbusiness" data={shop} />
       <SchemaMarkup type="breadcrumbs" data={breadcrumbs} />
 
-      <header className="shopfront-hero">
-        <img src={shop.coverImage || DEFAULT_COVER} alt="" />
-        <div className="container shopfront-card">
-          <img
-            src={shop.logo || `https://placehold.co/180x180/f0ece8/756f72?text=${encodeURIComponent(shop.name?.charAt(0) || 'S')}`}
-            alt={shop.name}
-            className="shopfront-logo"
-          />
-          <div>
-            <span className="luxury-eyebrow fashion-hero-kicker">
-              <Sparkles size={14} /> Seller storefront
-            </span>
-            <h1>{shop.name}</h1>
-            <div className="shopfront-meta">
-              {shop.status && (
-                <span>
-                  <BadgeCheck size={14} /> {shop.status}
-                </span>
-              )}
-              {shop.city && (
-                <span>
-                  <MapPin size={14} /> {shop.city}
-                </span>
-              )}
-              {shop.category && (
-                <span>
-                  <Store size={14} /> {shop.category}
-                </span>
-              )}
-              <span>
-                <Package size={14} /> {products.length} products
-              </span>
-            </div>
-            {shop.description && <p className="shopfront-description">{shop.description}</p>}
-          </div>
-          {(
-            <a
-              href="#whatsapp-order"
-              onClick={(e) => { e.preventDefault(); startOrderFlow(shopOrderProduct); }}
-              className="fashion-whatsapp shopfront-whatsapp"
-              id="shop-whatsapp-btn"
-            >
-              <MessageCircle size={18} />
-              WhatsApp
-            </a>
-          )}
-        </div>
-      </header>
+      <ShopHero 
+        shop={shop} 
+        onInquiryClick={() => startOrderFlow(shopOrderProduct)} 
+      />
 
-      <main className="container shopfront-content">
-        <div className="listing-results-header">
+      <ShopOverview shop={shop} />
+
+      <ShopStats productsCount={products.length} />
+
+      <ShopCollections />
+
+      <ShopGallery />
+
+      <main className="container shopfront-content" style={{ marginTop: '64px', borderTop: '1px solid var(--border)', paddingTop: '48px' }}>
+        <div className="listing-results-header" style={{ marginBottom: '32px' }}>
           <div>
-            <span className="luxury-eyebrow">Shop collection</span>
-            <h2 className="luxury-title luxury-title-sm">Products from {shop.name}</h2>
+            <span className="luxury-eyebrow">Atelier collection</span>
+            <h2 className="luxury-title luxury-title-sm" style={{ fontSize: '24px' }}>Boutique Styles</h2>
           </div>
-          <p>{products.length} styles shown</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600 }}>{products.length} active pieces shown</p>
         </div>
 
         {prodLoading ? (
@@ -192,7 +162,7 @@ const ShopDetailPage = () => {
               totalPages={pagination.totalPages}
               onPageChange={(nextPage) => {
                 setPage(nextPage);
-                window.scrollTo({ top: 420, behavior: 'smooth' });
+                window.scrollTo({ top: 900, behavior: 'smooth' });
               }}
             />
           </>
