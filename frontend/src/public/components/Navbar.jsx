@@ -266,9 +266,37 @@ const Navbar = () => {
           </button>
         </div>
 
+        {/* ── Mobile Location Strip (Fluid design under 1040px) ── */}
+        <div className="marketplace-mobile-location-strip" onClick={() => setIsLocationModalOpen(true)}>
+          <span className="mobile-location-trigger-btn">
+            <MapPin size={12} className="mobile-loc-icon" />
+            <span className="mobile-loc-text">
+              {locationLabel ? `Delivering to: ${locationLabel}` : 'Select your area / set location'}
+            </span>
+            <ChevronDown size={11} className="mobile-loc-chevron" />
+          </span>
+        </div>
+
         {mobileOpen && (
           <div className="marketplace-mobile-panel">
             <div className="container">
+              {/* Premium Location section inside drawer */}
+              <div 
+                className="mobile-drawer-location-card" 
+                onClick={() => { 
+                  setMobileOpen(false); 
+                  setIsLocationModalOpen(true); 
+                }}
+              >
+                <div className="mobile-drawer-loc-left">
+                  <MapPin size={16} className="loc-card-icon" />
+                  <div className="loc-card-content">
+                    <span className="loc-card-kicker">Delivery Area</span>
+                    <strong className="loc-card-val">{locationLabel || 'Set Location'}</strong>
+                  </div>
+                </div>
+                <ChevronDown size={14} className="loc-card-chevron" />
+              </div>
               {navLinks.map((link) => (
                 <Link key={link.to} to={link.to} className="marketplace-mobile-link">
                   {link.label}

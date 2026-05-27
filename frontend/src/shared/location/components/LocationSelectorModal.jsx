@@ -120,11 +120,12 @@ const LocationSelectorModal = ({ isOpen, onClose }) => {
           position: 'relative',
           width: '100%',
           maxWidth: '420px',
+          maxHeight: 'calc(100vh - 40px)',
+          overflowY: 'auto',
           background: 'var(--surface)',
           borderRadius: '24px',
           border: '1px solid var(--border)',
           boxShadow: '0 24px 64px -16px rgba(15, 12, 30, 0.4), 0 0 0 1px rgba(124, 58, 237, 0.08)',
-          overflow: 'hidden',
           animation: 'modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         }}
       >

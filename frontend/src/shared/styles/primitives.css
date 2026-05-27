@@ -358,3 +358,131 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PREMIUM MOBILE LOCATION SELECTOR STYLING
+   Inspired by Swiggy, Blinkit, and Zepto.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Mobile Location Strip (sticky header) ── */
+.marketplace-mobile-location-strip {
+  display: none; /* Hidden on desktop */
+}
+
+@media (max-width: 1040px) {
+  .marketplace-mobile-location-strip {
+    display: block;
+    width: 100%;
+    padding: 8px 16px 10px;
+    border-top: 1px solid rgba(17, 17, 19, 0.05);
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(14px);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+  }
+  
+  .marketplace-mobile-location-strip:active {
+    background: rgba(17, 17, 19, 0.03);
+  }
+
+  .mobile-location-trigger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 99px;
+    background: rgba(124, 58, 237, 0.05);
+    border: 1px solid rgba(124, 58, 237, 0.12);
+    color: #7c3aed;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    max-width: 100%;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-loc-icon {
+    flex-shrink: 0;
+  }
+
+  .mobile-loc-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-loc-chevron {
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+  
+  /* Make room in page layout for sticky strip on mobile */
+  .marketplace-page {
+    padding-top: 40px !important;
+  }
+}
+
+/* ── Mobile Drawer Location Card (Swiggy / Zepto style) ── */
+.mobile-drawer-location-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: rgba(124, 58, 237, 0.04);
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  border-radius: 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-drawer-location-card:active {
+  transform: scale(0.98);
+  background: rgba(124, 58, 237, 0.08);
+}
+
+.mobile-drawer-loc-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.loc-card-icon {
+  color: #7c3aed;
+  flex-shrink: 0;
+}
+
+.loc-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.loc-card-kicker {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #8b8b9c);
+}
+
+.loc-card-val {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text, #111);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.loc-card-chevron {
+  color: #7c3aed;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
