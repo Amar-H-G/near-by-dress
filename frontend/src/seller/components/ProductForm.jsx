@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Plus, Sparkles, Tag, Shirt, Pocket, Info } from 'lucide-react';
+import { Loader2, Plus, Sparkles, Tag, Shirt, Info } from 'lucide-react';
 import { useSettings } from '../../core/contexts/useSettings';
 import InputField from '../../shared/components/form/InputField';
 import SelectField from '../../shared/components/form/SelectField';
