@@ -1,4 +1,3 @@
-[ignoring loop detection]
 import { useState } from 'react';
 import { Navigation, Loader2 } from 'lucide-react';
 import { reverseGeocode } from '../services/locationService';

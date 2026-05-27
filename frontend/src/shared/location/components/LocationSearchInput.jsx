@@ -1,4 +1,3 @@
-[ignoring loop detection]
 import { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, Loader2, X } from 'lucide-react';
 import { forwardGeocode } from '../services/locationService';

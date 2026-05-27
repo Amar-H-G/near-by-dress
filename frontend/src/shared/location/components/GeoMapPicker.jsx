@@ -1,4 +1,3 @@
-[ignoring loop detection]
 import { lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 

@@ -1,4 +1,3 @@
-[ignoring loop detection]
 import LocationSearchInput from './LocationSearchInput';
 
 const AddressAutocomplete = ({ onAddressSelected, placeholder }) => {

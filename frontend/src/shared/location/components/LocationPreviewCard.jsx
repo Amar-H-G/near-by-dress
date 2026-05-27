@@ -1,4 +1,3 @@
-[ignoring loop detection]
 import { MapPin, Globe, Compass } from 'lucide-react';
 
 const LocationPreviewCard = ({ lat, lng, address, city, state, pincode }) => {
