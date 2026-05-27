@@ -213,19 +213,30 @@
   user-select: none;
 }
 
+/* ── Inline relative wrapper for baseline alignment ── */
+.nbd-logo-text {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  line-height: 1;
+}
+
 /* ── Brand mark: "NBD" ── */
 .nbd-mark {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text, #111);
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: 0.08em;
+  display: inline-block;
+  opacity: 1;
+  transform: translateX(0) scale(1);
   transition:
     opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
     transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
-    letter-spacing 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  display: block;
+    filter 0.4s ease;
 }
 
 /* ── Expanded name: "Near By Dresses" ── */
@@ -235,19 +246,22 @@
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--text, #111);
-  line-height: 0.9;
-  /* Premium reveal state */
-  max-width: 0;
-  opacity: 0;
-  overflow: hidden;
+  line-height: 1;
   white-space: nowrap;
-  display: block;
+  
+  /* Overlay absolutely, aligned perfectly to vertical center baseline */
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(12px) scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+  display: inline-block;
+  
   transition:
-    max-width 0.5s cubic-bezier(0.25, 1, 0.5, 1),
-    opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
-    letter-spacing 0.5s cubic-bezier(0.25, 1, 0.5, 1),
-    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  transform: translateX(-8px);
+    opacity 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+    transform 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+    filter 0.45s ease;
 }
 
 /* ── Elegant Tagline ── */
@@ -269,16 +283,17 @@
 .nbd-logo-link:hover .nbd-mark,
 .nbd-logo:hover .nbd-mark {
   opacity: 0;
-  transform: translateY(-4px) scale(0.95);
-  letter-spacing: 0.16em;
+  transform: translateX(-12px) scale(0.95);
+  filter: blur(2px);
+  pointer-events: none;
 }
 
 .nbd-logo-link:hover .nbd-expand,
 .nbd-logo:hover .nbd-expand {
-  max-width: 400px;
   opacity: 1;
-  letter-spacing: 0.28em;
-  transform: translateX(0);
+  transform: translateY(-50%) translateX(0) scale(1);
+  filter: blur(0);
+  pointer-events: auto;
 }
 
 /* ═══════════════════════════════════════════════════════════════
