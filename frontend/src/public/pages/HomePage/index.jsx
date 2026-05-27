@@ -127,7 +127,6 @@ const HomePage = () => {
       <LazySection>
         <MoodSection />
       </LazySection>
-
       <LazySection>
         <FeaturedShopsSection shops={featuredShops} />
       </LazySection>
@@ -135,7 +134,6 @@ const HomePage = () => {
       <LazySection rootMargin="400px">
         <NearbyShopsSection />
       </LazySection>
-
       <LazySection rootMargin="400px">
         <NearbyDiscoveryFeed />
       </LazySection>

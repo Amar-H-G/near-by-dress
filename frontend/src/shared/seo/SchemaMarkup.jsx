@@ -24,7 +24,7 @@ const SchemaMarkup = ({ type, data }) => {
           mpn: data._id,
           brand: {
             '@type': 'Brand',
-            name: data.shop?.name || 'NearByDress Merchant'
+            name: 'NearByDress'
           },
           offers: {
             '@type': 'Offer',
@@ -35,8 +35,8 @@ const SchemaMarkup = ({ type, data }) => {
             itemCondition: 'https://schema.org/NewCondition',
             availability: data.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             seller: {
-              '@type': 'Store',
-              name: data.shop?.name || 'NearByDress Boutique'
+              '@type': 'Organization',
+              name: 'NearByDress'
             }
           }
         };

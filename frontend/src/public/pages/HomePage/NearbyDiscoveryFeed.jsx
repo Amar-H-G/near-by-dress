@@ -164,9 +164,7 @@ const NearbyDiscoveryFeed = memo(() => {
                   ))}
                 </div>
               </div>
-            )}
-
-            {/* 2. FEATURED NEARBY ITEMS */}
+            )}            {/* 2. FEATURED NEARBY ITEMS */}
             {featuredItems.length > 0 && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '20px' }}>

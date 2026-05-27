@@ -128,13 +128,7 @@ const ProductCard = memo(({ product }) => {
           {hasDiscount && <span className="fashion-price-old">{formatPrice(price)}</span>}
         </div>
 
-        {shop && (
-          <Link to={`/shops/${shop._id}`} className="fashion-shop-link">
-            <Store size={13} />
-            <span>{shop.name}</span>
-            {shop.city && <span>{shop.city}</span>}
-          </Link>
-        )}
+
 
         <button
           type="button"

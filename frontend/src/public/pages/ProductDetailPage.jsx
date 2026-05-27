@@ -106,8 +106,8 @@ const ProductDetailPage = () => {
     <div className="marketplace-page product-detail-page">
       <SEO
         title={name}
-        description={description ? description.substring(0, 155) : `Buy ${name} at ${shop?.name || 'our boutique'} online near you. High-quality fashion collection.`}
-        keywords={`${name}, buy ${name} near me, ${categoryLabel || 'ethnic wear'}, ${shop?.name || ''}, clothes shopping by pincode`}
+        description={description ? description.substring(0, 155) : `Buy ${name} online. High-quality premium fashion collection at NearByDress.`}
+        keywords={`${name}, buy ${name} online, ${categoryLabel || 'ethnic wear'}, luxury fashion marketplace, premium style`}
         ogImage={imgs[0]}
       />
       <SchemaMarkup type="product" data={product} />
@@ -258,7 +258,7 @@ const ProductDetailPage = () => {
               </div>
               <div className="product-trust-item">
                 <ShieldCheck size={20} />
-                <span>Verified shop</span>
+                <span>Verified product</span>
               </div>
               <div className="product-trust-item">
                 <RotateCcw size={20} />
@@ -266,26 +266,9 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            {shop && (
-              <Link to={`/shops/${shop._id}`} className="product-shop-card">
-                <img src={shop.logo || `https://placehold.co/120x120/f0ece8/756f72?text=${encodeURIComponent(shop.name?.charAt(0) || 'S')}`} alt={shop.name} loading="lazy" />
-                <div>
-                  <strong>{shop.name}</strong>
-                  {shop.city && (
-                    <span>
-                      <MapPin size={12} /> {shop.city}
-                    </span>
-                  )}
-                </div>
-                <span className="product-shop-action">
-                  <Store size={13} /> View shop
-                </span>
-              </Link>
-            )}
-
             <div className="product-note">
               <Sparkles size={17} />
-              <span>Message the seller for fit guidance, availability, custom styling, and pickup or delivery details.</span>
+              <span>Connect with our concierge team for fit guidance, availability, custom styling, and premium shipping details.</span>
             </div>
           </aside>
         </div>
