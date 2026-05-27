@@ -30,21 +30,30 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault();   // ← must be FIRST, before any async work
+    e.stopPropagation();
+
     const errs = validate();
     if (Object.keys(errs).length) {
       setErrors(errs);
       return;
     }
+
     setLoading(true);
     try {
       const user = await login(form);
-      toast.success(`Welcome back, ${user.name}!`);
+      toast.success(`Welcome back, ${user.name || 'User'}!`);
       if (user.role === 'admin') navigate('/admin');
       else if (user.role === 'shop_owner') navigate('/seller/dashboard');
       else navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      // Extract the most meaningful error message available
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'Wrong email or password. Please try again.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

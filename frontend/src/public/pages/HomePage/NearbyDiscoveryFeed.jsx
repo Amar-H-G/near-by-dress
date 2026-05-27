@@ -26,6 +26,15 @@ const NearbyDiscoveryFeed = memo(() => {
   const hasCoords = location.status === 'resolved' && location.lat && location.lng;
   const hasPincode = !!location.pincode;
 
+  // ✅ Hooks must be declared BEFORE any early returns (Rules of Hooks)
+  const debounceRef = useRef(null);
+  const handleRadiusChange = useCallback((newRadius) => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      startTransition(() => setRadiusKm(newRadius));
+    }, 400);
+  }, [startTransition]);
+
   useEffect(() => {
     if (!hasCoords && !hasPincode) return;
 
@@ -56,21 +65,12 @@ const NearbyDiscoveryFeed = memo(() => {
     };
   }, [hasCoords, hasPincode, location.lat, location.lng, location.pincode, radiusKm]);
 
-  // If no location has been selected/initialized, do not display anything (or show default)
+  // If no location has been selected/initialized, do not display anything
   if (location.status === 'idle' || (!hasCoords && !hasPincode)) {
     return null;
   }
 
   const { shops = [], products = [], featuredItems = [], trendingProducts = [] } = feed || {};
-
-  // Debounced handler — avoids firing API on every slider pixel (mobile drag fix)
-  const debounceRef = useRef(null);
-  const handleRadiusChange = useCallback((newRadius) => {
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      startTransition(() => setRadiusKm(newRadius));
-    }, 400);
-  }, [startTransition]);
 
   return (
     <section className="luxury-section" style={{ background: 'linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%)', position: 'relative', overflow: 'hidden' }}>

@@ -11,7 +11,6 @@ export const AppProviders = ({ children }) => (
     <AuthProvider>
       <LocationProvider>
         <OrderFlowProvider>
-          <SmoothScroll>
           <Toaster
             position="top-right"
             toastOptions={{
@@ -22,17 +21,25 @@ export const AppProviders = ({ children }) => (
                 borderRadius: '12px',
                 fontSize: '14px',
               },
-              success: { iconTheme: { primary: '#10B981', secondary: '#fff' } },
-              error: { iconTheme: { primary: '#EF4444', secondary: '#fff' } },
+              success: {
+                duration: 3000,
+                iconTheme: { primary: '#10B981', secondary: '#fff' },
+              },
+              error: {
+                duration: 5000,
+                iconTheme: { primary: '#EF4444', secondary: '#fff' },
+              },
             }}
           />
-          {children}
-          {/* Global location permission popup — renders on all public pages */}
-          <LocationPopup />
+          <SmoothScroll>
+            {children}
+            {/* Global location permission popup — renders on all public pages */}
+            <LocationPopup />
           </SmoothScroll>
         </OrderFlowProvider>
       </LocationProvider>
     </AuthProvider>
   </SettingsProvider>
 );
+
 
