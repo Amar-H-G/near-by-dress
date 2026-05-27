@@ -8,12 +8,21 @@ export const attachAuthInterceptors = (apiClient) => {
   apiClient.interceptors.response.use(
     (res) => res,
     (error) => {
-      if (error.response?.status === 401) {
+      const status = error.response?.status;
+      const url = error.config?.url || '';
+
+      // Auth endpoints (login/register) return 401 for wrong credentials —
+      // this is expected. DO NOT redirect; let the component show the toast.
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
+
+      if (status === 401 && !isAuthEndpoint) {
         localStorage.removeItem('nbd_token');
         localStorage.removeItem('nbd_user');
         window.location.href = '/login';
       }
+
       return Promise.reject(error);
     },
   );
 };
+
