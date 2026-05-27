@@ -37,6 +37,31 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other', 'unspecified'],
+      default: 'unspecified',
+    },
+    dob: {
+      type: Date,
+      default: null,
+    },
+    addresses: [
+      {
+        label: { type: String, required: true, default: 'Home' },
+        fullName: { type: String, required: true },
+        phone: { type: String, required: true },
+        addressLine1: { type: String, required: true },
+        addressLine2: { type: String },
+        landmark: { type: String },
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        pincode: { type: String, required: true },
+        isDefault: { type: Boolean, default: false },
+        lat: { type: Number, default: null },
+        lng: { type: Number, default: null }
+      }
+    ],
     isActive: {
       type: Boolean,
       default: true,

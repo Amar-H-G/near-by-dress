@@ -107,6 +107,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/seller', sellerRoutes);
 app.use('/api/location', locationRoutes); // Geolocation module
+const profileRoutes = require('./src/modules/profile/profile.routes');
+app.use('/api/profile', profileRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

@@ -11,6 +11,12 @@ import {
 } from 'lucide-react';
 import { openAdminWhatsApp, validateOrderForm, generateOrderMessage } from './whatsappOrder';
 
+// Saved address integration
+import { fetchAddresses, addAddress as apiAddAddress, updateAddress as apiUpdateAddress } from '../../features/profile/services/profileService';
+import AddressSelector from '../../features/profile/components/AddressSelector';
+import AddressFormModal from '../../features/profile/components/AddressFormModal';
+import toast from 'react-hot-toast';
+
 const formatPrice = (value) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -76,13 +82,51 @@ const WhatsAppOrderModal = memo(({ isOpen, onClose, product, userProfile, curren
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
+
+  // Address integration state
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isAddrModalOpen, setIsAddrModalOpen] = useState(false);
+  const [editAddrData, setEditAddrData] = useState(null);
   
   const firstInputRef = useRef(null);
   const overlayRef = useRef(null);
 
+  // Helper to load addresses
+  const loadAddresses = async (selectId = null) => {
+    try {
+      const list = await fetchAddresses();
+      setAddresses(list || []);
+      
+      if (list && list.length > 0) {
+        // If a specific ID is provided (e.g. after adding/editing), select it.
+        // Otherwise, find the default address or pick the first one.
+        const defaultAddr = selectId 
+          ? list.find(a => a._id === selectId) 
+          : (list.find(a => a.isDefault) || list[0]);
+
+        if (defaultAddr) {
+          setSelectedAddressId(defaultAddr._id);
+          setForm((prev) => ({
+            ...prev,
+            name: defaultAddr.fullName,
+            phone: defaultAddr.phone,
+            address: defaultAddr.addressLine1 + (defaultAddr.addressLine2 ? `, ${defaultAddr.addressLine2}` : ''),
+            city: defaultAddr.city,
+            state: defaultAddr.state,
+            pincode: defaultAddr.pincode
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load saved addresses', err);
+    }
+  };
+
   // Auto-fill from profile and active location on mount/open
   useEffect(() => {
     if (isOpen) {
+      // Initialize raw state first
       setForm({
         name: userProfile?.name || '',
         phone: userProfile?.phone || '',
@@ -96,10 +140,52 @@ const WhatsAppOrderModal = memo(({ isOpen, onClose, product, userProfile, curren
       setErrors({});
       setSubmitted(false);
       
+      // Load saved addresses for select list
+      loadAddresses();
+      
       const timer = setTimeout(() => firstInputRef.current?.focus(), 150);
       return () => clearTimeout(timer);
     }
   }, [isOpen, userProfile, currentLoc, product]);
+
+  // Handle address selection change
+  const handleAddressSelect = (addrId) => {
+    setSelectedAddressId(addrId);
+    const chosen = addresses.find(a => a._id === addrId);
+    if (chosen) {
+      setForm((prev) => ({
+        ...prev,
+        name: chosen.fullName,
+        phone: chosen.phone,
+        address: chosen.addressLine1 + (chosen.addressLine2 ? `, ${chosen.addressLine2}` : ''),
+        city: chosen.city,
+        state: chosen.state,
+        pincode: chosen.pincode
+      }));
+      // Clear errors
+      setErrors({});
+    }
+  };
+
+  // Submit address inline in checkout
+  const handleAddrModalSubmit = async (payload) => {
+    try {
+      let savedId = null;
+      if (editAddrData) {
+        const updated = await apiUpdateAddress(editAddrData._id, payload);
+        savedId = updated._id;
+      } else {
+        const added = await apiAddAddress(payload);
+        savedId = added._id;
+      }
+      // Re-load addresses and auto select
+      await loadAddresses(savedId);
+      setIsAddrModalOpen(false);
+      setEditAddrData(null);
+    } catch (err) {
+      throw err;
+    }
+  };
 
   // Trap scroll
   useEffect(() => {
@@ -171,299 +257,334 @@ const WhatsAppOrderModal = memo(({ isOpen, onClose, product, userProfile, curren
   const subtotal = displayPrice * (form.qty || 1);
 
   return (
-    <div
-      ref={overlayRef}
-      onClick={handleOverlayClick}
-      role="dialog"
-      aria-modal="true"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 99999,
-        background: 'rgba(15, 12, 30, 0.45)',
-        backdropFilter: 'blur(10px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px'
-      }}
-    >
+    <>
       <div
+        ref={overlayRef}
+        onClick={handleOverlayClick}
+        role="dialog"
+        aria-modal="true"
         style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: '520px',
-          maxHeight: 'calc(100vh - 48px)',
-          overflowY: 'auto',
-          background: 'var(--surface, #ffffff)',
-          borderRadius: '24px',
-          border: '1px solid var(--border, rgba(0,0,0,0.06))',
-          boxShadow: '0 24px 64px -16px rgba(15, 12, 30, 0.25)',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 99999,
+          background: 'rgba(15, 12, 30, 0.45)',
+          backdropFilter: 'blur(10px)',
           display: 'flex',
-          flexDirection: 'column',
-          animation: 'orderSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
         }}
       >
-        {/* Glow Line banner */}
-        <div style={{ height: '5px', background: 'linear-gradient(90deg, #7c3aed, #ec4899)' }} />
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: '520px',
+            maxHeight: 'calc(100vh - 48px)',
+            overflowY: 'auto',
+            background: 'var(--surface, #ffffff)',
+            borderRadius: '24px',
+            border: '1px solid var(--border, rgba(0,0,0,0.06))',
+            boxShadow: '0 24px 64px -16px rgba(15, 12, 30, 0.25)',
+            display: 'flex',
+            flexDirection: 'column',
+            animation: 'orderSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+          }}
+        >
+          {/* Glow Line banner */}
+          <div style={{ height: '5px', background: 'linear-gradient(90deg, #7c3aed, #ec4899)' }} />
 
-        {/* Header */}
-        <div style={{ padding: '20px 24px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.08)', display: 'grid', placeItems: 'center', color: '#22c55e' }}>
-              <MessageCircle size={18} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text, #111)', margin: 0 }}>Confirm WhatsApp Order</h2>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted, #8b8b9c)', margin: 0 }}>Direct routing to Platform Admin queue</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted, #8b8b9c)', cursor: 'pointer', padding: '6px', borderRadius: '50%', display: 'grid', placeItems: 'center' }}
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Product preview strip */}
-        {product && (
-          <div style={{ padding: '16px 24px', background: 'var(--bg-2, #f9f9fb)', borderBottom: '1px solid rgba(0,0,0,0.04)', display: 'flex', gap: 14, alignItems: 'center' }}>
-            {product.image && (
-              <img
-                src={product.image}
-                alt={product.name}
-                style={{ width: '56px', height: '68px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(0,0,0,0.05)' }}
-              />
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#7c3aed', background: 'rgba(124,58,237,0.06)', padding: '2px 6px', borderRadius: '4px' }}>
-                {product.shopName || product.shop?.name || 'Verified Boutique'}
-              </span>
-              <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text, #111)', margin: '4px 0 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {product.name}
-              </h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', fontSize: '12px', color: 'var(--text-muted, #8b8b9c)' }}>
-                <span style={{ fontWeight: 800, color: 'var(--text, #111)' }}>{formatPrice(displayPrice)}</span>
-                {product.selectedSize && <span>• Size: {product.selectedSize}</span>}
-                {product.selectedColor && <span>• Color: {product.selectedColor}</span>}
+          {/* Header */}
+          <div style={{ padding: '20px 24px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.08)', display: 'grid', placeItems: 'center', color: '#22c55e' }}>
+                <MessageCircle size={18} />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text, #111)', margin: 0 }}>Confirm WhatsApp Order</h2>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted, #8b8b9c)', margin: 0 }}>Direct routing to Platform Admin queue</p>
               </div>
             </div>
-          </div>
-        )}
-
-        {submitted ? (
-          <div style={{ padding: '40px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <div style={{ color: '#22c55e', animation: 'scaleUp 0.3s ease' }}>
-              <CheckCircle size={48} />
-            </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text, #111)', margin: '8px 0 0' }}>Redirecting to WhatsApp...</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted, #8b8b9c)', margin: 0, maxWidth: '320px', lineHeight: 1.5 }}>
-              Your luxury order receipt has been generated. Send the message on WhatsApp to our administrator to confirm your item availability.
-            </p>
             <button
               type="button"
               onClick={onClose}
-              style={{
-                marginTop: '16px',
-                padding: '12px 28px',
-                borderRadius: '12px',
-                border: 'none',
-                background: 'var(--text, #111)',
-                color: '#fff',
-                fontSize: '13px',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
+              style={{ background: 'none', border: 'none', color: 'var(--text-muted, #8b8b9c)', cursor: 'pointer', padding: '6px', borderRadius: '50%', display: 'grid', placeItems: 'center' }}
             >
-              Done
+              <X size={18} />
             </button>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }} noValidate>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '13px', fontWeight: 800, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              <Edit3 size={13} />
-              Delivery Details (Editable)
-            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <Field
-                label="Full Name"
-                id="wa-name"
-                name="name"
-                icon={User}
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Name"
-                required
-                error={errors.name}
-                ref={firstInputRef}
-              />
-              <Field
-                label="Phone Number"
-                id="wa-phone"
-                name="phone"
-                icon={Phone}
-                type="tel"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="Phone number"
-                required
-                error={errors.phone}
-              />
-            </div>
-
-            <Field
-              label="Delivery Address"
-              id="wa-address"
-              name="address"
-              icon={MapPin}
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Apartment, Street Address"
-              required
-              error={errors.address}
-            />
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: 12 }}>
-              <Field
-                label="City"
-                id="wa-city"
-                name="city"
-                value={form.city}
-                onChange={handleChange}
-                placeholder="City"
-                required
-                error={errors.city}
-              />
-              <Field
-                label="State"
-                id="wa-state"
-                name="state"
-                value={form.state}
-                onChange={handleChange}
-                placeholder="State"
-              />
-              <Field
-                label="Pincode"
-                id="wa-pincode"
-                name="pincode"
-                value={form.pincode}
-                onChange={handleChange}
-                placeholder="Pincode"
-                maxLength={6}
-                required
-                error={errors.pincode}
-              />
-            </div>
-
-            {/* Qty & Notes block */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 16, alignItems: 'start' }}>
-              {/* Qty Selection */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--text, #111)' }}>
-                  <ShoppingBag size={12} color="#7c3aed" />
-                  Quantity
-                </label>
-                <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border, rgba(0,0,0,0.08))', borderRadius: '12px', height: '45px', overflow: 'hidden', background: 'var(--bg-2, #f9f9fb)' }}>
-                  <button
-                    type="button"
-                    style={{ flex: 1, height: '100%', border: 'none', background: 'none', fontSize: '16px', fontWeight: 700, cursor: 'pointer', color: 'var(--text, #111)' }}
-                    onClick={() => setForm((p) => ({ ...p, qty: Math.max(1, p.qty - 1) }))}
-                  >
-                    −
-                  </button>
-                  <span style={{ flex: 1.2, textAlign: 'center', fontSize: '14px', fontWeight: 700, color: 'var(--text, #111)' }}>
-                    {form.qty}
-                  </span>
-                  <button
-                    type="button"
-                    style={{ flex: 1, height: '100%', border: 'none', background: 'none', fontSize: '16px', fontWeight: 700, cursor: 'pointer', color: 'var(--text, #111)' }}
-                    onClick={() => setForm((p) => ({ ...p, qty: Math.min(20, p.qty + 1) }))}
-                  >
-                    +
-                  </button>
+          {/* Product preview strip */}
+          {product && (
+            <div style={{ padding: '16px 24px', background: 'var(--bg-2, #f9f9fb)', borderBottom: '1px solid rgba(0,0,0,0.04)', display: 'flex', gap: 14, alignItems: 'center' }}>
+              {product.image && (
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  style={{ width: '56px', height: '68px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(0,0,0,0.05)' }}
+                />
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#7c3aed', background: 'rgba(124,58,237,0.06)', padding: '2px 6px', borderRadius: '4px' }}>
+                  {product.shopName || product.shop?.name || 'Verified Boutique'}
+                </span>
+                <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text, #111)', margin: '4px 0 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {product.name}
+                </h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', fontSize: '12px', color: 'var(--text-muted, #8b8b9c)' }}>
+                  <span style={{ fontWeight: 800, color: 'var(--text, #111)' }}>{formatPrice(displayPrice)}</span>
+                  {product.selectedSize && <span>• Size: {product.selectedSize}</span>}
+                  {product.selectedColor && <span>• Color: {product.selectedColor}</span>}
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* Pricing Subtotal strip */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text, #111)' }}>
-                  Pricing Summary
-                </label>
-                <div style={{ display: 'flex', flexDirection: 'column', padding: '10px 14px', background: 'rgba(124,58,237,0.04)', border: '1px solid rgba(124,58,237,0.08)', borderRadius: '12px', height: '45px', justifyContent: 'center' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted, #8b8b9c)' }}>
-                    <span>Subtotal ({form.qty} items):</span>
-                    <strong style={{ color: '#7c3aed', fontWeight: 800 }}>{formatPrice(subtotal)}</strong>
+          {submitted ? (
+            <div style={{ padding: '40px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <div style={{ color: '#22c55e', animation: 'scaleUp 0.3s ease' }}>
+                <CheckCircle size={48} />
+              </div>
+              <h3 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text, #111)', margin: '8px 0 0' }}>Redirecting to WhatsApp...</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted, #8b8b9c)', margin: 0, maxWidth: '320px', lineHeight: 1.5 }}>
+                Your luxury order receipt has been generated. Send the message on WhatsApp to our administrator to confirm your item availability.
+              </p>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  marginTop: '16px',
+                  padding: '12px 28px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'var(--text, #111)',
+                  color: '#fff',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                Done
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }} noValidate>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '13px', fontWeight: 800, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <Edit3 size={13} />
+                Delivery Details
+              </div>
+
+              {/* Integrated Saved Addresses Selector */}
+              {userProfile && (
+                <AddressSelector
+                  addresses={addresses}
+                  selectedAddressId={selectedAddressId}
+                  onSelect={handleAddressSelect}
+                  onAddNew={() => {
+                    setEditAddrData(null);
+                    setIsAddrModalOpen(true);
+                  }}
+                  onEditAddress={(addr) => {
+                    setEditAddrData(addr);
+                    setIsAddrModalOpen(true);
+                  }}
+                />
+              )}
+
+              {/* Fallback inputs if no saved addresses exist or user wants manual coordinate overrides */}
+              {(!userProfile || addresses.length === 0) && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                    <Field
+                      label="Full Name"
+                      id="wa-name"
+                      name="name"
+                      icon={User}
+                      value={form.name}
+                      onChange={handleChange}
+                      placeholder="Name"
+                      required
+                      error={errors.name}
+                      ref={firstInputRef}
+                    />
+                    <Field
+                      label="Phone Number"
+                      id="wa-phone"
+                      name="phone"
+                      icon={Phone}
+                      type="tel"
+                      value={form.phone}
+                      onChange={handleChange}
+                      placeholder="Phone number"
+                      required
+                      error={errors.phone}
+                    />
+                  </div>
+
+                  <Field
+                    label="Delivery Address"
+                    id="wa-address"
+                    name="address"
+                    icon={MapPin}
+                    value={form.address}
+                    onChange={handleChange}
+                    placeholder="Apartment, Street Address"
+                    required
+                    error={errors.address}
+                  />
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: 12 }}>
+                    <Field
+                      label="City"
+                      id="wa-city"
+                      name="city"
+                      value={form.city}
+                      onChange={handleChange}
+                      placeholder="City"
+                      required
+                      error={errors.city}
+                    />
+                    <Field
+                      label="State"
+                      id="wa-state"
+                      name="state"
+                      value={form.state}
+                      onChange={handleChange}
+                      placeholder="State"
+                    />
+                    <Field
+                      label="Pincode"
+                      id="wa-pincode"
+                      name="pincode"
+                      value={form.pincode}
+                      onChange={handleChange}
+                      placeholder="Pincode"
+                      maxLength={6}
+                      required
+                      error={errors.pincode}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Qty & Notes block */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 16, alignItems: 'start' }}>
+                {/* Qty Selection */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--text, #111)' }}>
+                    <ShoppingBag size={12} color="#7c3aed" />
+                    Quantity
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border, rgba(0,0,0,0.08))', borderRadius: '12px', height: '45px', overflow: 'hidden', background: 'var(--bg-2, #f9f9fb)' }}>
+                    <button
+                      type="button"
+                      style={{ flex: 1, height: '100%', border: 'none', background: 'none', fontSize: '16px', fontWeight: 700, cursor: 'pointer', color: 'var(--text, #111)' }}
+                      onClick={() => setForm((p) => ({ ...p, qty: Math.max(1, p.qty - 1) }))}
+                    >
+                      −
+                    </button>
+                    <span style={{ flex: 1.2, textAlign: 'center', fontSize: '14px', fontWeight: 700, color: 'var(--text, #111)' }}>
+                      {form.qty}
+                    </span>
+                    <button
+                      type="button"
+                      style={{ flex: 1, height: '100%', border: 'none', background: 'none', fontSize: '16px', fontWeight: 700, cursor: 'pointer', color: 'var(--text, #111)' }}
+                      onClick={() => setForm((p) => ({ ...p, qty: Math.min(20, p.qty + 1) }))}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Pricing Subtotal strip */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text, #111)' }}>
+                    Pricing Summary
+                  </label>
+                  <div style={{ display: 'flex', flexDirection: 'column', padding: '10px 14px', background: 'rgba(124,58,237,0.04)', border: '1px solid rgba(124,58,237,0.08)', borderRadius: '12px', height: '45px', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted, #8b8b9c)' }}>
+                      <span>Subtotal ({form.qty} items):</span>
+                      <strong style={{ color: '#7c3aed', fontWeight: 800 }}>{formatPrice(subtotal)}</strong>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <Field
-              label="Additional Notes (optional)"
-              id="wa-note"
-              name="note"
-              as="textarea"
-              value={form.note}
-              onChange={handleChange}
-              placeholder="Specify special customization sizes, measurements, colors, or boutique timings..."
-            />
+              <Field
+                label="Additional Notes (optional)"
+                id="wa-note"
+                name="note"
+                as="textarea"
+                value={form.note}
+                onChange={handleChange}
+                placeholder="Specify special customization sizes, measurements, colors, or boutique timings..."
+              />
 
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '10px 14px', background: 'var(--bg-2, #f9f9fb)', borderRadius: '12px', fontSize: '11px', color: 'var(--text-muted, #8b8b9c)', lineHeight: 1.4 }}>
-              <HelpCircle size={14} style={{ flexShrink: 0, color: '#7c3aed' }} />
-              <span>We routes order details to our admin desk first. The agent will confirm cash/digital payment & dispatch availability.</span>
-            </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '10px 14px', background: 'var(--bg-2, #f9f9fb)', borderRadius: '12px', fontSize: '11px', color: 'var(--text-muted, #8b8b9c)', lineHeight: 1.4 }}>
+                <HelpCircle size={14} style={{ flexShrink: 0, color: '#7c3aed' }} />
+                <span>We routes order details to our admin desk first. The agent will confirm cash/digital payment & dispatch availability.</span>
+              </div>
 
-            <button
-              type="submit"
-              disabled={sending}
-              style={{
-                width: '100%',
-                minHeight: '52px',
-                borderRadius: '16px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: '14px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                boxShadow: '0 8px 24px rgba(124, 58, 237, 0.25)',
-                transition: 'all 0.2s'
-              }}
-            >
-              {sending ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Preparing order manifest...
-                </>
-              ) : (
-                <>
-                  <MessageCircle size={16} />
-                  Send Order on WhatsApp
-                </>
-              )}
-            </button>
-          </form>
-        )}
+              <button
+                type="submit"
+                disabled={sending}
+                style={{
+                  width: '100%',
+                  minHeight: '52px',
+                  borderRadius: '16px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  boxShadow: '0 8px 24px rgba(124, 58, 237, 0.25)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {sending ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Preparing order manifest...
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle size={16} />
+                    Send Order on WhatsApp
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+        </div>
+
+        <style>{`
+          @keyframes orderSlideIn {
+            from { transform: translateY(20px) scale(0.97); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+          }
+          @keyframes scaleUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+          }
+        `}</style>
       </div>
 
-      <style>{`
-        @keyframes orderSlideIn {
-          from { transform: translateY(20px) scale(0.97); opacity: 0; }
-          to { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        @keyframes scaleUp {
-          from { transform: scale(0.8); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
-    </div>
+      {/* Inline Address Form Modal for Add/Edit without leaving order flow! */}
+      <AddressFormModal
+        isOpen={isAddrModalOpen}
+        onClose={() => {
+          setIsAddrModalOpen(false);
+          setEditAddrData(null);
+        }}
+        onSubmit={handleAddrModalSubmit}
+        editAddress={editAddrData}
+      />
+    </>
   );
 });
 
