@@ -18,30 +18,58 @@ export default defineConfig({
     }
   },
   build: {
-    target: 'esnext',
+    // Target modern mobile browsers — smaller, faster output
+    target: ['es2020', 'chrome80', 'safari13'],
     cssMinify: true,
     rollupOptions: {
       output: {
+        // Aggressive manual chunking for optimal mobile lazy loading
         manualChunks(id) {
-          // Put core React frameworks in a separate base vendor chunk
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router-dom/')) {
-            return 'vendor-core';
+          // ── Core React framework — always loaded ──
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/') ||
+            id.includes('node_modules/scheduler/')
+          ) {
+            return 'vendor-react';
           }
-          // Put Leaflet maps in a separate lazy-load chunk
+          // ── React Router — loaded on first navigation ──
+          if (id.includes('node_modules/react-router')) {
+            return 'vendor-router';
+          }
+          // ── Leaflet maps — LAZY: only when map component mounts ──
           if (id.includes('node_modules/leaflet') || id.includes('node_modules/react-leaflet')) {
             return 'vendor-maps';
           }
-          // Put icons library in separate lazy chunk
+          // ── Lucide icons — lazy, tree-shaken ──
           if (id.includes('node_modules/lucide-react')) {
             return 'vendor-icons';
           }
-          // Default: cluster other node_modules into third-party vendor
+          // ── GSAP animations — lazy ──
+          if (id.includes('node_modules/gsap')) {
+            return 'vendor-gsap';
+          }
+          // ── Admin pages — lazy-loaded route chunk ──
+          if (id.includes('/src/admin/')) {
+            return 'chunk-admin';
+          }
+          // ── Seller pages — lazy-loaded route chunk ──
+          if (id.includes('/src/seller/')) {
+            return 'chunk-seller';
+          }
+          // ── All other node_modules — general vendor ──
           if (id.includes('node_modules')) {
             return 'vendor-utils';
           }
-        }
+        },
+        // Consistent, cache-friendly chunk naming
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
       }
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 600,
+    // Enable asset inlining for tiny assets (reduces requests on mobile)
+    assetsInlineLimit: 4096,
   }
 })

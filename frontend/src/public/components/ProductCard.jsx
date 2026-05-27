@@ -1,54 +1,78 @@
+import { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Heart, MessageCircle, Sparkles, Star, Store } from 'lucide-react';
 import { useLocation } from '../../core/contexts/useLocation';
 import { haversineDistance, formatDistance } from '../../shared/location/utils/geoUtils';
 
-const formatPrice = (value) =>
-  new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(Number(value || 0));
+// ── Stable formatter instance (created once, not on every render) ──────────
+const priceFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  maximumFractionDigits: 0,
+});
+
+const formatPrice = (value) => priceFormatter.format(Number(value || 0));
 
 const getProductImage = (images, name) => {
   const firstImage = images?.[0];
   return typeof firstImage === 'object'
     ? firstImage?.url
-    : firstImage || `https://placehold.co/600x760/f0ece8/756f72?text=${encodeURIComponent(name || 'Fashion')}`;
+    : firstImage || `https://placehold.co/400x520/f0ece8/756f72?text=${encodeURIComponent(name || 'Fashion')}`;
 };
 
-const ProductCard = ({ product }) => {
+// ── Wrapped in memo — only re-renders when `product` prop changes ──────────
+const ProductCard = memo(({ product }) => {
   const { _id, name, price, discountPrice, images, category, shop } = product;
   const { location: userLoc } = useLocation();
 
-  const displayPrice = discountPrice && discountPrice < price ? discountPrice : price;
-  const hasDiscount = discountPrice && discountPrice < price;
-  const image = getProductImage(images, name);
-  const categoryLabel = typeof category === 'object' ? category?.name : category;
-  const rating = product.rating || product.averageRating;
-  const reviewCount = product.reviewCount || product.reviewsCount;
-
-  const shopCoords = shop?.location?.coordinates;
-  const hasUserCoords = userLoc.status === 'resolved' && userLoc.lat && userLoc.lng;
-  const hasShopCoords = Array.isArray(shopCoords) && shopCoords.length === 2 && shopCoords[0] && shopCoords[1];
-
-  let distanceText = null;
-  if (hasUserCoords && hasShopCoords) {
-    const dist = haversineDistance(userLoc.lat, userLoc.lng, shopCoords[1], shopCoords[0]);
-    distanceText = formatDistance(dist);
-  }
-
-  const whatsappUrl = shop?.whatsappNumber
-    ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}"`
-    : null;
+  // ── All derived values memoized — no recalculation on parent re-renders ──
+  const {
+    displayPrice,
+    hasDiscount,
+    image,
+    categoryLabel,
+    rating,
+    reviewCount,
+    distanceText,
+    whatsappUrl,
+    discountPct,
+  } = useMemo(() => {
+    const hasDiscount = !!(discountPrice && discountPrice < price);
+    const displayPrice = hasDiscount ? discountPrice : price;
+    const image = getProductImage(images, name);
+    const categoryLabel = typeof category === 'object' ? category?.name : category;
+    const rating = product.rating || product.averageRating;
+    const reviewCount = product.reviewCount || product.reviewsCount;
+    const shopCoords = shop?.location?.coordinates;
+    const hasUserCoords = userLoc.status === 'resolved' && userLoc.lat && userLoc.lng;
+    const hasShopCoords = Array.isArray(shopCoords) && shopCoords.length === 2 && shopCoords[0] && shopCoords[1];
+    let distanceText = null;
+    if (hasUserCoords && hasShopCoords) {
+      const dist = haversineDistance(userLoc.lat, userLoc.lng, shopCoords[1], shopCoords[0]);
+      distanceText = formatDistance(dist);
+    }
+    const whatsappUrl = shop?.whatsappNumber
+      ? `https://wa.me/${shop.whatsappNumber.replace(/\D/g, '')}?text=Hi! I'm interested in "${name}"`
+      : null;
+    const discountPct = hasDiscount ? Math.round(((price - discountPrice) / price) * 100) : 0;
+    return { displayPrice, hasDiscount, image, categoryLabel, rating, reviewCount, distanceText, whatsappUrl, discountPct };
+  }, [product, userLoc.status, userLoc.lat, userLoc.lng]);
 
   return (
     <article className="fashion-product-card">
       <Link to={`/products/${_id}`} className="fashion-product-media" aria-label={`View ${name}`}>
-        <img src={image} alt={name} loading="lazy" />
+        {/* loading=lazy defers off-screen images; decoding=async unblocks main thread */}
+        <img
+          src={image}
+          alt={name}
+          loading="lazy"
+          decoding="async"
+          width="400"
+          height="520"
+        />
         <div className="fashion-card-badges">
           <span className={`fashion-badge ${hasDiscount ? 'fashion-badge-sale' : ''}`}>
-            {hasDiscount ? `${Math.round(((price - discountPrice) / price) * 100)}% off` : 'New'}
+            {hasDiscount ? `${discountPct}% off` : 'New'}
           </span>
           <span className="fashion-wishlist" aria-label={`Save ${name}`} title="Save">
             <Heart size={16} />
@@ -128,6 +152,8 @@ const ProductCard = ({ product }) => {
       </div>
     </article>
   );
-};
+});
+
+ProductCard.displayName = 'ProductCard';
 
 export default ProductCard;

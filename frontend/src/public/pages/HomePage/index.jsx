@@ -1,21 +1,53 @@
-import { useEffect, useState } from 'react';
+import { lazy, memo, Suspense, useEffect, useRef, useState } from 'react';
 import { useSettings } from '../../../core/contexts/useSettings';
 import { getProducts } from '../../services/product.service';
 import { getShops } from '../../../shared/services/shop.service';
+
+// ── Critical above-fold sections — eagerly imported ───────────────────────
 import HeroSection from './HeroSection';
 import FeaturesSection from './FeaturesSection';
-import FeaturedProducts from './FeaturedProducts';
-import CategoriesSection from './CategoriesSection';
 import CampaignSection from './CampaignSection';
-import FeaturedShopsSection from './FeaturedShopsSection';
-import NearbyDiscoveryFeed from './NearbyDiscoveryFeed';
-import MoodSection from './MoodSection';
-import SellerCtaSection from './SellerCtaSection';
-import FooterSection from './FooterSection';
 
-// SEO components
+// ── Below-fold sections — lazy-loaded to reduce initial JS parse time ─────
+const FeaturedProducts    = lazy(() => import('./FeaturedProducts'));
+const CategoriesSection   = lazy(() => import('./CategoriesSection'));
+const MoodSection         = lazy(() => import('./MoodSection'));
+const FeaturedShopsSection = lazy(() => import('./FeaturedShopsSection'));
+const NearbyDiscoveryFeed = lazy(() => import('./NearbyDiscoveryFeed'));
+const NearbyShopsSection  = lazy(() => import('./NearbyShopsSection'));
+const SellerCtaSection    = lazy(() => import('./SellerCtaSection'));
+const FooterSection       = lazy(() => import('./FooterSection'));
+
+// SEO — small, keep eager
 import SEO from '../../../shared/seo/SEO';
 import SchemaMarkup from '../../../shared/seo/SchemaMarkup';
+
+// ── Intersection-observer lazy mount — only render when near viewport ─────
+const LazySection = memo(({ children, fallback = null, rootMargin = '200px' }) => {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !('IntersectionObserver' in window)) {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { rootMargin }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  return (
+    <div ref={ref}>
+      {visible ? <Suspense fallback={fallback}>{children}</Suspense> : fallback}
+    </div>
+  );
+});
+LazySection.displayName = 'LazySection';
 
 const normalizeList = (payload, nestedKey) => {
   const data = payload?.data?.data;
@@ -47,10 +79,7 @@ const HomePage = () => {
     };
 
     void fetchHomeData();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const pageKeywords = categories?.map(c => c.name).join(', ') || 'sarees, kurtis, boutiques, nearby fashion';
@@ -62,31 +91,59 @@ const HomePage = () => {
         description={settings?.description || "NearByDress - Discover and buy premium fashion wear, sarees, kurtis, and designer wear from boutiques and tailors near you."}
         keywords={`nearby dress shops, boutiques near me, ethnic wear near me, local fashion discovery, ${pageKeywords}`}
       />
-      <SchemaMarkup
-        type="website"
-        data={{ _id: 'global' }}
-      />
+      <SchemaMarkup type="website" data={{ _id: 'global' }} />
+
+      {/* ── Above fold: eagerly render, critical for LCP ── */}
       <HeroSection siteName={settings?.siteName || 'NearByDress'} />
       <FeaturesSection siteName={settings?.siteName || 'NearByDress'} />
       <CampaignSection />
-      <FeaturedProducts
-        products={featuredProducts}
-        eyebrow="Editor's rail"
-        title="Featured by local stylists"
-        copy="Fresh pieces from verified boutiques, presented like a premium fashion floor."
-      />
-      <CategoriesSection categories={categories} />
-      <FeaturedProducts
-        products={newArrivals}
-        eyebrow="Just dropped"
-        title="New arrivals worth opening first"
-        copy="Recently added fashion from shops around you, ready for direct WhatsApp buying."
-      />
-      <MoodSection />
-      <FeaturedShopsSection shops={featuredShops} />
-      <NearbyDiscoveryFeed />
-      <SellerCtaSection />
-      <FooterSection settings={settings} />
+
+      {/* ── Below fold: lazy-mount via IntersectionObserver ── */}
+      <LazySection>
+        <FeaturedProducts
+          products={featuredProducts}
+          eyebrow="Editor's rail"
+          title="Featured by local stylists"
+          copy="Fresh pieces from verified boutiques, presented like a premium fashion floor."
+        />
+      </LazySection>
+
+      <LazySection>
+        <CategoriesSection categories={categories} />
+      </LazySection>
+
+      <LazySection>
+        <FeaturedProducts
+          products={newArrivals}
+          eyebrow="Just dropped"
+          title="New arrivals worth opening first"
+          copy="Recently added fashion from shops around you, ready for direct WhatsApp buying."
+        />
+      </LazySection>
+
+      <LazySection>
+        <MoodSection />
+      </LazySection>
+
+      <LazySection>
+        <FeaturedShopsSection shops={featuredShops} />
+      </LazySection>
+
+      <LazySection rootMargin="400px">
+        <NearbyShopsSection />
+      </LazySection>
+
+      <LazySection rootMargin="400px">
+        <NearbyDiscoveryFeed />
+      </LazySection>
+
+      <LazySection>
+        <SellerCtaSection />
+      </LazySection>
+
+      <LazySection>
+        <FooterSection settings={settings} />
+      </LazySection>
     </div>
   );
 };

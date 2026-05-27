@@ -5,7 +5,7 @@
  * Allows the customer to interactively adjust the discovery radius or query by pincode fallback.
  */
 
-import { useEffect, useState, useTransition } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { Link } from 'react-router-dom';
 import {
   MapPin, Loader2, Sparkles, Flame,
@@ -16,7 +16,7 @@ import { getNearbyDiscoveryFeed } from '../../../shared/location/services/locati
 import ShopCard from '../../components/ShopCard';
 import ProductCard from '../../components/ProductCard';
 
-const NearbyDiscoveryFeed = () => {
+const NearbyDiscoveryFeed = memo(() => {
   const { location, setManualPincode, detect } = useLocation();
   const [feed, setFeed] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -63,11 +63,14 @@ const NearbyDiscoveryFeed = () => {
 
   const { shops = [], products = [], featuredItems = [], trendingProducts = [] } = feed || {};
 
-  const handleRadiusChange = (newRadius) => {
-    startTransition(() => {
-      setRadiusKm(newRadius);
-    });
-  };
+  // Debounced handler — avoids firing API on every slider pixel (mobile drag fix)
+  const debounceRef = useRef(null);
+  const handleRadiusChange = useCallback((newRadius) => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      startTransition(() => setRadiusKm(newRadius));
+    }, 400);
+  }, [startTransition]);
 
   return (
     <section className="luxury-section" style={{ background: 'linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%)', position: 'relative', overflow: 'hidden' }}>
@@ -89,7 +92,7 @@ const NearbyDiscoveryFeed = () => {
         }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-              <Compass size={14} color="#7c3aed" className="animate-spin" style={{ animationDuration: '4s' }} />
+              <Compass size={14} color="#7c3aed" />
               <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: '#7c3aed' }}>
                 Local discovery network
               </span>
@@ -252,6 +255,8 @@ const NearbyDiscoveryFeed = () => {
       </div>
     </section>
   );
-};
+});
+
+NearbyDiscoveryFeed.displayName = 'NearbyDiscoveryFeed';
 
 export default NearbyDiscoveryFeed;

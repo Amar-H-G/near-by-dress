@@ -7,6 +7,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Ensures smooth momentum scrolling on iOS Safari */
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -17,6 +19,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  /* Prevent layout shift from scrollbar appearing */
+  overflow-x: hidden;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────── */
@@ -33,3 +37,42 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text);
   letter-spacing: -0.02em;
 }
+
+/* ─── Performance: GPU layer hints ──────────────────────────────────────── */
+/* Product cards: contain layout/style so browser doesn't recalculate outside */
+.fashion-product-card {
+  contain: layout style;
+}
+
+/* Sections below fold: skip rendering until near viewport (massive mobile win) */
+.luxury-section,
+.luxury-section-tight {
+  content-visibility: auto;
+  /* Hint at approx height to prevent CLS during lazy render */
+  contain-intrinsic-size: 0 600px;
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+/* pulseGeo — moved from NearbyShopsSection inline style tag */
+@keyframes pulseGeo {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* GPU-only shimmer: uses transform instead of background-position for mobile perf */
+@keyframes shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* ─── Reduce motion: respect user preference ────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

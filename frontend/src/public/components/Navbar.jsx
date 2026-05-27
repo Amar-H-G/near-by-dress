@@ -2,7 +2,7 @@
  * Used by: user, seller (public/seller layout)
  * Purpose: Main navigation bar
  */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronDown,
@@ -44,10 +44,21 @@ const Navbar = () => {
   const catDropRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    // RAF-throttled scroll: prevents >60 state updates/sec — critical for mobile
+    let rafId = null;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 20);
+        rafId = null;
+      });
+    };
     handleScroll();
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   useEffect(() => {
@@ -67,24 +78,28 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate('/');
-  };
+  }, [logout, navigate]);
 
-  const isActive = (path) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
-  const queryParams = new URLSearchParams(location.search);
-  const selectedCategoryId = queryParams.get('category');
-  const selectedCategory = categories?.find((category) => category._id === selectedCategoryId);
-  const rootCategories = categories?.filter((category) => !category.parentId) || [];
-  const isDetailRoute = /^\/products\/[^/]+/.test(location.pathname) || /^\/shops\/[^/]+/.test(location.pathname);
+  // Memoized derived values — no recalculation unless dependencies change
+  const isActive = useCallback(
+    (path) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path)),
+    [location.pathname]
+  );
 
-  // Location chip label
-  const locationLabel = userLoc.city
-    ? userLoc.city
-    : userLoc.pincode
-      ? userLoc.pincode
-      : null;
+  const { selectedCategory, rootCategories, isDetailRoute, locationLabel } = useMemo(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const selectedCategoryId = queryParams.get('category');
+    const selectedCategory = categories?.find((c) => c._id === selectedCategoryId);
+    const rootCategories = categories?.filter((c) => !c.parentId) || [];
+    const isDetailRoute =
+      /^\/products\/[^/]+/.test(location.pathname) ||
+      /^\/shops\/[^/]+/.test(location.pathname);
+    const locationLabel = userLoc.city || userLoc.pincode || null;
+    return { selectedCategory, rootCategories, isDetailRoute, locationLabel };
+  }, [location.pathname, location.search, categories, userLoc.city, userLoc.pincode]);
 
   return (
     <>

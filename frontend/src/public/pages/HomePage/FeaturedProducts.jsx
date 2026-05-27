@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../../components/ProductCard';
 
-const FeaturedProducts = ({ products, eyebrow, title, copy }) => {
+const FeaturedProducts = memo(({ products, eyebrow, title, copy }) => {
   if (!products.length) return null;
 
   return (
@@ -26,6 +27,8 @@ const FeaturedProducts = ({ products, eyebrow, title, copy }) => {
       </div>
     </section>
   );
-};
+});
+
+FeaturedProducts.displayName = 'FeaturedProducts';
 
 export default FeaturedProducts;

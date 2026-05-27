@@ -5,14 +5,14 @@
  * Gracefully hidden when no location is available.
  */
 
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Navigation, Loader2, Store } from 'lucide-react';
 import { useLocation } from '../../../core/contexts/useLocation';
 import { getNearbyShops } from '../../../shared/location/services/locationService';
 import ShopCard from '../../components/ShopCard';
 
-const NearbyShopsSection = () => {
+const NearbyShopsSection = memo(() => {
   const { location, detect } = useLocation();
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -183,16 +183,10 @@ const NearbyShopsSection = () => {
           </div>
         )}
       </div>
-
-      {/* Pulse animation keyframes */}
-      <style>{`
-        @keyframes pulseGeo {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(0.8); }
-        }
-      `}</style>
     </section>
   );
-};
+});
+
+NearbyShopsSection.displayName = 'NearbyShopsSection';
 
 export default NearbyShopsSection;
