@@ -12,6 +12,11 @@ export { default as useShopLocation } from './hooks/useShopLocation';
 export { default as MapPicker } from './components/MapPicker';
 export { default as ShopLocationPicker } from './components/ShopLocationPicker';
 export { default as LocationPermissionBanner } from './components/LocationPermissionBanner';
+export { default as LocationSearchInput } from './components/LocationSearchInput';
+export { default as CurrentLocationButton } from './components/CurrentLocationButton';
+export { default as GeoMapPicker } from './components/GeoMapPicker';
+export { default as AddressAutocomplete } from './components/AddressAutocomplete';
+export { default as LocationPreviewCard } from './components/LocationPreviewCard';
 
 // Services
 export * as locationService from './services/locationService';

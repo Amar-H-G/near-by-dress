@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import InputField from '../../shared/components/form/InputField';
 import FileUpload from '../../shared/components/form/FileUpload';
 import { Store, MapPin, Clock, Info, Hash, Phone } from 'lucide-react';
+import {
+  AddressAutocomplete,
+  CurrentLocationButton,
+  GeoMapPicker,
+  LocationPreviewCard
+} from '../../shared/location';
+import { reverseGeocode } from '../../shared/location/services/locationService';
 
 const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onCancel, readOnly = false }) => {
   const [form, setForm] = useState({
@@ -92,7 +99,103 @@ const ShopForm = ({ initialData = {}, onSubmit, loading, showCancel = false, onC
           ></textarea>
         </div>
 
-        {/* Location */}
+        {/* Geocoding & Map Selection */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+          background: 'var(--surface-2)',
+          padding: '24px',
+          borderRadius: '20px',
+          border: '1px solid var(--border)'
+        }}>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <MapPin size={18} color="var(--primary)" /> Storefront Location Intelligence
+          </h3>
+
+          {!readOnly && (
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, alignItems: 'flex-end' }}>
+              <AddressAutocomplete
+                onAddressSelected={(geo) => {
+                  setForm(prev => ({
+                    ...prev,
+                    address: geo.road || geo.formattedAddress?.split(',')[0] || prev.address || '',
+                    city: geo.city || prev.city || '',
+                    state: geo.state || prev.state || '',
+                    pincode: geo.pincode || prev.pincode || '',
+                    location: {
+                      type: 'Point',
+                      coordinates: [Number(geo.lng), Number(geo.lat)]
+                    }
+                  }));
+                }}
+                placeholder="Search street, area, city, pincode..."
+              />
+              <div style={{ marginBottom: 20 }}>
+                <CurrentLocationButton
+                  onLocationFetched={(geo) => {
+                    setForm(prev => ({
+                      ...prev,
+                      address: geo.road || geo.formattedAddress?.split(',')[0] || prev.address || '',
+                      city: geo.city || prev.city || '',
+                      state: geo.state || prev.state || '',
+                      pincode: geo.pincode || prev.pincode || '',
+                      location: {
+                        type: 'Point',
+                        coordinates: [Number(geo.lng), Number(geo.lat)]
+                      }
+                    }));
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Draggable Map */}
+          <GeoMapPicker
+            center={form.location?.coordinates ? { lat: form.location.coordinates[1], lng: form.location.coordinates[0] } : undefined}
+            markerPos={form.location?.coordinates ? { lat: form.location.coordinates[1], lng: form.location.coordinates[0] } : null}
+            onChange={async (lat, lng) => {
+              if (readOnly) return;
+              try {
+                const geo = await reverseGeocode(lat, lng);
+                setForm(prev => ({
+                  ...prev,
+                  address: geo?.road || geo?.formattedAddress?.split(',')[0] || prev.address || '',
+                  city: geo?.city || prev.city || '',
+                  state: geo?.state || prev.state || '',
+                  pincode: geo?.pincode || prev.pincode || '',
+                  location: {
+                    type: 'Point',
+                    coordinates: [lng, lat]
+                  }
+                }));
+              } catch (_) {
+                setForm(prev => ({
+                  ...prev,
+                  location: {
+                    type: 'Point',
+                    coordinates: [lng, lat]
+                  }
+                }));
+              }
+            }}
+            readOnly={readOnly}
+            height="300px"
+          />
+
+          {/* Selected coordinates details snapshot preview */}
+          <LocationPreviewCard
+            lat={form.location?.coordinates?.[1]}
+            lng={form.location?.coordinates?.[0]}
+            address={form.address}
+            city={form.city}
+            state={form.state}
+            pincode={form.pincode}
+          />
+        </div>
+
+        {/* Location Form Fields */}
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
           <InputField
             label="Street Address"
