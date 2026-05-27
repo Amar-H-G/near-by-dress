@@ -328,22 +328,69 @@
 }
 
 /* ── Auth pages ── */
+.nbd-logo--auth {
+  align-items: center;
+  text-align: center;
+}
+.nbd-logo--auth .nbd-logo-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
 .nbd-logo--auth .nbd-mark {
-  font-size: clamp(36px, 4vw, 58px);
+  font-size: clamp(32px, 4vw, 42px);
+  display: block;
+  opacity: 1;
+  transform: none;
+  filter: none;
 }
 .nbd-logo--auth .nbd-expand {
-  font-size: clamp(14px, 1.6vw, 22px);
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+  display: block;
+  font-size: clamp(12px, 1.4vw, 14px);
+  letter-spacing: 0.24em;
+  color: var(--text-muted, #8b8b9c);
+  margin-top: 4px;
+  filter: none;
 }
 
 /* ── Loading screen logo ── */
+.nbd-logo--loading {
+  align-items: center;
+  text-align: center;
+}
+.nbd-logo--loading .nbd-logo-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
 .nbd-logo--loading .nbd-mark {
-  font-size: clamp(48px, 6vw, 84px);
+  font-size: clamp(38px, 5vw, 48px);
+  display: block;
+  opacity: 1;
+  transform: none;
+  filter: none;
 }
 .nbd-logo--loading .nbd-expand {
-  font-size: clamp(16px, 2vw, 28px);
-  max-width: 500px;
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
   opacity: 1;
-  transform: translateX(0);
+  pointer-events: auto;
+  display: block;
+  font-size: clamp(13px, 1.6vw, 15px);
+  letter-spacing: 0.28em;
+  color: var(--text-muted, #8b8b9c);
+  margin-top: 6px;
+  filter: none;
 }
 
 /* Touch devices fallback */
