@@ -99,25 +99,26 @@ const BlogsPage = () => {
                 style={{ 
                   display: 'flex', 
                   flexDirection: 'column', 
-                  background: 'rgba(255, 255, 255, 0.03)', 
-                  border: '1px solid rgba(255, 255, 255, 0.06)', 
+                  background: 'var(--fashion-panel, #ffffff)', 
+                  border: '1px solid rgba(17, 17, 19, 0.08)', 
                   borderRadius: '16px', 
                   overflow: 'hidden', 
+                  boxShadow: 'var(--fashion-shadow-soft)',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   cursor: 'pointer',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-6px)';
-                  e.currentTarget.style.boxShadow = '0 12px 30px rgba(124, 58, 237, 0.12)';
+                  e.currentTarget.style.boxShadow = 'var(--fashion-shadow)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.boxShadow = 'var(--fashion-shadow-soft)';
                 }}
               >
                 <Link to={`/blogs/${post.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', height: '100%' }}>
                   {/* Cover Image */}
-                  <div style={{ width: '100%', height: '200px', overflow: 'hidden', background: '#25203b', position: 'relative' }}>
+                  <div style={{ width: '100%', height: '200px', overflow: 'hidden', background: '#ece9e5', position: 'relative' }}>
                     <img 
                       src={post.coverImage || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600'} 
                       alt={post.title} 
@@ -126,7 +127,7 @@ const BlogsPage = () => {
                       onMouseLeave={(e) => { e.target.style.transform = 'scale(1)'; }}
                     />
                     {post.tags && post.tags.length > 0 && (
-                      <span style={{ position: 'absolute', top: '12px', left: '12px', background: 'var(--brand-gradient)', color: '#fff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                      <span style={{ position: 'absolute', top: '12px', left: '12px', background: 'var(--brand-gradient, linear-gradient(135deg, #7b233d, #c15b75))', color: '#fff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                         {post.tags[0]}
                       </span>
                     )}
@@ -135,7 +136,7 @@ const BlogsPage = () => {
                   {/* Post Content */}
                   <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                     {/* Metadata row */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.8rem', color: 'var(--fashion-muted, #747174)', marginBottom: '12px' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <Calendar size={12} /> {formatDate(post.createdAt)}
                       </span>
@@ -145,17 +146,17 @@ const BlogsPage = () => {
                     </div>
 
                     {/* Title */}
-                    <h3 style={{ fontSize: '1.35rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '12px', color: '#fff' }}>
+                    <h3 style={{ fontSize: '1.35rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '12px', color: 'var(--fashion-ink, #111113)' }}>
                       {post.title}
                     </h3>
 
                     {/* Excerpt */}
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '20px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <p style={{ color: 'var(--fashion-muted, #747174)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '20px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {post.excerpt || post.content?.replace(/<[^>]*>/g, '') || ''}
                     </p>
 
                     {/* Action link */}
-                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#a78bfa', fontWeight: 600 }}>
+                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--fashion-wine, #7b233d)', fontWeight: 600 }}>
                       Read Article <ArrowRight size={14} />
                     </div>
                   </div>

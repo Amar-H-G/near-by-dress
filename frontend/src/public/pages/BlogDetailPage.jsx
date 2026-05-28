@@ -97,14 +97,14 @@ const BlogDetailPage = () => {
             display: 'inline-flex', 
             alignItems: 'center', 
             gap: '8px', 
-            color: 'var(--text-muted)', 
+            color: 'var(--fashion-muted, #747174)', 
             textDecoration: 'none', 
             fontSize: '0.9rem', 
             marginBottom: '32px',
             transition: 'color 0.2s ease'
           }}
-          onMouseEnter={(e) => e.target.style.color = '#fff'}
-          onMouseLeave={(e) => e.target.style.color = 'var(--text-muted)'}
+          onMouseEnter={(e) => e.target.style.color = 'var(--fashion-wine, #7b233d)'}
+          onMouseLeave={(e) => e.target.style.color = 'var(--fashion-muted, #747174)'}
         >
           <ArrowLeft size={16} /> Back to articles
         </Link>
@@ -113,24 +113,24 @@ const BlogDetailPage = () => {
         <header style={{ marginBottom: '40px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
             {post.tags?.map((tag, i) => (
-              <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(124, 58, 237, 0.15)', border: '1px solid rgba(124, 58, 237, 0.3)', color: '#c084fc', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(123, 35, 61, 0.08)', border: '1px solid rgba(123, 35, 61, 0.15)', color: 'var(--fashion-rose, #c15b75)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 <Tag size={10} /> {tag}
               </span>
             ))}
           </div>
 
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1.25, letterSpacing: '-0.02em', color: '#fff', marginBottom: '20px' }}>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1.25, letterSpacing: '-0.02em', color: 'var(--fashion-ink, #111113)', marginBottom: '20px' }}>
             {post.title}
           </h1>
 
           {/* Author metadata */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.08)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', padding: '16px 0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--fashion-line, #e8e5e2)', borderBottom: '1px solid var(--fashion-line, #e8e5e2)', padding: '16px 0', fontSize: '0.9rem', color: 'var(--fashion-muted, #747174)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--brand-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.95rem' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--brand-gradient, linear-gradient(135deg, #7b233d, #c15b75))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.95rem' }}>
                 {post.author ? post.author.charAt(0).toUpperCase() : 'A'}
               </div>
               <div>
-                <span style={{ color: '#fff', fontWeight: 600, display: 'block' }}>{post.author || 'Editorial Team'}</span>
+                <span style={{ color: 'var(--fashion-ink, #111113)', fontWeight: 600, display: 'block' }}>{post.author || 'Editorial Team'}</span>
                 <span style={{ fontSize: '0.8rem' }}>Fashion Advisor</span>
               </div>
             </div>
@@ -147,7 +147,7 @@ const BlogDetailPage = () => {
         </header>
 
         {/* Cover Image */}
-        <div style={{ width: '100%', maxHeight: '450px', borderRadius: '16px', overflow: 'hidden', marginBottom: '40px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <div style={{ width: '100%', maxHeight: '450px', borderRadius: '16px', overflow: 'hidden', marginBottom: '40px', border: '1px solid rgba(17, 17, 19, 0.08)' }}>
           <img 
             src={post.coverImage || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200'} 
             alt={post.title} 
@@ -161,7 +161,7 @@ const BlogDetailPage = () => {
           style={{ 
             fontSize: '1.1rem', 
             lineHeight: '1.8', 
-            color: 'rgba(255, 255, 255, 0.85)',
+            color: 'var(--fashion-ink-2, #2f3035)',
             letterSpacing: '-0.003em',
           }}
           dangerouslySetInnerHTML={{ __html: post.content }}
@@ -176,7 +176,7 @@ const BlogDetailPage = () => {
         .blog-content-body h2 {
           font-size: 1.75rem;
           font-weight: 700;
-          color: #fff;
+          color: var(--fashion-ink, #111113);
           margin-top: 40px;
           margin-bottom: 16px;
           letter-spacing: -0.01em;
@@ -184,7 +184,7 @@ const BlogDetailPage = () => {
         .blog-content-body h3 {
           font-size: 1.4rem;
           font-weight: 650;
-          color: #fff;
+          color: var(--fashion-ink, #111113);
           margin-top: 32px;
           margin-bottom: 12px;
         }
@@ -196,13 +196,13 @@ const BlogDetailPage = () => {
           margin-bottom: 8px;
         }
         .blog-content-body blockquote {
-          border-left: 4px solid var(--primary-color, #7c3aed);
-          background: rgba(124, 58, 237, 0.05);
+          border-left: 4px solid var(--fashion-wine, #7b233d);
+          background: rgba(123, 35, 61, 0.05);
           padding: 16px 24px;
           margin: 32px 0;
           border-radius: 0 12px 12px 0;
           font-style: italic;
-          color: rgba(255,255,255,0.95);
+          color: var(--fashion-ink-2, #2f3035);
         }
         .blog-content-body img {
           max-width: 100%;
