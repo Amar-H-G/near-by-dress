@@ -98,4 +98,17 @@ productSchema.index({ shop: 1, isActive: 1 });
 productSchema.index({ category: 1, isActive: 1 });
 productSchema.index({ name: 'text', description: 'text' });
 
+// ── Cache Invalidation Hooks ──
+const cacheService = require('../core/cache/cache.service');
+const clearSitemapCache = () => {
+  cacheService.invalidatePattern('sitemap:*').catch(err => {
+    console.error('❌ Failed to clear sitemap cache:', err.message);
+  });
+};
+productSchema.post('save', clearSitemapCache);
+productSchema.post('remove', clearSitemapCache);
+productSchema.post('updateOne', clearSitemapCache);
+productSchema.post('findOneAndUpdate', clearSitemapCache);
+productSchema.post('updateMany', clearSitemapCache);
+
 module.exports = mongoose.model('Product', productSchema);

@@ -38,111 +38,363 @@ exports.getRobotsTxt = (req, res) => {
   return res.send(robots);
 };
 
+// Helper to escape XML special characters
+const escapeXml = (str) => {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+};
+
+// Helper to get the latest update date from an array of documents
+const getLatestDate = (items, fallback = new Date()) => {
+  if (!items || items.length === 0) return fallback.toISOString().split('T')[0];
+  const dates = items.map(item => item.updatedAt ? new Date(item.updatedAt) : new Date(0));
+  const maxDate = new Date(Math.max(...dates));
+  return maxDate.toISOString().split('T')[0];
+};
+
+const cacheService = require('../../core/cache/cache.service');
+
 // ─── XML Sitemap Generator ───────────────────────────────────────────────────
 exports.getSitemapXml = async (req, res) => {
   try {
+    const type = req.params.type; // e.g. "products", "shops", "image" etc
     const host = req.get('host');
     const protocol = req.secure ? 'https' : 'http';
+    
+    // Auto-resolve production domains appropriately
     const frontendUrl = process.env.CLIENT_URL || `${protocol}://${host.replace('api', 'www')}`;
     const cleanFrontUrl = frontendUrl.replace(/\/$/, '');
 
-    const [products, shops, categories, blogs] = await Promise.all([
-      Product.find({ isActive: true }).select('_id updatedAt').lean(),
-      Shop.find({ status: 'approved', isActive: true }).select('_id updatedAt city pincode').lean(),
-      Category.find({ isActive: true }).select('slug updatedAt').lean(),
-      BlogPost.find({ isActive: true }).select('slug updatedAt').lean()
-    ]);
+    const cacheKey = `sitemap:${type || 'index'}`;
+    const cachedXml = await cacheService.get(cacheKey);
+    if (cachedXml) {
+      res.header('Content-Type', 'application/xml');
+      res.header('Cache-Control', 'public, max-age=3600');
+      return res.send(cachedXml);
+    }
 
-    const xmlItems = [];
+    let xml = '';
 
-    // 1. Static/Core pages
-    const corePages = [
-      { path: '', priority: '1.0', changefreq: 'daily' },
-      { path: '/products', priority: '0.9', changefreq: 'daily' },
-      { path: '/shops', priority: '0.8', changefreq: 'weekly' },
-      { path: '/blogs', priority: '0.7', changefreq: 'weekly' }
-    ];
+    // Helper to format ISO dates to YYYY-MM-DD
+    const formatDate = (date) => {
+      const d = date ? new Date(date) : new Date();
+      return d.toISOString().split('T')[0];
+    };
 
-    corePages.forEach(p => {
-      xmlItems.push(`  <url>
-    <loc>${cleanFrontUrl}${p.path}</loc>
-    <changefreq>${p.changefreq}</changefreq>
-    <priority>${p.priority}</priority>
-  </url>`);
-    });
+    if (!type) {
+      // ─── Sitemap Index ───
+      const [products, shops, categories, blogs] = await Promise.all([
+        Product.find({ isActive: true }).select('updatedAt').lean(),
+        Shop.find({ status: 'approved', isActive: true }).select('updatedAt').lean(),
+        Category.find({ isActive: true }).select('updatedAt').lean(),
+        BlogPost.find({ isActive: true }).select('updatedAt').lean()
+      ]);
 
-    // 2. Categories
-    categories.forEach(c => {
-      xmlItems.push(`  <url>
-    <loc>${cleanFrontUrl}/products?category=${c.slug}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`);
-    });
+      const latestProductDate = getLatestDate(products);
+      const latestShopDate = getLatestDate(shops);
+      const latestCategoryDate = getLatestDate(categories);
+      const latestBlogDate = getLatestDate(blogs);
+      const latestCoreDate = getLatestDate([...products, ...shops, ...blogs]);
 
-    // 3. Shops & Local landing pages
-    const uniqueCities = new Set();
-    const uniquePincodes = new Set();
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        '  <sitemap>',
+        `    <loc>${cleanFrontUrl}/sitemap-core.xml</loc>`,
+        `    <lastmod>${latestCoreDate}</lastmod>`,
+        '  </sitemap>',
+        '  <sitemap>',
+        `    <loc>${cleanFrontUrl}/sitemap-products.xml</loc>`,
+        `    <lastmod>${latestProductDate}</lastmod>`,
+        '  </sitemap>',
+        '  <sitemap>',
+        `    <loc>${cleanFrontUrl}/sitemap-shops.xml</loc>`,
+        `    <lastmod>${latestShopDate}</lastmod>`,
+        '  </sitemap>',
+        '  <sitemap>',
+        `    <loc>${cleanFrontUrl}/sitemap-categories.xml</loc>`,
+        `    <lastmod>${latestCategoryDate}</lastmod>`,
+        '  </sitemap>',
+        '  <sitemap>',
+        `    <loc>${cleanFrontUrl}/sitemap-city.xml</loc>`,
+        `    <lastmod>${latestShopDate}</lastmod>`,
+        '  </sitemap>',
+        '  <sitemap>',
+        `    <loc>${cleanFrontUrl}/sitemap-pincode.xml</loc>`,
+        `    <lastmod>${latestShopDate}</lastmod>`,
+        '  </sitemap>',
+        '  <sitemap>',
+        `    <loc>${cleanFrontUrl}/sitemap-nearby.xml</loc>`,
+        `    <lastmod>${latestShopDate}</lastmod>`,
+        '  </sitemap>',
+        '  <sitemap>',
+        `    <loc>${cleanFrontUrl}/sitemap-blog.xml</loc>`,
+        `    <lastmod>${latestBlogDate}</lastmod>`,
+        '  </sitemap>',
+        '  <sitemap>',
+        `    <loc>${cleanFrontUrl}/sitemap-image.xml</loc>`,
+        `    <lastmod>${latestProductDate}</lastmod>`,
+        '  </sitemap>',
+        '</sitemapindex>'
+      ].join('\n');
 
-    shops.forEach(s => {
-      xmlItems.push(`  <url>
-    <loc>${cleanFrontUrl}/shops/${s._id}</loc>
-    <lastmod>${s.updatedAt ? s.updatedAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>`);
+    } else if (type === 'core') {
+      // ─── Core Sitemap ───
+      const xmlItems = [
+        '  <url>',
+        `    <loc>${cleanFrontUrl}</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>1.0</priority>',
+        '  </url>',
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/products</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.9</priority>',
+        '  </url>',
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/shops</loc>`,
+        '    <changefreq>weekly</changefreq>',
+        '    <priority>0.8</priority>',
+        '  </url>',
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/nearby-fashion-shops</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.85</priority>',
+        '  </url>',
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/fashion-near-me</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.85</priority>',
+        '  </url>',
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/blogs</loc>`,
+        '    <changefreq>weekly</changefreq>',
+        '    <priority>0.7</priority>',
+        '  </url>'
+      ];
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        xmlItems.join('\n'),
+        '</urlset>'
+      ].join('\n');
 
-      if (s.city) uniqueCities.add(s.city.toLowerCase());
-      if (s.pincode) uniquePincodes.add(s.pincode);
-    });
+    } else if (type === 'products') {
+      // ─── Products Sitemap ───
+      const products = await Product.find({ isActive: true }).select('_id updatedAt').lean();
+      const xmlItems = products.map(p => [
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/products/${p._id}</loc>`,
+        `    <lastmod>${formatDate(p.updatedAt)}</lastmod>`,
+        '    <changefreq>weekly</changefreq>',
+        '    <priority>0.9</priority>',
+        '  </url>'
+      ].join('\n'));
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        xmlItems.join('\n'),
+        '</urlset>'
+      ].join('\n');
 
-    // City pages
-    uniqueCities.forEach(city => {
-      xmlItems.push(`  <url>
-    <loc>${cleanFrontUrl}/shops/city/${city}</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>`);
-    });
+    } else if (type === 'shops') {
+      // ─── Shops Sitemap ───
+      const shops = await Shop.find({ status: 'approved', isActive: true }).select('_id updatedAt').lean();
+      const xmlItems = shops.map(s => [
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/shops/${s._id}</loc>`,
+        `    <lastmod>${formatDate(s.updatedAt)}</lastmod>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.8</priority>',
+        '  </url>'
+      ].join('\n'));
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        xmlItems.join('\n'),
+        '</urlset>'
+      ].join('\n');
 
-    // Pincode pages
-    uniquePincodes.forEach(pin => {
-      xmlItems.push(`  <url>
-    <loc>${cleanFrontUrl}/shops/pincode/${pin}</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>`);
-    });
+    } else if (type === 'categories') {
+      // ─── Categories Sitemap ───
+      const categories = await Category.find({ isActive: true }).select('slug updatedAt').lean();
+      const xmlItems = categories.map(c => [
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/categories/${c.slug}</loc>`,
+        `    <lastmod>${formatDate(c.updatedAt)}</lastmod>`,
+        '    <changefreq>weekly</changefreq>',
+        '    <priority>0.8</priority>',
+        '  </url>'
+      ].join('\n'));
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        xmlItems.join('\n'),
+        '</urlset>'
+      ].join('\n');
 
-    // 4. Products
-    products.forEach(p => {
-      xmlItems.push(`  <url>
-    <loc>${cleanFrontUrl}/products/${p._id}</loc>
-    <lastmod>${p.updatedAt ? p.updatedAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>`);
-    });
+    } else if (type === 'city') {
+      // ─── City Sitemap ───
+      const shops = await Shop.find({ status: 'approved', isActive: true }).select('city updatedAt').lean();
+      const cities = [...new Set(shops.map(s => s.city).filter(Boolean).map(c => c.toLowerCase()))];
+      const xmlItems = cities.map(city => [
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/shops/city/${city}</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.75</priority>',
+        '  </url>',
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/shops/${city}</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.75</priority>',
+        '  </url>'
+      ].join('\n'));
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        xmlItems.join('\n'),
+        '</urlset>'
+      ].join('\n');
 
-    // 5. Blogs
-    blogs.forEach(b => {
-      xmlItems.push(`  <url>
-    <loc>${cleanFrontUrl}/blogs/${b.slug}</loc>
-    <lastmod>${b.updatedAt ? b.updatedAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`);
-    });
+    } else if (type === 'pincode') {
+      // ─── Pincode Sitemap ───
+      const shops = await Shop.find({ status: 'approved', isActive: true }).select('pincode updatedAt').lean();
+      const pincodes = [...new Set(shops.map(s => s.pincode).filter(Boolean))];
+      const xmlItems = pincodes.map(pin => [
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/shops/pincode/${pin}</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.75</priority>',
+        '  </url>',
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/shops/${pin}</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.75</priority>',
+        '  </url>'
+      ].join('\n'));
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        xmlItems.join('\n'),
+        '</urlset>'
+      ].join('\n');
 
-    const sitemap = [
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-      xmlItems.join('\n'),
-      '</urlset>'
-    ].join('\n');
+    } else if (type === 'nearby') {
+      // ─── Nearby Sitemap ───
+      const shops = await Shop.find({ status: 'approved', isActive: true }).select('city updatedAt').lean();
+      const cities = [...new Set(shops.map(s => s.city).filter(Boolean).map(c => c.toLowerCase()))];
+      const xmlItems = cities.map(city => [
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/nearby-fashion-shops?city=${city}</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.7</priority>',
+        '  </url>',
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/fashion-near-me?city=${city}</loc>`,
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.7</priority>',
+        '  </url>'
+      ].join('\n'));
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        xmlItems.join('\n'),
+        '</urlset>'
+      ].join('\n');
+
+    } else if (type === 'blog') {
+      // ─── Blog Sitemap ───
+      const blogs = await BlogPost.find({ isActive: true }).select('slug updatedAt').lean();
+      const xmlItems = blogs.map(b => [
+        '  <url>',
+        `    <loc>${cleanFrontUrl}/blogs/${b.slug}</loc>`,
+        `    <lastmod>${formatDate(b.updatedAt)}</lastmod>`,
+        '    <changefreq>weekly</changefreq>',
+        '    <priority>0.8</priority>',
+        '  </url>'
+      ].join('\n'));
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        xmlItems.join('\n'),
+        '</urlset>'
+      ].join('\n');
+
+    } else if (type === 'image') {
+      // ─── Image Sitemap ───
+      const [products, shops] = await Promise.all([
+        Product.find({ isActive: true }).select('_id name images').lean(),
+        Shop.find({ status: 'approved', isActive: true }).select('_id name logo coverImage').lean()
+      ]);
+
+      const xmlItems = [];
+
+      products.forEach(p => {
+        if (p.images && p.images.length > 0) {
+          const imageXml = p.images.map(img => {
+            const url = typeof img === 'object' ? img.url : img;
+            if (!url) return '';
+            return [
+              '    <image:image>',
+              `      <image:loc>${url}</image:loc>`,
+              `      <image:title>${escapeXml(p.name)}</image:title>`,
+              '    </image:image>'
+            ].join('\n');
+          }).filter(Boolean).join('\n');
+
+          if (imageXml) {
+            xmlItems.push([
+              '  <url>',
+              `    <loc>${cleanFrontUrl}/products/${p._id}</loc>`,
+              imageXml,
+              '  </url>'
+            ].join('\n'));
+          }
+        }
+      });
+
+      shops.forEach(s => {
+        const imageUrls = [s.logo, s.coverImage].filter(Boolean);
+        if (imageUrls.length > 0) {
+          const imageXml = imageUrls.map(url => [
+            '    <image:image>',
+            `      <image:loc>${url}</image:loc>`,
+            `      <image:title>${escapeXml(s.name)}</image:title>`,
+            '    </image:image>'
+          ].join('\n')).join('\n');
+
+          xmlItems.push([
+            '  <url>',
+            `    <loc>${cleanFrontUrl}/shops/${s._id}</loc>`,
+            imageXml,
+            '  </url>'
+          ].join('\n'));
+        }
+      });
+
+      xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+        '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+        xmlItems.join('\n'),
+        '</urlset>'
+      ].join('\n');
+
+    } else {
+      return res.status(404).send('Sitemap type not found');
+    }
+
+    // Save to Cache
+    await cacheService.set(cacheKey, xml, 3600);
 
     res.header('Content-Type', 'application/xml');
-    return res.send(sitemap);
+    res.header('Cache-Control', 'public, max-age=3600');
+    return res.send(xml);
   } catch (err) {
     console.error('❌ Sitemap compilation failure:', err.message);
     return res.status(500).send('Error compiling sitemap');

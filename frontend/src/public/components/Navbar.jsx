@@ -18,6 +18,7 @@ import {
   Store,
   User,
   X,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '../../core/auth/useAuth';
 import { useSettings } from '../../core/contexts/useSettings';
@@ -29,6 +30,7 @@ const navLinks = [
   { label: 'Home', to: '/', icon: Home },
   { label: 'Products', to: '/products', icon: ShoppingBag },
   { label: 'Shops', to: '/shops', icon: Store },
+  { label: 'Blog', to: '/blogs', icon: BookOpen },
 ];
 
 const Navbar = () => {

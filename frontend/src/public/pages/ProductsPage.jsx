@@ -1,5 +1,5 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { MapPin, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { getProducts } from '../services/product.service.js';
 import { useLocation as useUserLocation } from '../../core/contexts/useLocation';
@@ -22,6 +22,7 @@ const normalizeProducts = (payload) => {
 const ProductsPage = () => {
   const pageRef = usePageTransition();
   const { settings } = useSettings();
+  const { slug: categorySlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { location: userLoc } = useUserLocation();
   const [products, setProducts] = useState([]);
@@ -41,6 +42,7 @@ const ProductsPage = () => {
       const params = Object.fromEntries([...searchParams]);
       params.limit = 12;
       if (!params.page) params.page = page;
+      if (categorySlug) params.category = categorySlug;
 
       const { data } = await getProducts(params);
       const productList = normalizeProducts(data);
@@ -55,10 +57,10 @@ const ProductsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchParams, page]);
+  }, [searchParams, page, categorySlug]);
 
   useEffect(() => {
-    queueMicrotask(fetchProducts);
+    fetchProducts();
   }, [fetchProducts]);
 
   const handleFilterChange = (key, value) => {
@@ -81,13 +83,37 @@ const ProductsPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const getCategoryName = () => {
+    if (!categorySlug) return '';
+    const found = settings?.categories?.find(c => c.slug === categorySlug);
+    if (found) return found.name;
+    return categorySlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  };
+
+  const getDynamicTitle = () => {
+    if (categorySlug) return `Buy ${getCategoryName()} Online | Best Local Boutiques | ${settings?.siteName || 'NearByDress'}`;
+    return settings?.seo?.productsTitle || 'Premium Fashion Collection';
+  };
+
+  const getDynamicDescription = () => {
+    if (categorySlug) return `Shop the latest ${getCategoryName()} collections from verified local boutiques in your neighborhood. Discover designer wear, compare prices, and order instantly on WhatsApp.`;
+    return settings?.seo?.productsDescription || 'Browse and buy high-quality fashion products from boutique shops near you.';
+  };
+
   return (
     <div ref={pageRef} className="marketplace-page luxury-shell">
       <SEO
-        title={settings?.seo?.productsTitle || 'Premium Fashion Collection'}
-        description={settings?.seo?.productsDescription || 'Browse local boutiques.'}
+        title={getDynamicTitle()}
+        description={getDynamicDescription()}
+        keywords={categorySlug ? `${getCategoryName()}, buy ${getCategoryName()} online, ${getCategoryName()} boutiques, local fashion` : undefined}
       />
       <SchemaMarkup type="website" data={settings} />
+      {products.length > 0 && (
+        <SchemaMarkup 
+          type="itemlist" 
+          data={products.map(p => ({ id: p._id, name: p.name, url: `/products/${p._id}` }))} 
+        />
+      )}
       <header className="listing-hero">
         <div className="container">
           <span className="luxury-eyebrow fashion-hero-kicker">

@@ -17,13 +17,17 @@ const SchemaMarkup = ({ type, data }) => {
     const seoBase = settings?.seo || {};
     const siteLogo = settings?.logo || seoBase.organizationLogo || '';
 
+    // Calculate a dynamic priceValidUntil date (e.g. current year + 2 years) to prevent expiration errors
+    const currentYear = new Date().getFullYear();
+    const dynamicPriceValidUntil = `${currentYear + 2}-12-31`;
+
     switch (type) {
       case 'product':
         schemaObj = {
           '@context': 'https://schema.org',
           '@type': 'Product',
           name: data.name,
-          image: data.images?.map(img => img.url) || [],
+          image: data.images?.map(img => typeof img === 'object' ? img.url : img) || [],
           description: data.description || '',
           sku: data._id,
           mpn: data._id,
@@ -36,7 +40,7 @@ const SchemaMarkup = ({ type, data }) => {
             url: window.location.href,
             priceCurrency: 'INR',
             price: data.discountPrice || data.price,
-            priceValidUntil: '2032-12-31',
+            priceValidUntil: dynamicPriceValidUntil,
             itemCondition: 'https://schema.org/NewCondition',
             availability: data.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             seller: {
@@ -79,12 +83,100 @@ const SchemaMarkup = ({ type, data }) => {
         schemaObj = {
           '@context': 'https://schema.org',
           '@type': 'BreadcrumbList',
-          itemListElement: data.map((item, index) => ({
-            '@type': 'ListItem',
-            position: index + 1,
-            name: item.name,
-            item: item.url
+          itemListElement: data.map((item, index) => {
+            const absoluteUrl = item.url?.startsWith('http') 
+              ? item.url 
+              : `${window.location.origin}${item.url?.startsWith('/') ? '' : '/'}${item.url || ''}`;
+            return {
+              '@type': 'ListItem',
+              position: index + 1,
+              name: item.name,
+              item: absoluteUrl
+            };
+          })
+        };
+        break;
+
+      case 'organization':
+        schemaObj = {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: brandName,
+          url: window.location.origin,
+          logo: siteLogo || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600',
+          contactPoint: {
+            '@type': 'ContactPoint',
+            telephone: settings?.contactPhone || '',
+            contactType: 'customer support',
+            areaServed: 'IN',
+            availableLanguage: ['en', 'hi']
+          },
+          sameAs: [
+            settings?.socialLinks?.facebook,
+            settings?.socialLinks?.instagram,
+            settings?.socialLinks?.twitter
+          ].filter(Boolean)
+        };
+        break;
+
+      case 'article':
+        schemaObj = {
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': window.location.href
+          },
+          headline: data.title,
+          image: data.coverImage || siteLogo || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600',
+          datePublished: data.createdAt || new Date().toISOString(),
+          dateModified: data.updatedAt || data.createdAt || new Date().toISOString(),
+          author: {
+            '@type': 'Person',
+            name: data.author || brandName
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: brandName,
+            logo: {
+              '@type': 'ImageObject',
+              url: siteLogo || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600'
+            }
+          },
+          description: data.excerpt || data.title
+        };
+        break;
+
+      case 'faq':
+        schemaObj = {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: (Array.isArray(data) ? data : []).map(item => ({
+            '@type': 'Question',
+            name: item.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: item.answer
+            }
           }))
+        };
+        break;
+
+      case 'itemlist':
+        schemaObj = {
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          itemListElement: (Array.isArray(data) ? data : []).map((item, index) => {
+            const absoluteUrl = item.url?.startsWith('http')
+              ? item.url
+              : `${window.location.origin}${item.url?.startsWith('/') ? '' : '/'}${item.url || `/products/${item._id || item.id}`}`;
+            return {
+              '@type': 'ListItem',
+              position: index + 1,
+              url: absoluteUrl,
+              name: item.name
+            };
+          })
         };
         break;
 

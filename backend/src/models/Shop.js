@@ -129,4 +129,17 @@ shopSchema.index({ owner: 1 });
 // 2dsphere index — required for $near, $geoWithin, $geoNear queries
 shopSchema.index({ location: '2dsphere' }, { sparse: true }); // sparse so docs without location are not indexed
 
+// ── Cache Invalidation Hooks ──
+const cacheService = require('../core/cache/cache.service');
+const clearSitemapCache = () => {
+  cacheService.invalidatePattern('sitemap:*').catch(err => {
+    console.error('❌ Failed to clear sitemap cache:', err.message);
+  });
+};
+shopSchema.post('save', clearSitemapCache);
+shopSchema.post('remove', clearSitemapCache);
+shopSchema.post('updateOne', clearSitemapCache);
+shopSchema.post('findOneAndUpdate', clearSitemapCache);
+shopSchema.post('updateMany', clearSitemapCache);
+
 module.exports = mongoose.model('Shop', shopSchema);

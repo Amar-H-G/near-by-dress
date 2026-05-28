@@ -19,6 +19,8 @@ const ShopsPage = lazy(() => import('../public/pages/ShopsPage'));
 const ShopDetailPage = lazy(() => import('../public/pages/ShopDetailPage'));
 const UserProfilePage = lazy(() => import('../public/pages/UserProfilePage'));
 const CMSPage = lazy(() => import('../public/pages/CMSPage'));
+const BlogsPage = lazy(() => import('../public/pages/BlogsPage'));
+const BlogDetailPage = lazy(() => import('../public/pages/BlogDetailPage'));
 
 const NotFound = () => (
   <div style={{ textAlign: 'center', padding: '120px 24px' }}>
@@ -76,8 +78,18 @@ const AppRoutes = () => (
       <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
       <Route path="/products" element={<PublicLayout><ProductsPage /></PublicLayout>} />
       <Route path="/products/:id" element={<PublicLayout><ProductDetailPage /></PublicLayout>} />
+      <Route path="/categories/:slug" element={<PublicLayout><ProductsPage /></PublicLayout>} />
+      
       <Route path="/shops" element={<PublicLayout><ShopsPage /></PublicLayout>} />
       <Route path="/shops/:id" element={<PublicLayout><ShopDetailPage /></PublicLayout>} />
+      <Route path="/shops/city/:city" element={<PublicLayout><ShopsPage /></PublicLayout>} />
+      <Route path="/shops/pincode/:pincode" element={<PublicLayout><ShopsPage /></PublicLayout>} />
+      <Route path="/nearby-fashion-shops" element={<PublicLayout><ShopsPage /></PublicLayout>} />
+      <Route path="/fashion-near-me" element={<PublicLayout><ShopsPage /></PublicLayout>} />
+
+      <Route path="/blogs" element={<PublicLayout><BlogsPage /></PublicLayout>} />
+      <Route path="/blogs/:slug" element={<PublicLayout><BlogDetailPage /></PublicLayout>} />
+
       <Route
         path="/profile"
         element={

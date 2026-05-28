@@ -28,11 +28,13 @@ const SEO = ({
     const baseKws   = seoBase.homeKeywords || 'fashion, local shops, marketplace, boutique';
     const baseOgImg = seoBase.ogImage || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600';
 
-    // 1. Title
-    document.title = title ? `${title} | ${siteShort}` : baseTitle;
+    // 1. Title Normalization (use baseTitle if title is Home/Homepage/empty)
+    const isHome = !title || title.toLowerCase() === 'home' || title.toLowerCase() === 'homepage';
+    const finalTitle = isHome ? baseTitle : `${title} | ${siteShort}`;
+    document.title = finalTitle;
 
     const setMetaTag = (attrName, attrValue, contentValue) => {
-      if (!contentValue) return;
+      if (contentValue === undefined || contentValue === null) return;
       let el = document.querySelector(`meta[${attrName}="${attrValue}"]`);
       if (!el) {
         el = document.createElement('meta');
@@ -58,20 +60,25 @@ const SEO = ({
     setMetaTag('name', 'keywords',    keywords    || baseKws);
     setMetaTag('name', 'robots',      robots);
 
-    // 3. Canonical
-    setLinkTag('canonical', canonical || window.location.href);
+    // 3. Canonical Normalization (strip search parameters by default to avoid duplicate page indexing)
+    const cleanUrl = window.location.href.split('?')[0];
+    const finalCanonical = canonical || cleanUrl;
+    setLinkTag('canonical', finalCanonical);
 
     // 4. OpenGraph
-    const ogTitle = title ? `${title} | ${siteShort}` : baseTitle;
+    const ogTitle = finalTitle;
     const ogDesc  = description || baseDesc;
     const ogImg   = ogImage || baseOgImg;
 
-    setMetaTag('property', 'og:title',     ogTitle);
+    setMetaTag('property', 'og:title',      ogTitle);
     setMetaTag('property', 'og:description', ogDesc);
-    setMetaTag('property', 'og:type',      ogType);
-    setMetaTag('property', 'og:url',       canonical || window.location.href);
-    setMetaTag('property', 'og:image',     ogImg);
-    setMetaTag('property', 'og:site_name', siteName);
+    setMetaTag('property', 'og:type',        ogType);
+    setMetaTag('property', 'og:url',         finalCanonical);
+    setMetaTag('property', 'og:image',        ogImg);
+    setMetaTag('property', 'og:image:width',  '1200');
+    setMetaTag('property', 'og:image:height', '630');
+    setMetaTag('property', 'og:site_name',    siteName);
+    setMetaTag('property', 'og:locale',       'en_IN');
 
     // 5. Twitter Cards
     setMetaTag('name', 'twitter:card',        seoBase.twitterCard || 'summary_large_image');
@@ -86,11 +93,17 @@ const SEO = ({
     const geoPlacename = seoBase.localBusinessLocality || '';
     const geoCountry = seoBase.localBusinessCountry || 'IN';
     const geoPostal = seoBase.localBusinessPostalCode || '';
+    const lat = settings?.locationDefaults?.lat || '';
+    const lng = settings?.locationDefaults?.lng || '';
 
     if (geoRegion) setMetaTag('name', 'geo.region', geoRegion);
     if (geoPlacename) setMetaTag('name', 'geo.placename', geoPlacename);
     if (geoCountry) setMetaTag('name', 'geo.country', geoCountry);
     if (geoPostal) setMetaTag('name', 'postal-code', geoPostal);
+    if (lat && lng) {
+      setMetaTag('name', 'geo.position', `${lat};${lng}`);
+      setMetaTag('name', 'ICBM', `${lat}, ${lng}`);
+    }
 
   }, [title, description, keywords, canonical, ogImage, ogType, robots, settings]);
 

@@ -24,9 +24,9 @@ const invalidateShopCache = async () => {
 /** Public: list approved + active shops with Redis cache */
 const getApprovedShops = async (query) => {
   const { page, limit, skip } = getPagination(query);
-  const { city, category, search } = query;
+  const { city, category, search, pincode } = query;
 
-  const cacheKey = `shops:page:${page}:limit:${limit}:city:${city || ''}:cat:${category || ''}:q:${search || ''}`;
+  const cacheKey = `shops:page:${page}:limit:${limit}:city:${city || ''}:cat:${category || ''}:q:${search || ''}:pin:${pincode || ''}`;
   const redis = getRedis();
 
   if (redis) {
@@ -38,6 +38,7 @@ const getApprovedShops = async (query) => {
 
   const filter = { status: 'approved', isActive: true };
   if (city) filter.city = city.toLowerCase();
+  if (pincode) filter.pincode = pincode;
   if (category) filter.category = { $regex: category, $options: 'i' };
   if (search) filter.name = { $regex: search, $options: 'i' };
 

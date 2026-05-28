@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { BadgeCheck, MapPin, MessageCircle, Package, Sparkles, Store } from 'lucide-react';
 import { getShop, getShopProducts } from '../../shared/services/shop.service.js';
 import ProductCard from '../components/ProductCard';
@@ -30,6 +30,7 @@ const normalizeProducts = (payload) => {
 
 const ShopDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
@@ -39,10 +40,22 @@ const ShopDetailPage = () => {
   const [page, setPage] = useState(1);
   const { startOrderFlow } = useOrderFlow();
 
+  // Redirect alias/legacy URLs to city or pincode pages if not a valid MongoDB ObjectId
+  useEffect(() => {
+    if (id && !/^[0-9a-fA-F]{24}$/.test(id)) {
+      if (/^\d+$/.test(id)) {
+        navigate(`/shops/pincode/${id}`, { replace: true });
+      } else {
+        navigate(`/shops/city/${id.toLowerCase()}`, { replace: true });
+      }
+    }
+  }, [id, navigate]);
+
   useEffect(() => {
     let mounted = true;
 
     const fetchShop = async () => {
+      if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) return;
       setLoading(true);
       try {
         const { data } = await getShop(id);
@@ -65,6 +78,7 @@ const ShopDetailPage = () => {
     let mounted = true;
 
     const fetchProducts = async () => {
+      if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) return;
       setProdLoading(true);
       try {
         const { data } = await getShopProducts(id, { page, limit: 12 });

@@ -62,4 +62,17 @@ const blogPostSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ── Cache Invalidation Hooks ──
+const cacheService = require('../core/cache/cache.service');
+const clearSitemapCache = () => {
+  cacheService.invalidatePattern('sitemap:*').catch(err => {
+    console.error('❌ Failed to clear sitemap cache:', err.message);
+  });
+};
+blogPostSchema.post('save', clearSitemapCache);
+blogPostSchema.post('remove', clearSitemapCache);
+blogPostSchema.post('updateOne', clearSitemapCache);
+blogPostSchema.post('findOneAndUpdate', clearSitemapCache);
+blogPostSchema.post('updateMany', clearSitemapCache);
+
 module.exports = mongoose.model('BlogPost', blogPostSchema);

@@ -85,6 +85,7 @@ app.get('/health', (_req, res) => {
 const seoCtrl = require('./src/modules/seo/seo.controller');
 app.get('/robots.txt', seoCtrl.getRobotsTxt);
 app.get('/sitemap.xml', seoCtrl.getSitemapXml);
+app.get('/sitemap-:type.xml', seoCtrl.getSitemapXml);
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
 const sellerRoutes   = require('./src/modules/seller/routes/seller.routes');

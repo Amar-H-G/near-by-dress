@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { MapPin, Navigation, Search, Sparkles, X } from 'lucide-react';
 import { getShops } from '../../shared/services/shop.service.js';
 import { getNearbyShops } from '../../shared/location/services/locationService';
@@ -22,6 +22,7 @@ const normalizeShops = (payload) => {
 const ShopsPage = () => {
   const pageRef = usePageTransition();
   const { settings } = useSettings();
+  const { city: paramCity, pincode: paramPincode } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { location: userLoc } = useUserLocation();
   const [shops, setShops] = useState([]);
@@ -31,10 +32,16 @@ const ShopsPage = () => {
   const [nearbyMode, setNearbyMode] = useState(false);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
-  const city = searchParams.get('city') || '';
+  const city = paramCity || searchParams.get('city') || '';
+  const pincode = paramPincode || searchParams.get('pincode') || '';
   const search = searchParams.get('search') || '';
   const [searchInput, setSearchInput] = useState(search);
   const [cityInput, setCityInput] = useState(city || userLoc.city || '');
+
+  // Synchronize input fields when route/context city changes
+  useEffect(() => {
+    setCityInput(city || userLoc.city || '');
+  }, [city, userLoc.city]);
 
   const fetchShops = useCallback(async () => {
     setLoading(true);
@@ -48,9 +55,10 @@ const ShopsPage = () => {
         shopList = Array.isArray(data.data) ? data.data : [];
         paginationData = { page: data.page || page, totalPages: data.totalPages || 1, total: data.total || shopList.length };
       } else {
-        // Standard city/search filter
+        // Standard city/pincode/search filter
         const params = { page, limit: 12 };
         if (city) params.city = city;
+        if (pincode) params.pincode = pincode;
         if (search) params.search = search;
         const { data } = await getShops(params);
         shopList = normalizeShops(data);
@@ -68,10 +76,10 @@ const ShopsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, city, search, nearbyMode, userLoc.lat, userLoc.lng]);
+  }, [page, city, pincode, search, nearbyMode, userLoc.lat, userLoc.lng]);
 
   useEffect(() => {
-    queueMicrotask(fetchShops);
+    fetchShops();
   }, [fetchShops]);
 
   const handleFilter = (e) => {
@@ -104,16 +112,35 @@ const ShopsPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const getDynamicTitle = () => {
+    if (city) return `Best Boutique Fashion Shops in ${city.charAt(0).toUpperCase() + city.slice(1)} | ${settings?.siteName || 'NearByDress'}`;
+    if (pincode) return `Local Fashion Stores in Pincode ${pincode} | ${settings?.siteName || 'NearByDress'}`;
+    return settings?.seo?.shopsTitle || 'Verified Local Fashion Boutiques';
+  };
+
+  const getDynamicDescription = () => {
+    if (city) return `Explore top clothing boutiques, custom tailors, and designer fashion shops in ${city.charAt(0).toUpperCase() + city.slice(1)}. Connect with local sellers on WhatsApp for direct buying.`;
+    if (pincode) return `Discover boutique clothing stores and active fashion labels pinning themselves near pincode ${pincode}. View collections and buy on WhatsApp.`;
+    return settings?.seo?.shopsDescription || 'Find the best clothing shops and design boutiques in your area.';
+  };
+
   return (
     <div ref={pageRef} className="marketplace-page luxury-shell">
       <SEO
-        title={settings?.seo?.shopsTitle || 'Verified Local Fashion Boutiques'}
-        description={settings?.seo?.shopsDescription || 'Find the best clothing shops and design boutiques in your area.'}
+        title={getDynamicTitle()}
+        description={getDynamicDescription()}
+        keywords={city ? `boutiques in ${city}, clothing shops in ${city}, fashion ${city}, dress shops near me` : pincode ? `shops in ${pincode}, fashion near ${pincode}` : undefined}
       />
       <SchemaMarkup type="localbusiness" data={{
-        name: settings?.siteName || 'NearByDress Network',
-        description: settings?.seo?.shopsDescription || 'Local Boutique network',
+        name: city ? `NearByDress Boutique Network — ${city.charAt(0).toUpperCase() + city.slice(1)}` : settings?.siteName || 'NearByDress Network',
+        description: getDynamicDescription(),
       }} />
+      {shops.length > 0 && (
+        <SchemaMarkup 
+          type="itemlist" 
+          data={shops.map(s => ({ id: s._id, name: s.name, url: `/shops/${s._id}` }))} 
+        />
+      )}
       <header className="listing-hero listing-hero-shops">
         <div className="container">
           <span className="luxury-eyebrow fashion-hero-kicker">

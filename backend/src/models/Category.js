@@ -47,4 +47,17 @@ categorySchema.pre('validate', function() {
   }
 });
 
+// ── Cache Invalidation Hooks ──
+const cacheService = require('../core/cache/cache.service');
+const clearSitemapCache = () => {
+  cacheService.invalidatePattern('sitemap:*').catch(err => {
+    console.error('❌ Failed to clear sitemap cache:', err.message);
+  });
+};
+categorySchema.post('save', clearSitemapCache);
+categorySchema.post('remove', clearSitemapCache);
+categorySchema.post('updateOne', clearSitemapCache);
+categorySchema.pre('findOneAndUpdate', clearSitemapCache);
+categorySchema.post('updateMany', clearSitemapCache);
+
 module.exports = mongoose.model('Category', categorySchema);

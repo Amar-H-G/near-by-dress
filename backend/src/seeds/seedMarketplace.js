@@ -19,6 +19,7 @@ const User = require('../models/User');
 const Shop = require('../models/Shop');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
+const BlogPost = require('../models/BlogPost');
 
 // Import Generators
 const generateSellers = require('./generators/generateSellers');
@@ -58,6 +59,9 @@ const runSeeder = async () => {
 
     const categoryWipe = await Category.deleteMany({});
     console.log(`   - Cleared ${categoryWipe.deletedCount} old categories to rebuild pristine structure.`);
+
+    const blogWipe = await BlogPost.deleteMany({});
+    console.log(`   - Cleared ${blogWipe.deletedCount} old blog posts.`);
 
     // 3. Seed Fresh Fashion Categories
     console.log('🌱 Creating pristine fashion category mapping...');
@@ -115,6 +119,51 @@ const runSeeder = async () => {
       totalProductsSeeded += shopProducts.length;
     }
     console.log(`   ✔ Successfully populated ${totalProductsSeeded} active products.`);
+
+    // 6.5 Seed Premium Fashion Styling Blogs
+    console.log('🌱 Seeding premium fashion styling blogs...');
+    const blogPosts = [
+      {
+        title: '10 Essential Styling Tips for Indian Festive Wear',
+        slug: 'styling-tips-indian-festive-wear',
+        content: `
+          <h2>Choose the Right Silhouettes</h2>
+          <p>Indian ethnic wear is known for its graceful silhouettes. Whether you choose a classic lehenga, a floating anarkali, or a traditional saree, it's essential to select shapes that match your personal style and frame.</p>
+          <h2>Play with Vibrant Color Palettes</h2>
+          <p>Festivals are all about celebrations and colors. Don't be afraid to experiment with rich, curated color palettes such as deep emerald green, royal indigo blue, mustard yellow, and warm peach-orange.</p>
+          <blockquote>Accessorizing is key. A pair of antique chandbalis or a statement choker can instantly elevate a simple solid kurta into premium festive attire.</blockquote>
+          <h2>Mix and Match Textures</h2>
+          <p>Combine soft raw silk with sheer organza or hand-woven Banarasi brocades with light chiffon to add dimensional rich textures to your overall outfit.</p>
+        `,
+        excerpt: 'Discover the ultimate guide to styling sarees, lehengas, and fusion wear for this festive season. Learn how to mix colors, styles, and accessories like a professional fashion stylist.',
+        coverImage: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800',
+        author: 'Aisha Sharma',
+        tags: ['styling', 'festive wear', 'ethnic fashion'],
+        keywords: ['festive styling tips', 'indian ethnic wear', 'how to style lehenga', 'saree trends'],
+        isActive: true
+      },
+      {
+        title: 'Why Shopping Local is the Future of Sustainable Fashion',
+        slug: 'why-shopping-local-is-the-future-of-sustainable-fashion',
+        content: `
+          <h2>The True Cost of Fast Fashion</h2>
+          <p>In an era dominated by mass production, fast fashion has led to massive carbon footprints and resource exploitation. Choosing local boutiques reduces transit emissions and supports green practices.</p>
+          <h2>Support Your Local Artisans</h2>
+          <p>Every local boutique partners with local craftsmen, tailors, and weavers, keeping traditional handloom arts alive and ensuring fair wages within the community.</p>
+          <blockquote>When you buy from a neighborhood storefront, you are investing directly in a family business and encouraging localized circular commerce.</blockquote>
+          <h2>Custom Tailoring Over Standardized Sizing</h2>
+          <p>Local shops offer bespoke, custom-tailored apparel that fits your body shape perfectly, reducing waste from returns and ensuring garments are worn for years rather than weeks.</p>
+        `,
+        excerpt: 'Explore how choosing local fashion boutiques in Siliguri and beyond helps reduce carbon footprints, preserves traditional craftsmanship, and supports sustainable circular economies.',
+        coverImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800',
+        author: 'Vikram Mehta',
+        tags: ['sustainability', 'local business', 'slow fashion'],
+        keywords: ['sustainable fashion', 'buy local dress', 'slow fashion boutiques', 'green shopping'],
+        isActive: true
+      }
+    ];
+    await BlogPost.insertMany(blogPosts);
+    console.log('   ✔ Seeded 2 premium, SEO-optimized fashion-tech blog posts.');
 
     // 7. Write Credentials and Export Lists
     console.log('📝 Compiling and writing boutique credentials files...');

@@ -17,7 +17,9 @@ const getShopListKey = (query) => {
   const limit = query.limit || 10;
   const status = query.status || 'approved';
   const city = query.city || 'all';
-  return `shops:list:p_${page}:l_${limit}:s_${status}:c_${city}`;
+  const pincode = query.pincode || 'all';
+  const search = query.search || 'none';
+  return `shops:list:p_${page}:l_${limit}:s_${status}:c_${city}:pin_${pincode}:q_${search}`;
 };
 
 const getProductDetailKey = (productId) => {
