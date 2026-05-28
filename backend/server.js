@@ -47,6 +47,8 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'https://near-dress.onrender.com',     // production frontend
   'https://near-by-dress.onrender.com',  // backend itself
+  'https://near-by-dress.vercel.app/',
+  'https://near-by-dress.vercel.app',
   ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(u => u.trim().replace(/\/$/, '')) : []),
 ];
 
